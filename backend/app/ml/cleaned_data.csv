@@ -1,0 +1,31 @@
+place,country,city,type,cost,best_month,region
+Eiffel Tower,France,Paris,Monument/Tower,35,May-June/Sept-Oct,Western Europe
+Times Square,United States,New York City,Urban Landmark,0,Apr-June/Sept-Nov,North America
+Louvre Museum,France,Paris,Museum,22,Oct-March,Western Europe
+Great Wall of China,China,Beijing/Multiple,Historic Monument,10,Apr-May/Sept-Oct,East Asia
+Taj Mahal,India,Agra,Monument/Mausoleum,15,Oct-March,South Asia
+Colosseum,Italy,Rome,Historic Monument,18,Apr-May/Sept-Oct,Southern Europe
+Statue of Liberty,United States,New York City,Monument/Statue,25,May-Sept,North America
+Sydney Opera House,Australia,Sydney,Cultural Building,49,Sept-Nov,Oceania
+Machu Picchu,Peru,Cusco Region,Archaeological Site,70,Apr-Oct,South America
+Forbidden City,China,Beijing,Historic Palace,8,Apr-May/Sept-Oct,East Asia
+Angkor Wat,Cambodia,Siem Reap,Temple Complex,37,Nov-Feb,Southeast Asia
+Notre-Dame Cathedral,France,Paris,Cathedral,0,Apr-June/Sept-Oct,Western Europe
+Central Park,United States,New York City,Park,0,May-Sept,North America
+Las Vegas Strip,United States,Las Vegas,Entertainment District,0,March-May/Sept-Nov,North America
+Empire State Building,United States,New York City,Skyscraper,44,May-Sept,North America
+Golden Gate Bridge,United States,San Francisco,Bridge,0,Sept-Nov,North America
+Lincoln Memorial,United States,Washington D.C.,Monument/Memorial,0,Apr-June/Sept-Oct,North America
+Sagrada Familia,Spain,Barcelona,Cathedral,26,Apr-June/Sept-Oct,Southern Europe
+Disneyland (California),United States,Anaheim,Theme Park,104,Apr-May/Sept-Nov,North America
+Magic Kingdom (Orlando),United States,Orlando,Theme Park,109,Jan-May/Sept-Dec,North America
+Grand Canyon,United States,Arizona,Natural Wonder,35,March-May/Sept-Nov,North America
+Great Pyramid of Giza,Egypt,Cairo,Historic Monument,20,Oct-Apr,North Africa
+Leaning Tower of Pisa,Italy,Pisa,Historic Tower,20,Apr-May/Sept-Oct,Southern Europe
+Palace of Versailles,France,Versailles,Historic Palace,21,Apr-June/Sept-Oct,Western Europe
+Acropolis,Greece,Athens,Archaeological Site,13,Apr-May/Sept-Oct,Southern Europe
+Burj Khalifa,United Arab Emirates,Dubai,Skyscraper,45,Nov-March,Middle East
+Big Ben,United Kingdom,London,Clock Tower,0,Apr-June/Sept-Oct,Western Europe
+Tower Bridge,United Kingdom,London,Bridge,0,May-Sept,Western Europe
+Buckingham Palace,United Kingdom,London,Palace,0,June-Sept,Western Europe
+Christ the Redeemer,Brazil,Rio de Janeiro,Monument/Statue,12,Apr-June/Sept-Nov,South America
