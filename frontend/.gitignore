@@ -89,3 +89,7 @@ firebase_key.json
 backend/firebase_key.json
 
 backend/secrets/firebase_key.json
+
+*.mp4
+
+frontend/public/travel.mp4
