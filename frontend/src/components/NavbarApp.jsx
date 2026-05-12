@@ -1,3 +1,5 @@
+// src/components/NavbarApp.jsx
+
 import logo from "../assets/logo.svg";
 
 import {
@@ -111,6 +113,10 @@ const NavbarApp = () => {
             {navItem("/plan", "Plan Trip")}
 
             {navItem("/saved", "Saved Trips")}
+            
+            {navItem("/profile", "Profile")}
+
+            {navItem("/my-bookings", "My Bookings")}
 
             {navItem("/booking", "Booking")}
 

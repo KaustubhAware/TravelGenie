@@ -1,0 +1,124 @@
+# =========================================
+# LOG FILES
+# =========================================
+
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# =========================================
+# NODE / REACT / VITE
+# =========================================
+
+node_modules/
+frontend/node_modules/
+
+dist/
+dist-ssr/
+build/
+frontend/dist/
+
+*.local
+
+# =========================================
+# ENV FILES
+# =========================================
+
+.env
+.env.local
+.env.development
+.env.production
+
+frontend/.env
+backend/.env
+
+# =========================================
+# PYTHON / FASTAPI
+# =========================================
+
+venv/
+
+__pycache__/
+*/__pycache__/
+
+*.pyc
+*.pyo
+*.pyd
+
+.python-version
+
+# =========================================
+# DATABASE
+# =========================================
+
+*.sqlite3
+*.db
+
+# =========================================
+# FIREBASE / SECRETS
+# =========================================
+
+firebase-debug.log
+
+firebase_key.json
+backend/firebase_key.json
+
+serviceAccountKey.json
+firebase-adminsdk.json
+
+backend/secrets/firebase_key.json
+
+# =========================================
+# IDE / EDITOR
+# =========================================
+
+.vscode/*
+!.vscode/extensions.json
+
+.idea/
+
+.DS_Store
+
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# =========================================
+# OS FILES
+# =========================================
+
+Thumbs.db
+
+# =========================================
+# CACHE FILES
+# =========================================
+
+.cache/
+.temp/
+tmp/
+
+# =========================================
+# TESTING
+# =========================================
+
+coverage/
+
+# =========================================
+# TYPESCRIPT
+# =========================================
+
+*.tsbuildinfo
+
+# =========================================
+# MEDIA
+# =========================================
+
+*.mp4
+
+frontend/public/travel.mp4

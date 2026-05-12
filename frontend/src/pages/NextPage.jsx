@@ -129,67 +129,81 @@ export default function NextPage() {
 
   /* ================= SAVE TRIP ================= */
 
-  const saveTrip = async () => {
+const saveTrip = async () => {
 
-    if (!result) return;
+  if (!result) return;
 
-    const user = auth.currentUser;
+  const user = auth.currentUser;
 
-    if (!user) {
+  if (!user) {
 
-      toast.error("Please login first");
+    toast.error("Please login first");
 
-      navigate("/login");
+    navigate("/login");
 
-      return;
-    }
+    return;
 
-    setSaving(true);
+  }
 
-    try {
+  setSaving(true);
 
-      const token = await user.getIdToken();
+  try {
 
-      const res = await fetch(`${API}/save-trip`, {
+    const token = await user.getIdToken();
+
+    const res = await fetch(
+      `${API}/save-itinerary`,
+      {
 
         method: "POST",
 
         headers: {
           "Content-Type": "application/json",
+
           Authorization: `Bearer ${token}`,
         },
 
         body: JSON.stringify({
+
           destination: form.destination,
+
           budget: form.budget,
+
           days: form.days,
+
           preferences: form.preferences,
-          cost: result.cost,
-          sentiment: result.sentiment,
-          itinerary: result.itinerary,
+
+          itinerary: JSON.stringify(
+            result.itinerary
+          ),
+
         }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Save failed");
       }
+    );
 
-      toast.success("Trip saved!");
+    const data = await res.json();
 
-    } catch (err) {
+    if (!res.ok) {
 
-      console.error(err);
-
-      toast.error("Failed to save trip");
+      throw new Error(
+        data.detail || "Save failed"
+      );
 
     }
 
-    setSaving(false);
+    toast.success("Trip saved successfully!");
 
-  };
+  } catch (err) {
 
+    console.error(err);
+
+    toast.error("Failed to save trip");
+
+  }
+
+  setSaving(false);
+
+};
   return (
 
 <div className="h-screen overflow-hidden bg-[#f5f9ff] px-4 md:px-6 pt-4 pb-4">

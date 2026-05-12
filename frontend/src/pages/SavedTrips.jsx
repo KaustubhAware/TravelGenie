@@ -66,11 +66,14 @@ export default function SavedTrips() {
 
       const token = await user.getIdToken();
 
-      const res = await fetch(`${API}/get-trips`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await fetch(
+        `${API}/my-itineraries`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       const data = await res.json();
 
@@ -100,6 +103,41 @@ export default function SavedTrips() {
   };
 
   useEffect(() => {
+    const fetchTrips = async () => {
+      setLoading(true);
+      const user = auth.currentUser;
+      if (!user) {
+        toast.error("Please login first");
+        navigate("/login");
+        setLoading(false);
+        return;
+      }
+      try {
+        const token = await user.getIdToken();
+        const res = await fetch(
+          `${API}/my-itineraries`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        const data = await res.json();
+        if (!res.ok) throw new Error();
+        const formatted = (data.trips || []).map((trip) => ({
+          ...trip,
+          destination: trip.destination || "Unknown",
+          itinerary: parseItinerary(trip.itinerary),
+          budget: Number(trip.budget) || 0,
+        }));
+        setTrips(formatted);
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to load trips");
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchTrips();
   }, []);
 
