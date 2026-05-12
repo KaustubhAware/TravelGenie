@@ -84,3 +84,6 @@ coverage/
 # TYPESCRIPT
 # =========================
 *.tsbuildinfo
+
+firebase_key.json
+backend/firebase_key.json
