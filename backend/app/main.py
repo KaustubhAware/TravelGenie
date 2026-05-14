@@ -1,4 +1,6 @@
+# =====================================================
 # app/main.py
+# =====================================================
 
 from fastapi import FastAPI
 
@@ -8,6 +10,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# =====================================================
+# IMPORT ROUTES
+# =====================================================
+
 from app.routes import (
     recommend,
     cost,
@@ -16,78 +22,139 @@ from app.routes import (
     admin,
     auth,
     profile,
-    itinerary
+    itinerary,
+    clients,
+    packages
 )
 
-app = FastAPI()
+# =====================================================
+# CREATE APP
+# =====================================================
 
-# ============================================
-# ================= CORS =====================
-# ============================================
+app = FastAPI(
+    title="TravelGenie API",
+    version="1.0.0"
+)
+
+# =====================================================
+# CORS
+# =====================================================
 
 app.add_middleware(
     CORSMiddleware,
+
     allow_origins=["*"],
+
     allow_credentials=True,
+
     allow_methods=["*"],
+
     allow_headers=["*"],
 )
 
-# ============================================
-# ================= ROUTES ===================
-# ============================================
+# =====================================================
+# API ROUTES
+# =====================================================
+
+# RECOMMENDATION ROUTES
 
 app.include_router(
     recommend.router,
-    prefix="/api"
+    prefix="/api",
+    tags=["Recommendations"]
 )
+
+# COST ROUTES
 
 app.include_router(
     cost.router,
-    prefix="/api"
+    prefix="/api",
+    tags=["Cost"]
 )
+
+# TRIP ROUTES
 
 app.include_router(
     trips.router,
-    prefix="/api"
+    prefix="/api",
+    tags=["Trips"]
 )
+
+# BOOKING ROUTES
 
 app.include_router(
     booking.router,
-    prefix="/api"
+    prefix="/api",
+    tags=["Bookings"]
 )
+
+# ADMIN ROUTES
 
 app.include_router(
     admin.router,
-    prefix="/api"
+    prefix="/api",
+    tags=["Admin"]
 )
+
+# AUTH ROUTES
 
 app.include_router(
     auth.router,
-    prefix="/api"
+    prefix="/api",
+    tags=["Authentication"]
 )
+
+# PROFILE ROUTES
 
 app.include_router(
     profile.router,
-    prefix="/api"
+    prefix="/api",
+    tags=["Profile"]
 )
 
-# ============================================
-# ============= ITINERARY ROUTES =============
-# ============================================
+# ITINERARY ROUTES
 
 app.include_router(
     itinerary.router,
-    prefix="/api"
+    prefix="/api",
+    tags=["Itinerary"]
 )
 
-# ============================================
-# ================= HEALTH ===================
-# ============================================
+# CLIENT ROUTES
+
+app.include_router(
+    clients.router,
+    prefix="/api",
+    tags=["Clients"]
+)
+
+# PACKAGE ROUTES
+
+app.include_router(
+    packages.router,
+    prefix="/api",
+    tags=["Packages"]
+)
+
+# =====================================================
+# ROOT
+# =====================================================
 
 @app.get("/")
 def home():
 
     return {
-        "message": "API Running"
+        "message": "TravelGenie API Running Successfully"
+    }
+
+# =====================================================
+# HEALTH CHECK
+# =====================================================
+
+@app.get("/health")
+def health_check():
+
+    return {
+        "status": "healthy",
+        "service": "TravelGenie Backend"
     }

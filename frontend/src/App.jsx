@@ -34,6 +34,10 @@ import UserProtectedRoute from "./components/UserProtectedRoute";
 
 import AppLayout from "./layouts/AppLayout";
 
+import AdminClients from "./pages/AdminClients";
+
+import AdminPackages from "./pages/AdminPackages";
+
 function App() {
 
   return (
@@ -71,6 +75,16 @@ function App() {
       <Route
         path="/admin"
         element={<AdminDashboard />}
+      />
+
+      <Route
+        path="/admin/clients"
+        element={<AdminClients />}
+      />
+
+      <Route
+         path="/admin/packages"
+        element={<AdminPackages />}
       />
 
       {/* ============================================ */}
@@ -171,7 +185,10 @@ function App() {
 
     </Routes>
 
+    
+
   );
+  
 
 }
 
