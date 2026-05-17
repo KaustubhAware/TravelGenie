@@ -1,25 +1,139 @@
-import pandas as pd
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.naive_bayes import MultinomialNB
+# =====================================================
+# SMART TRAVEL SENTIMENT ANALYSIS
+# File: app/ml/sentiment.py
+# =====================================================
 
-# Load dataset
-df = pd.read_csv("app/ml/reviews.csv")
+# =====================================================
+# SENTIMENT FUNCTION
+# =====================================================
 
-# Create labels manually
-df["sentiment"] = [1, 0, 1, 0, 1, 0]  # 1=positive, 0=negative
-
-# Convert text to vectors
-cv = CountVectorizer()
-X = cv.fit_transform(df["review"])
-y = df["sentiment"]
-
-# Train model
-model = MultinomialNB()
-model.fit(X, y)
-
-# Prediction function
 def analyze_sentiment(text):
-    text_vec = cv.transform([text])
-    prediction = model.predict(text_vec)[0]
 
-    return "Positive" if prediction == 1 else "Negative"
+    # =====================================================
+    # HANDLE LIST INPUT
+    # =====================================================
+
+    if isinstance(text, list):
+
+        text = " ".join(text)
+
+    # =====================================================
+    # HANDLE EMPTY INPUT
+    # =====================================================
+
+    if not text:
+
+        return "Neutral"
+
+    # =====================================================
+    # LOWERCASE TEXT
+    # =====================================================
+
+    text = text.lower()
+
+    # =====================================================
+    # POSITIVE TRAVEL KEYWORDS
+    # =====================================================
+
+    positive_keywords = [
+
+        "beach",
+
+        "beaches",
+
+        "nightlife",
+
+        "food",
+
+        "luxury",
+
+        "travel",
+
+        "trip",
+
+        "vacation",
+
+        "holiday",
+
+        "shopping",
+
+        "family",
+
+        "solo",
+
+        "fun",
+
+        "explore"
+    ]
+
+    # =====================================================
+    # RELAXED KEYWORDS
+    # =====================================================
+
+    relaxed_keywords = [
+
+        "peace",
+
+        "nature",
+
+        "spa",
+
+        "meditation",
+
+        "calm",
+
+        "relax"
+    ]
+
+    # =====================================================
+    # ADVENTURE KEYWORDS
+    # =====================================================
+
+    adventure_keywords = [
+
+        "adventure",
+
+        "trekking",
+
+        "hiking",
+
+        "camping",
+
+        "rafting",
+
+        "bike",
+
+        "roadtrip",
+
+        "mountain"
+    ]
+
+    # =====================================================
+    # CHECK POSITIVE
+    # =====================================================
+
+    if any(word in text for word in positive_keywords):
+
+        return "Positive"
+
+    # =====================================================
+    # CHECK RELAXED
+    # =====================================================
+
+    if any(word in text for word in relaxed_keywords):
+
+        return "Relaxed"
+
+    # =====================================================
+    # CHECK ADVENTURE
+    # =====================================================
+
+    if any(word in text for word in adventure_keywords):
+
+        return "Adventure"
+
+    # =====================================================
+    # DEFAULT
+    # =====================================================
+
+    return "Neutral"

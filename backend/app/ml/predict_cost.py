@@ -1,19 +1,35 @@
 import pickle
 
-# Load model + encoder
-model = pickle.load(open("app/ml/cost_model.pkl", "rb"))
-le_city = pickle.load(open("app/ml/le_city.pkl", "rb"))
+# =====================================================
+# LOAD MODEL
+# =====================================================
+
+model = pickle.load(
+    open("app/ml/cost_model.pkl", "rb")
+)
+
+le_city = pickle.load(
+    open("app/ml/le_city.pkl", "rb")
+)
+
+# =====================================================
+# PREDICT COST
+# =====================================================
 
 def predict_cost(city):
-    city = city.strip()
 
-    # 🔥 SAFETY FIX (IMPORTANT)
-    if city not in le_city.classes_:
-        return 3000  # default fallback cost
+    try:
 
-    city_encoded = le_city.transform([city])[0]
+        city_encoded = le_city.transform(
+            [city]
+        )[0]
 
-    # Predict cost
-    predicted_cost = model.predict([[city_encoded]])[0]
+        prediction = model.predict(
+            [[city_encoded]]
+        )[0]
 
-    return round(predicted_cost, 2)
+        return int(prediction)
+
+    except:
+
+        return 25000
