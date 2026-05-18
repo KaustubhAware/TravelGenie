@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from app.db import get_connection
 
@@ -15,105 +15,136 @@ def get_clients():
 
     cursor = conn.cursor()
 
-    query = """
-    SELECT
-        u.id,
-        u.full_name,
-        u.email,
-        u.phone,
-        u.city,
-        u.country,
+    try:
 
-        COUNT(b.booking_id) AS total_bookings,
+        query = """
+        SELECT
+            u.id,
+            u.full_name,
+            u.email,
+            u.phone,
+            u.city,
+            u.country,
 
-        COALESCE(
-            SUM(b.budget),
-            0
-        ) AS total_spent,
+            COUNT(b.booking_id) AS total_bookings,
 
-        MAX(b.created_at) AS latest_booking
+            COALESCE(
+                SUM(b.budget),
+                0
+            ) AS total_spent,
 
-    FROM users u
+            MAX(b.created_at) AS latest_booking
 
-    LEFT JOIN bookings b
-    ON u.id = b.user_id
+        FROM users u
 
-    GROUP BY
-        u.id,
-        u.full_name,
-        u.email,
-        u.phone,
-        u.city,
-        u.country
+        LEFT JOIN bookings b
+        ON u.id = b.user_id
 
-    ORDER BY total_spent DESC
-    """
+        WHERE
+            COALESCE(u.is_deleted, FALSE) = FALSE
 
-    cursor.execute(query)
+        GROUP BY
+            u.id,
+            u.full_name,
+            u.email,
+            u.phone,
+            u.city,
+            u.country
 
-    rows = cursor.fetchall()
+        ORDER BY total_spent DESC
+        """
 
-    clients = []
+        cursor.execute(query)
 
-    for row in rows:
+        rows = cursor.fetchall()
 
-        clients.append({
+        clients = []
 
-            "id": row[0],
+        for row in rows:
 
-            "full_name": row[1],
+            clients.append({
 
-            "email": row[2],
+                "id": row[0],
 
-            "phone": row[3],
+                "full_name": row[1] or "Unknown User",
 
-            "city": row[4],
+                "email": row[2],
 
-            "country": row[5],
+                "phone": row[3],
 
-            "total_bookings": row[6],
+                "city": row[4],
 
-            "total_spent": row[7],
+                "country": row[5],
 
-            "latest_booking": str(row[8]) if row[8] else None
+                "total_bookings": row[6],
 
-        })
+                "total_spent": float(row[7]) if row[7] else 0,
 
-    cursor.close()
+                "latest_booking":
+                    str(row[8]) if row[8] else None
+            })
 
-    conn.close()
+        return {
+            "success": True,
+            "clients": clients
+        }
 
-    return {
-        "clients": clients
-    }
+    except Exception as e:
+
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
+
+    finally:
+
+        cursor.close()
+
+        conn.close()
+
 # =====================================================
-# DELETE CLIENT
+# SOFT DELETE CLIENT
 # =====================================================
 
 @router.delete("/admin/clients/{client_id}")
 def delete_client(client_id: int):
 
+    conn = get_connection()
+
+    cursor = conn.cursor()
+
     try:
 
-        conn = get_connection()
-
-        cursor = conn.cursor()
-
-        # DELETE BOOKINGS
+        # =============================================
+        # CHECK CLIENT EXISTS
+        # =============================================
 
         cursor.execute(
             """
-            DELETE FROM bookings
-            WHERE user_id = %s
+            SELECT id
+            FROM users
+            WHERE id = %s
             """,
             (client_id,)
         )
 
-        # DELETE USER
+        existing_user = cursor.fetchone()
+
+        if not existing_user:
+
+            raise HTTPException(
+                status_code=404,
+                detail="Client not found"
+            )
+
+        # =============================================
+        # SOFT DELETE CLIENT
+        # =============================================
 
         cursor.execute(
             """
-            DELETE FROM users
+            UPDATE users
+            SET is_deleted = TRUE
             WHERE id = %s
             """,
             (client_id,)
@@ -122,22 +153,28 @@ def delete_client(client_id: int):
         conn.commit()
 
         return {
-            "message": "Client deleted successfully"
+
+            "success": True,
+
+            "message":
+                "Client deleted successfully"
         }
+
+    except HTTPException:
+
+        raise
 
     except Exception as e:
 
-        print("DELETE ERROR:", e)
+        conn.rollback()
 
-        return {
-            "error": str(e)
-        }
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
 
     finally:
 
         cursor.close()
 
         conn.close()
-    return {
-        "message": "Client deleted successfully"
-    }

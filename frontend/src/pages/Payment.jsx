@@ -2,6 +2,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import { useState, useEffect } from "react";
 import { auth } from "../firebase";
+import { API_BASE } from "../services/httpClient";
 import { toast, Toaster } from "react-hot-toast";
 
 import {
@@ -73,7 +74,7 @@ export default function Payment() {
       const token = await user.getIdToken();
 
       const res = await fetch(
-        "http://127.0.0.1:8000/api/update-payment",
+        `${API_BASE}/update-payment`,
         {
           method: "POST",
           headers: {
@@ -136,7 +137,7 @@ export default function Payment() {
               </h1>
 
               <p className="text-gray-500 mt-2">
-                Complete your payment to confirm your booking
+                Complete simulated payment after agency approval
               </p>
 
             </div>
@@ -327,7 +328,7 @@ export default function Payment() {
 
                   {loading
                     ? "Processing Payment..."
-                    : `Pay ₹ ${data.cost || data.budget || 0}`}
+                    : `Pay Rs. ${data.cost || data.total_cost || data.budget || 0}`}
 
                   {!loading && <FaArrowRight />}
 
@@ -456,7 +457,7 @@ export default function Payment() {
                     <span>Trip Cost</span>
 
                     <span>
-                      ₹ {data.cost || data.budget || 0}
+                      Rs. {data.cost || data.total_cost || data.budget || 0}
                     </span>
 
                   </div>
@@ -465,7 +466,7 @@ export default function Payment() {
 
                     <span>Taxes & Fees</span>
 
-                    <span>₹ 0</span>
+                    <span>Rs. 0</span>
 
                   </div>
 
@@ -474,7 +475,7 @@ export default function Payment() {
                     <span>Total</span>
 
                     <span>
-                      ₹ {data.cost || data.budget || 0}
+                      Rs. {data.cost || data.total_cost || data.budget || 0}
                     </span>
 
                   </div>

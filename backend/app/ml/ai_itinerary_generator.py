@@ -3,6 +3,7 @@
 # =====================================================
 
 import os
+import re
 
 from google import genai
 
@@ -19,7 +20,7 @@ from app.ml.prompt_builder import (
 load_dotenv()
 
 # =====================================================
-# CREATE CLIENT
+# GEMINI CLIENT
 # =====================================================
 
 client = genai.Client(
@@ -38,9 +39,13 @@ def generate_ai_itinerary(data):
         # BUILD PROMPT
         # =====================================================
 
-        prompt = build_itinerary_prompt(data)
+        prompt = build_itinerary_prompt(
+            data
+        )
 
+        print("=" * 40)
         print("PROMPT SENT TO GEMINI")
+        print("=" * 40)
 
         # =====================================================
         # GENERATE RESPONSE
@@ -48,63 +53,60 @@ def generate_ai_itinerary(data):
 
         response = client.models.generate_content(
 
-            model="models/gemini-flash-latest",
+          model="models/gemini-flash-latest",
 
             contents=prompt
         )
 
-        print("GEMINI RESPONSE RECEIVED")
-
         # =====================================================
-        # DEBUG RAW RESPONSE
-        # =====================================================
-
-        print("======================================")
-        print("RAW GEMINI RESPONSE")
-        print("======================================")
-
-        print(response.text)
-
-        print("======================================")
-
-        # =====================================================
-        # VALIDATE RESPONSE
+        # VALIDATION
         # =====================================================
 
         if not response:
 
-            print("EMPTY RESPONSE")
+            print("NO RESPONSE")
 
             return None
 
         if not hasattr(response, "text"):
 
-            print("NO TEXT ATTRIBUTE")
+            print("NO TEXT FOUND")
 
             return None
+
+        raw_text = response.text.strip()
+
+        print("=" * 40)
+        print("RAW GEMINI RESPONSE")
+        print("=" * 40)
+        print(raw_text)
 
         # =====================================================
         # CLEAN RESPONSE
         # =====================================================
 
-        cleaned_response = response.text.strip()
+        cleaned = re.sub(
+            r"```json|```",
+            "",
+            raw_text
+        ).strip()
 
-        print("======================================")
+        print("=" * 40)
         print("CLEANED RESPONSE")
-        print("======================================")
+        print("=" * 40)
+        print(cleaned)
 
-        print(cleaned_response)
+        return cleaned
 
-        print("======================================")
-
-        # =====================================================
-        # RETURN TEXT
-        # =====================================================
-
-        return cleaned_response
+    # =====================================================
+    # ERROR
+    # =====================================================
 
     except Exception as e:
 
-        print("GEMINI ERROR:", e)
+        print("=" * 40)
+        print("GEMINI ERROR")
+        print("=" * 40)
+        print(e)
 
         return None

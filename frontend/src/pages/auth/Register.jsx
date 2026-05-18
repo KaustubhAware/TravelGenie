@@ -46,93 +46,128 @@ export default function Register() {
 
   const handleRegister = async () => {
 
-    if (!email || !password) {
+  if (!email || !password) {
 
-      alert("Please fill all fields");
+    alert("Please fill all fields");
 
-      return;
+    return;
+  }
 
+  if (password.length < 6) {
+
+    alert(
+      "Password must be at least 6 characters"
+    );
+
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+
+    // =====================================
+    // FIREBASE REGISTER
+    // =====================================
+
+    const userCredential =
+      await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
+    // =====================================
+    // GET FIREBASE TOKEN
+    // =====================================
+
+    const token =
+      await userCredential.user.getIdToken();
+
+    // =====================================
+    // SAVE TOKEN
+    // =====================================
+
+    localStorage.setItem(
+      "token",
+      token
+    );
+
+    // =====================================
+    // SAVE USER TO DATABASE
+    // =====================================
+
+    const response = await fetch(
+      "http://127.0.0.1:8000/api/admin/save-user",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type":
+            "application/json",
+
+          Authorization:
+            `Bearer ${token}`,
+        },
+      }
+    );
+
+    // =====================================
+    // HANDLE BACKEND ERROR
+    // =====================================
+
+    if (!response.ok) {
+
+      throw new Error(
+        "Failed to save user"
+      );
     }
 
-    if (password.length < 6) {
+    // =====================================
+    // NAVIGATE
+    // =====================================
+
+    navigate(from, {
+      replace: true,
+    });
+
+  } catch (err) {
+
+    console.error(err);
+
+    if (
+      err.code ===
+      "auth/email-already-in-use"
+    ) {
 
       alert(
-        "Password must be at least 6 characters"
+        "Email already registered"
       );
 
-      return;
+    } else if (
+      err.code ===
+      "auth/invalid-email"
+    ) {
 
+      alert("Invalid email");
+
+    } else if (
+      err.code ===
+      "auth/weak-password"
+    ) {
+
+      alert("Weak password");
+
+    } else {
+
+      alert("Something went wrong");
     }
 
-    setLoading(true);
-
-    try {
-
-      const userCredential =
-        await createUserWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
-
-      const token =
-        await userCredential.user.getIdToken();
-
-      await fetch(
-        "http://127.0.0.1:8000/api/admin/save-user",
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json",
-
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      navigate(from, {
-        replace: true,
-      });
-
-    } catch (err) {
-
-      if (
-        err.code ===
-        "auth/email-already-in-use"
-      ) {
-
-        alert(
-          "Email already registered"
-        );
-
-      } else if (
-        err.code ===
-        "auth/invalid-email"
-      ) {
-
-        alert("Invalid email");
-
-      } else if (
-        err.code ===
-        "auth/weak-password"
-      ) {
-
-        alert("Weak password");
-
-      } else {
-
-        alert("Something went wrong");
-
-      }
-
-    }
+  } finally {
 
     setLoading(false);
-
-  };
-
+  }
+};
   return (
 
     <div className="h-screen overflow-hidden bg-gradient-to-br from-[#eef5ff] to-[#f8fbff] flex items-center justify-center px-6 py-4">

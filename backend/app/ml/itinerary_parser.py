@@ -1,10 +1,36 @@
-
 # =====================================================
 # ITINERARY PARSER
 # =====================================================
 
 import json
 import re
+
+# =====================================================
+# DEFAULT RESPONSE
+# =====================================================
+
+DEFAULT_RESPONSE = {
+
+    "itinerary": [],
+
+    "recommended_places": [],
+
+    "estimated_cost": 0,
+
+    "sentiment": "Neutral",
+
+    "budget_breakdown": {},
+
+    "travel_tips": [],
+
+    "hotel_recommendations": [],
+
+    "restaurant_recommendations": [],
+
+    "weather": {},
+
+    "crowd_insights": []
+}
 
 # =====================================================
 # PARSE RESPONSE
@@ -20,29 +46,10 @@ def parse_itinerary_response(text):
 
         if not text:
 
-            return {
-
-                "itinerary": [],
-
-                "recommended_places": [],
-
-                "estimated_cost": 0,
-
-                "sentiment": "Neutral",
-
-                "budget_breakdown": {},
-
-                "travel_tips": [],
-
-                "hotel_recommendations": [],
-
-                "restaurant_recommendations": [],
-
-                "weather": {}
-            }
+            return DEFAULT_RESPONSE
 
         # =====================================================
-        # REMOVE MARKDOWN
+        # CLEAN MARKDOWN
         # =====================================================
 
         cleaned = re.sub(
@@ -51,19 +58,22 @@ def parse_itinerary_response(text):
             text
         ).strip()
 
-        # =====================================================
-        # CONVERT TO JSON
-        # =====================================================
-
-        data = json.loads(
-            cleaned
-        )
+        print("=" * 40)
+        print("CLEANED RESPONSE")
+        print("=" * 40)
+        print(cleaned)
 
         # =====================================================
-        # RETURN SAFE DATA
+        # LOAD JSON
         # =====================================================
 
-        return {
+        data = json.loads(cleaned)
+
+        # =====================================================
+        # SAFE RESPONSE
+        # =====================================================
+
+        response = {
 
             "itinerary": data.get(
                 "itinerary",
@@ -120,33 +130,34 @@ def parse_itinerary_response(text):
             "weather": data.get(
                 "weather",
                 {}
+            ),
+
+            # =====================================================
+            # CROWD INSIGHTS
+            # =====================================================
+
+            "crowd_insights": data.get(
+                "crowd_insights",
+                []
             )
         }
 
+        print("=" * 40)
+        print("FINAL PARSED RESPONSE")
+        print("=" * 40)
+        print(response)
+
+        return response
+
+    # =====================================================
+    # ERROR
+    # =====================================================
+
     except Exception as e:
 
-        print(
-            "PARSER ERROR:",
-            e
-        )
+        print("=" * 40)
+        print("PARSER ERROR")
+        print("=" * 40)
+        print(e)
 
-        return {
-
-            "itinerary": [],
-
-            "recommended_places": [],
-
-            "estimated_cost": 0,
-
-            "sentiment": "Neutral",
-
-            "budget_breakdown": {},
-
-            "travel_tips": [],
-
-            "hotel_recommendations": [],
-
-            "restaurant_recommendations": [],
-
-            "weather": {}
-        }
+        return DEFAULT_RESPONSE

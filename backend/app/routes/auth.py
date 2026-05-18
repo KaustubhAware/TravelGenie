@@ -6,11 +6,14 @@ import os
 from fastapi import Depends
 from app.firebase_auth import verify_firebase_token
 from app.db import get_connection
+from app.config import get_settings
+from app.responses import success_response
 
 router = APIRouter(prefix="/admin")
 
 # 🔐 CONFIG
-SECRET_KEY = os.getenv("ADMIN_SECRET_KEY", "MYSECRET123")
+settings = get_settings()
+SECRET_KEY = settings.ADMIN_SECRET_KEY
 ALGORITHM = "HS256"
 TOKEN_EXPIRE_HOURS = 2
 
@@ -23,8 +26,8 @@ class LoginRequest(BaseModel):
 
 # ================= ADMIN USER =================
 ADMIN_USER = {
-    "username": "admin",
-    "password": "admin123"
+    "username": settings.ADMIN_USERNAME,
+    "password": settings.ADMIN_PASSWORD
 }
 
 
@@ -45,7 +48,11 @@ def login(data: LoginRequest):
 
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
-    return {"access_token": token}
+    return success_response(
+        message="Admin login successful",
+        data={"access_token": token},
+        access_token=token
+    )
 
 
 # ================= VERIFY TOKEN =================
@@ -120,6 +127,7 @@ async def save_user(
 
     conn.close()
 
-    return {
-        "message": "User saved"
-    }
+    return success_response(
+        message="User saved",
+        data={}
+    )

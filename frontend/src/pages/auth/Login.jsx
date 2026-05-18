@@ -45,81 +45,117 @@ export default function Login() {
 
   const handleLogin = async () => {
 
-    if (!email || !password) {
+  if (!email || !password) {
 
-      alert("Please fill all fields");
+    alert("Please fill all fields");
 
-      return;
+    return;
+  }
 
-    }
+  setLoading(true);
 
-    setLoading(true);
+  try {
 
-    try {
+    // =====================================
+    // FIREBASE LOGIN
+    // =====================================
 
-      const userCredential =
-        await signInWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
-
-      const token =
-        await userCredential.user.getIdToken();
-
-      await fetch(
-        "http://127.0.0.1:8000/api/admin/save-user",
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json",
-
-            Authorization: `Bearer ${token}`,
-          },
-        }
+    const userCredential =
+      await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
       );
 
-      navigate(from, {
-        replace: true,
-      });
+    // =====================================
+    // GET FIREBASE TOKEN
+    // =====================================
 
-    } catch (err) {
+    const token =
+      await userCredential.user.getIdToken();
 
-      if (
-        err.code ===
-        "auth/user-not-found"
-      ) {
+    // =====================================
+    // SAVE TOKEN
+    // =====================================
 
-        alert("User not found");
+    localStorage.setItem(
+      "token",
+      token
+    );
 
-      } else if (
-        err.code ===
-        "auth/wrong-password"
-      ) {
+    // =====================================
+    // SAVE USER TO BACKEND
+    // =====================================
 
-        alert("Incorrect password");
+    const response = await fetch(
+      "http://127.0.0.1:8000/api/admin/save-user",
+      {
+        method: "POST",
 
-      } else if (
-        err.code ===
-        "auth/invalid-email"
-      ) {
+        headers: {
+          "Content-Type":
+            "application/json",
 
-        alert("Invalid email");
-
-      } else {
-
-        alert("Login failed");
-
+          Authorization:
+            `Bearer ${token}`,
+        },
       }
+    );
 
+    // =====================================
+    // HANDLE BACKEND ERROR
+    // =====================================
+
+    if (!response.ok) {
+
+      throw new Error(
+        "Failed to save user"
+      );
     }
 
+    // =====================================
+    // NAVIGATE
+    // =====================================
+
+    navigate(from, {
+      replace: true,
+    });
+
+  } catch (err) {
+
+    console.error(err);
+
+    if (
+      err.code ===
+      "auth/user-not-found"
+    ) {
+
+      alert("User not found");
+
+    } else if (
+      err.code ===
+      "auth/wrong-password"
+    ) {
+
+      alert("Incorrect password");
+
+    } else if (
+      err.code ===
+      "auth/invalid-email"
+    ) {
+
+      alert("Invalid email");
+
+    } else {
+
+      alert("Login failed");
+    }
+
+  } finally {
+
     setLoading(false);
-
-  };
-
+  }
+};
   return (
 
     <div className="min-h-screen bg-gradient-to-br from-[#eef5ff] to-[#f8fbff] flex items-center justify-center px-6 py-10">

@@ -1,42 +1,49 @@
 // src/App.jsx
 
 import {
+  lazy,
+  Suspense,
+} from "react";
+
+import {
   Routes,
   Route,
   Navigate,
 } from "react-router-dom";
 
-import Home from "./pages/Home";
-
-import NextPage from "./pages/NextPage";
-
-import Booking from "./pages/Booking";
-
-import Payment from "./pages/Payment";
-
-import BookingSuccess from "./pages/BookingSuccess";
-
-import Login from "./pages/auth/Login";
-
-import Register from "./pages/auth/Register";
-
-import SavedTrips from "./pages/SavedTrips";
-
-import AdminDashboard from "./pages/AdminDashboard";
-
-import AdminLogin from "./pages/AdminLogin";
-
-import ProfileComplete from "./pages/ProfileComplete";
-
-import MyBookings from "./pages/MyBookings";
-
 import UserProtectedRoute from "./components/UserProtectedRoute";
 
 import AppLayout from "./layouts/AppLayout";
 
-import AdminClients from "./pages/AdminClients";
+import AdminProtectedRoute from "./components/AdminProtectedRoute";
+import RouteLoader from "./components/RouteLoader";
+import ErrorBoundary from "./components/ErrorBoundary";
 
-import AdminPackages from "./pages/AdminPackages";
+const Home = lazy(() => import("./pages/Home"));
+const NextPage = lazy(() => import("./pages/NextPage"));
+const Booking = lazy(() => import("./pages/Booking"));
+const Payment = lazy(() => import("./pages/Payment"));
+const BookingSuccess = lazy(() => import("./pages/BookingSuccess"));
+const Login = lazy(() => import("./pages/auth/Login"));
+const Register = lazy(() => import("./pages/auth/Register"));
+const SavedTrips = lazy(() => import("./pages/SavedTrips"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const AdminLogin = lazy(() => import("./pages/AdminLogin"));
+const ProfileComplete = lazy(() => import("./pages/ProfileComplete"));
+const MyBookings = lazy(() => import("./pages/MyBookings"));
+const BookingDetails = lazy(() => import("./pages/BookingDetails"));
+const AdminClients = lazy(() => import("./pages/AdminClients"));
+const AdminPackages = lazy(() => import("./pages/AdminPackages"));
+const AgentDashboard = lazy(() => import("./pages/AgentDashboard"));
+
+const withSuspense = (element, label) => (
+  <ErrorBoundary>
+    <Suspense fallback={<RouteLoader label={label} />}>
+      {element}
+    </Suspense>
+  </ErrorBoundary>
+);
+
 
 function App() {
 
@@ -50,17 +57,17 @@ function App() {
 
       <Route
         path="/"
-        element={<Home />}
+        element={withSuspense(<Home />, "Loading TravelGenie...")}
       />
 
       <Route
         path="/login"
-        element={<Login />}
+        element={withSuspense(<Login />, "Loading login...")}
       />
 
       <Route
         path="/register"
-        element={<Register />}
+        element={withSuspense(<Register />, "Loading registration...")}
       />
 
       {/* ============================================ */}
@@ -69,24 +76,93 @@ function App() {
 
       <Route
         path="/admin/login"
-        element={<AdminLogin />}
+        element={withSuspense(<AdminLogin />, "Loading admin login...")}
       />
 
       <Route
         path="/admin"
-        element={<AdminDashboard />}
+        element={
+          withSuspense(
+            <AdminProtectedRoute>
+              <AdminDashboard />
+            </AdminProtectedRoute>,
+            "Loading admin dashboard..."
+          )
+        }
+      />
+
+      <Route
+        path="/admin/dashboard"
+        element={
+          withSuspense(
+            <AdminProtectedRoute>
+              <AdminDashboard />
+            </AdminProtectedRoute>,
+            "Loading admin dashboard..."
+          )
+        }
+      />
+
+      <Route
+        path="/admin/bookings"
+        element={
+          withSuspense(
+            <AdminProtectedRoute>
+              <AdminDashboard />
+            </AdminProtectedRoute>,
+            "Loading booking operations..."
+          )
+        }
+      />
+
+      <Route
+        path="/admin/analytics"
+        element={
+          withSuspense(
+            <AdminProtectedRoute>
+              <AdminDashboard />
+            </AdminProtectedRoute>,
+            "Loading analytics..."
+          )
+        }
       />
 
       <Route
         path="/admin/clients"
-        element={<AdminClients />}
+        element={
+          withSuspense(
+            <AdminProtectedRoute>
+              <AdminClients />
+            </AdminProtectedRoute>,
+            "Loading clients..."
+          )
+        }
       />
 
       <Route
          path="/admin/packages"
-        element={<AdminPackages />}
+        element={
+          withSuspense(
+            <AdminProtectedRoute>
+              <AdminPackages />
+            </AdminProtectedRoute>,
+            "Loading packages..."
+          )
+        }
       />
 
+      <Route
+        path="/agent"
+        element={
+          withSuspense(
+            <AdminProtectedRoute>
+              <AgentDashboard />
+            </AdminProtectedRoute>,
+            "Loading agent workspace..."
+          )
+        }
+      />
+      
       {/* ============================================ */}
       {/* ============ PROFILE COMPLETE ============== */}
       {/* ============================================ */}
@@ -94,9 +170,12 @@ function App() {
       <Route
         path="/complete-profile"
         element={
-          <UserProtectedRoute>
-            <ProfileComplete />
-          </UserProtectedRoute>
+          withSuspense(
+            <UserProtectedRoute>
+              <ProfileComplete />
+            </UserProtectedRoute>,
+            "Loading profile..."
+          )
         }
       />
 
@@ -109,54 +188,72 @@ function App() {
   <Route
     path="/plan"
     element={
-      <UserProtectedRoute>
-        <NextPage />
-      </UserProtectedRoute>
+      withSuspense(
+        <UserProtectedRoute>
+          <NextPage />
+        </UserProtectedRoute>,
+        "Loading AI planner..."
+      )
     }
   />
 
   <Route
     path="/saved"
     element={
-      <UserProtectedRoute>
-        <SavedTrips />
-      </UserProtectedRoute>
+      withSuspense(
+        <UserProtectedRoute>
+          <SavedTrips />
+        </UserProtectedRoute>,
+        "Loading saved trips..."
+      )
     }
   />
 
   <Route
     path="/profile"
     element={
-      <UserProtectedRoute>
-        <ProfileComplete />
-      </UserProtectedRoute>
+      withSuspense(
+        <UserProtectedRoute>
+          <ProfileComplete />
+        </UserProtectedRoute>,
+        "Loading profile..."
+      )
     }
   />
 
   <Route
     path="/booking"
     element={
-      <UserProtectedRoute>
-        <Booking />
-      </UserProtectedRoute>
+      withSuspense(
+        <UserProtectedRoute>
+          <Booking />
+        </UserProtectedRoute>,
+        "Loading booking request..."
+      )
     }
   />
 
   <Route
     path="/payment"
     element={
-      <UserProtectedRoute>
-        <Payment />
-      </UserProtectedRoute>
+      withSuspense(
+        <UserProtectedRoute>
+          <Payment />
+        </UserProtectedRoute>,
+        "Loading payment..."
+      )
     }
   />
 
   <Route
     path="/booking-success"
     element={
-      <UserProtectedRoute>
-        <BookingSuccess />
-      </UserProtectedRoute>
+      withSuspense(
+        <UserProtectedRoute>
+          <BookingSuccess />
+        </UserProtectedRoute>,
+        "Loading confirmation..."
+      )
     }
   />
 
@@ -167,9 +264,24 @@ function App() {
   <Route
     path="/my-bookings"
     element={
-      <UserProtectedRoute>
-        <MyBookings />
-      </UserProtectedRoute>
+      withSuspense(
+        <UserProtectedRoute>
+          <MyBookings />
+        </UserProtectedRoute>,
+        "Loading bookings..."
+      )
+    }
+  />
+
+  <Route
+    path="/booking/:bookingId"
+    element={
+      withSuspense(
+        <UserProtectedRoute>
+          <BookingDetails />
+        </UserProtectedRoute>,
+        "Loading booking details..."
+      )
     }
   />
 

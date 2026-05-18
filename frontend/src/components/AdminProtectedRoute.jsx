@@ -14,7 +14,7 @@ export default function AdminProtectedRoute({ children }) {
       }
 
       try {
-        const res = await fetch("http://127.0.0.1:8000/admin/stats", {
+        const res = await fetch("http://127.0.0.1:8000/api/admin/stats", {
           headers: {
             Authorization: `Bearer ${token}`,
           },

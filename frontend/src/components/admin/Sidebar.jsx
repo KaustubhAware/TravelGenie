@@ -7,6 +7,7 @@ import {
   FaSignOutAlt,
   FaMapMarkedAlt,
   FaUsers,
+  FaUserTie,
 } from "react-icons/fa";
 
 export default function Sidebar({
@@ -60,9 +61,9 @@ export default function Sidebar({
           {/* DASHBOARD */}
 
           <Link
-            to="/admin/dashboard"
+            to="/admin"
             className={menuClass(
-              "/admin/dashboard"
+              "/admin"
             )}
           >
 
@@ -121,6 +122,21 @@ export default function Sidebar({
 
             {sidebarOpen && (
               <span>Packages</span>
+            )}
+
+          </Link>
+
+          <Link
+            to="/agent"
+            className={menuClass(
+              "/agent"
+            )}
+          >
+
+            <FaUserTie className="text-lg min-w-[20px]" />
+
+            {sidebarOpen && (
+              <span>Agent Panel</span>
             )}
 
           </Link>

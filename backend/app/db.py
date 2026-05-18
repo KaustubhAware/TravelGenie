@@ -5,6 +5,7 @@
 import psycopg2
 
 from psycopg2.extras import RealDictCursor
+from app.config import get_settings
 
 # =====================================================
 # DATABASE CONNECTION
@@ -12,17 +13,19 @@ from psycopg2.extras import RealDictCursor
 
 def get_connection():
 
+    settings = get_settings()
+
     return psycopg2.connect(
 
-        host="localhost",
+        host=settings.DB_HOST,
 
-        database="travelgenie",
+        database=settings.DB_NAME,
 
-        user="postgres",
+        user=settings.DB_USER,
 
-        password="root",
+        password=settings.DB_PASSWORD,
 
-        port="5432"
+        port=settings.DB_PORT
     )
 
 # =====================================================

@@ -1,23 +1,25 @@
-import { useState } from "react";
+import {
+  lazy,
+  Suspense,
+  useState,
+} from "react";
 
 import { useNavigate } from "react-router-dom";
 
 import { toast } from "react-hot-toast";
 
 import { auth } from "../firebase";
-
-import GlobeComponent from "../components/GlobeComponent";
-
-import AITripResult from "../components/ai/AITripResult";
+import { API_BASE } from "../services/httpClient";
 
 import {
   FaArrowRight,
 } from "react-icons/fa";
 
-/* ================= API ================= */
+const AITripResult = lazy(() =>
+  import("../components/ai/AITripResult")
+);
 
-const API =
-  "http://127.0.0.1:8000/api";
+/* ================= API ================= */
 
 export default function NextPage() {
 
@@ -112,7 +114,7 @@ export default function NextPage() {
 
       const res = await fetch(
 
-        `${API}/generate-trip`,
+        `${API_BASE}/generate-trip`,
 
         {
 
@@ -255,7 +257,7 @@ export default function NextPage() {
 
       const res = await fetch(
 
-        `${API}/save-itinerary`,
+        `${API_BASE}/save-itinerary`,
 
         {
 
@@ -456,9 +458,46 @@ export default function NextPage() {
 
             {!result && !loading && (
 
-              <div className="relative h-full overflow-hidden rounded-[28px] bg-[#071120]">
+              <div className="relative h-full overflow-hidden rounded-[28px] bg-[#071120] p-8 flex items-center">
 
-                <GlobeComponent />
+                <div className="max-w-xl">
+
+                  <p className="text-blue-200 font-semibold mb-4">
+                    AI Travel Operations
+                  </p>
+
+                  <h2 className="text-5xl font-bold text-white leading-tight">
+                    Build intelligent itineraries for real agency workflows
+                  </h2>
+
+                  <p className="text-blue-100 mt-6 leading-relaxed">
+                    Generate day-wise plans, hotels, restaurants, budgets, maps, and booking-ready trip data from a single workspace.
+                  </p>
+
+                  <div className="grid md:grid-cols-3 gap-4 mt-10">
+
+                    {["Itinerary", "Budget", "Booking"].map((item) => (
+
+                      <div
+                        key={item}
+                        className="border border-white/10 bg-white/10 rounded-2xl p-5 text-white"
+                      >
+
+                        <p className="font-semibold">
+                          {item}
+                        </p>
+
+                        <p className="text-sm text-blue-100 mt-2">
+                          Enterprise ready
+                        </p>
+
+                      </div>
+
+                    ))}
+
+                  </div>
+
+                </div>
 
               </div>
 
@@ -482,13 +521,21 @@ export default function NextPage() {
 
             {result && (
 
-              <AITripResult
-                result={result}
-                saveTrip={saveTrip}
-                saving={saving}
-                navigate={navigate}
-                form={form}
-              />
+              <Suspense
+                fallback={
+                  <div className="h-full flex items-center justify-center text-gray-500">
+                    Preparing AI trip workspace...
+                  </div>
+                }
+              >
+                <AITripResult
+                  result={result}
+                  saveTrip={saveTrip}
+                  saving={saving}
+                  navigate={navigate}
+                  form={form}
+                />
+              </Suspense>
 
             )}
 

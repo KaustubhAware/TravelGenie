@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Toaster, toast } from "react-hot-toast";
 import { auth } from "../firebase";
+import { API_BASE } from "../services/httpClient";
+import { validateBookingForm } from "../utils/validators";
 
 import {
   FaPlaneDeparture,
@@ -69,23 +71,7 @@ export default function Booking() {
 
   const validateForm = () => {
 
-    let newErrors = {};
-
-    if (!form.firstName) newErrors.firstName = "Required";
-
-    if (!form.lastName) newErrors.lastName = "Required";
-
-    if (!form.email) {
-      newErrors.email = "Required";
-    } else if (!/\S+@\S+\.\S+/.test(form.email)) {
-      newErrors.email = "Invalid email";
-    }
-
-    if (!form.phone) {
-      newErrors.phone = "Required";
-    } else if (!/^\d{10}$/.test(form.phone)) {
-      newErrors.phone = "Invalid phone";
-    }
+    let newErrors = validateBookingForm(form);
 
     setErrors(newErrors);
 
@@ -124,7 +110,7 @@ export default function Booking() {
       const token = await user.getIdToken();
 
       const res = await fetch(
-        "http://127.0.0.1:8000/api/save-booking",
+        `${API_BASE}/save-booking`,
         {
           method: "POST",
           headers: {
@@ -146,9 +132,9 @@ export default function Booking() {
         throw new Error(data.error || "Booking failed");
       }
 
-      toast.success("Booking saved!");
+      toast.success("Booking request submitted");
 
-      navigate("/payment", {
+      navigate("/my-bookings", {
         state: {
           ...form,
           ...tripData,
@@ -450,7 +436,7 @@ export default function Booking() {
 
               {loading
                 ? "Processing Booking..."
-                : "Continue to Payment"}
+                : "Submit Booking Request"}
 
               {!loading && <FaArrowRight />}
 

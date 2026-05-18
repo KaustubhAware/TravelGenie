@@ -1,23 +1,101 @@
 import {
+  Fragment,
+  memo,
+  useState,
+} from "react";
+
+import {
   FaMapMarkedAlt,
+  FaCheck,
+  FaTimes,
+  FaCreditCard,
+  FaClipboardList,
 } from "react-icons/fa";
 
-export default function BookingTable({
-  paginatedBookings,
-  statusFilter,
-  setStatusFilter,
-  setPage,
-  updateStatus,
-  cancelBooking,
-  page,
-  totalPages,
+const statusStyles = {
+  pending: "bg-yellow-100 text-yellow-700",
+  approved: "bg-blue-100 text-blue-700",
+  under_review: "bg-indigo-100 text-indigo-700",
+  rejected: "bg-red-100 text-red-700",
+  cancelled: "bg-gray-200 text-gray-700",
+  paid: "bg-green-100 text-green-700",
+  payment_pending: "bg-sky-100 text-sky-700",
+  completed: "bg-emerald-100 text-emerald-700",
+};
+
+function BookingTable({
+
+  paginatedBookings = [],
+
+  statusFilter = "all",
+
+  setStatusFilter = () => {},
+
+  setPage = () => {},
+
+  updateStatus = () => {},
+
+  reviewBooking = () => {},
+
+  cancelBooking = () => {},
+
+  page = 1,
+
+  totalPages = 1,
+
 }) {
+
+  const [reviewOpen, setReviewOpen] =
+    useState(null);
+
+  const [reviewForm, setReviewForm] =
+    useState({
+      internal_notes: "",
+      assigned_agent: "",
+      adjusted_price: "",
+    });
+
+  const openReview = (booking) => {
+
+    setReviewOpen(booking.booking_id);
+
+    setReviewForm({
+      internal_notes:
+        booking.internal_notes || "",
+      assigned_agent:
+        booking.assigned_agent || "",
+      adjusted_price:
+        booking.total_cost || booking.budget || "",
+    });
+
+  };
+
+  const submitReview = (booking, decision) => {
+
+    reviewBooking({
+      booking_id: booking.booking_id,
+      decision,
+      internal_notes:
+        reviewForm.internal_notes,
+      assigned_agent:
+        reviewForm.assigned_agent,
+      adjusted_price:
+        reviewForm.adjusted_price
+          ? Number(reviewForm.adjusted_price)
+          : null,
+    });
+
+    setReviewOpen(null);
+
+  };
 
   return (
 
     <div className="bg-white rounded-[28px] p-6 shadow-lg border border-gray-100">
 
-      {/* TOP */}
+      {/* =====================================================
+          TOP
+      ===================================================== */}
 
       <div className="flex flex-wrap gap-4 justify-between mb-8">
 
@@ -37,7 +115,9 @@ export default function BookingTable({
 
         </div>
 
-        {/* FILTER */}
+        {/* =====================================================
+            FILTER
+        ===================================================== */}
 
         <select
           value={statusFilter}
@@ -52,52 +132,108 @@ export default function BookingTable({
         >
 
           <option value="all">
+
             All Status
+
           </option>
 
           <option value="paid">
+
             Paid
+
+          </option>
+
+          <option value="approved">
+
+            Approved
+
+          </option>
+
+          <option value="payment_pending">
+
+            Payment Pending
+
+          </option>
+
+          <option value="under_review">
+
+            Under Review
+
           </option>
 
           <option value="pending">
+
             Pending
+
+          </option>
+
+          <option value="rejected">
+
+            Rejected
+
+          </option>
+
+          <option value="cancelled">
+
+            Cancelled
+
           </option>
 
         </select>
 
       </div>
 
-      {/* TABLE */}
+      {/* =====================================================
+          TABLE
+      ===================================================== */}
 
       <div className="overflow-x-auto">
 
         <table className="w-full border-separate border-spacing-y-3">
+
+          {/* =====================================================
+              TABLE HEADER
+          ===================================================== */}
 
           <thead>
 
             <tr className="text-left">
 
               <th className="py-4 text-gray-500 font-semibold">
+
                 Destination
+
               </th>
 
               <th className="py-4 text-gray-500 font-semibold">
+
                 Customer
+
               </th>
 
               <th className="py-4 text-gray-500 font-semibold">
+
                 Status
+
               </th>
 
               <th className="py-4 text-gray-500 font-semibold">
+
                 Actions
+
               </th>
 
             </tr>
 
           </thead>
 
+          {/* =====================================================
+              TABLE BODY
+          ===================================================== */}
+
           <tbody>
+
+            {/* EMPTY STATE */}
 
             {paginatedBookings.length === 0 && (
 
@@ -116,10 +252,13 @@ export default function BookingTable({
 
             )}
 
-            {paginatedBookings.map((b) => (
+            {/* BOOKINGS */}
+
+            {paginatedBookings?.map((b, index) => (
+
+              <Fragment key={b.id || b.booking_id || index}>
 
               <tr
-                key={b.id}
                 className="bg-[#f9fbff] hover:bg-blue-50 transition"
               >
 
@@ -137,7 +276,13 @@ export default function BookingTable({
 
                     <span className="font-semibold text-gray-800">
 
-                      {b.destination}
+                      {b.destination || "N/A"}
+
+                    </span>
+
+                    <span className="text-xs text-gray-400">
+
+                      {b.booking_id}
 
                     </span>
 
@@ -149,7 +294,7 @@ export default function BookingTable({
 
                 <td className="py-5 px-4 text-gray-700 font-medium">
 
-                  {b.name}
+                  {b.name || "Unknown"}
 
                 </td>
 
@@ -159,13 +304,11 @@ export default function BookingTable({
 
                   <span
                     className={`px-4 py-2 rounded-full text-sm font-medium ${
-                      b.status === "paid"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-yellow-100 text-yellow-700"
+                      statusStyles[b.status] || statusStyles.pending
                     }`}
                   >
 
-                    {b.status}
+                    {b.status || "pending"}
 
                   </span>
 
@@ -179,13 +322,47 @@ export default function BookingTable({
 
                     <button
                       onClick={() =>
+                        openReview(b)
+                      }
+                      disabled={["paid", "cancelled", "completed"].includes(b.status)}
+                      className="bg-blue-600 hover:bg-blue-700 disabled:opacity-40 shadow-md text-white px-4 py-2 rounded-xl transition flex items-center gap-2"
+                    >
+
+                      <FaClipboardList />
+
+                      Review
+
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        updateStatus(
+                          b.booking_id,
+                          "rejected"
+                        )
+                      }
+                      disabled={["rejected", "paid", "cancelled"].includes(b.status)}
+                      className="bg-red-500 hover:bg-red-600 disabled:opacity-40 shadow-md text-white px-4 py-2 rounded-xl transition flex items-center gap-2"
+                    >
+
+                      <FaTimes />
+
+                      Reject
+
+                    </button>
+
+                    <button
+                      onClick={() =>
                         updateStatus(
                           b.booking_id,
                           "paid"
                         )
                       }
-                      className="bg-gradient-to-r from-green-500 to-emerald-500 hover:opacity-90 shadow-md text-white px-4 py-2 rounded-xl transition"
+                      disabled={!["approved", "payment_pending"].includes(b.status)}
+                      className="bg-green-600 hover:bg-green-700 disabled:opacity-40 shadow-md text-white px-4 py-2 rounded-xl transition flex items-center gap-2"
                     >
+
+                      <FaCreditCard />
 
                       Paid
 
@@ -197,7 +374,8 @@ export default function BookingTable({
                           b.booking_id
                         )
                       }
-                      className="bg-gradient-to-r from-red-500 to-rose-500 hover:opacity-90 shadow-md text-white px-4 py-2 rounded-xl transition"
+                      disabled={["cancelled", "paid"].includes(b.status)}
+                      className="bg-gray-700 hover:bg-gray-800 disabled:opacity-40 shadow-md text-white px-4 py-2 rounded-xl transition"
                     >
 
                       Cancel
@@ -210,6 +388,100 @@ export default function BookingTable({
 
               </tr>
 
+              {reviewOpen === b.booking_id && (
+
+                <tr>
+
+                  <td
+                    colSpan="4"
+                    className="bg-white border border-blue-100 rounded-2xl p-5"
+                  >
+
+                    <div className="grid md:grid-cols-3 gap-4">
+
+                      <input
+                        value={reviewForm.assigned_agent}
+                        onChange={(e) =>
+                          setReviewForm({
+                            ...reviewForm,
+                            assigned_agent:
+                              e.target.value,
+                          })
+                        }
+                        placeholder="Assigned agent"
+                        className="border border-gray-200 rounded-xl px-4 py-3"
+                      />
+
+                      <input
+                        type="number"
+                        value={reviewForm.adjusted_price}
+                        onChange={(e) =>
+                          setReviewForm({
+                            ...reviewForm,
+                            adjusted_price:
+                              e.target.value,
+                          })
+                        }
+                        placeholder="Final package price"
+                        className="border border-gray-200 rounded-xl px-4 py-3"
+                      />
+
+                      <div className="flex gap-3">
+
+                        <button
+                          onClick={() =>
+                            submitReview(
+                              b,
+                              "approve"
+                            )
+                          }
+                          className="flex-1 bg-green-600 text-white rounded-xl px-4 py-3 font-semibold"
+                        >
+
+                          Approve
+
+                        </button>
+
+                        <button
+                          onClick={() =>
+                            submitReview(
+                              b,
+                              "review"
+                            )
+                          }
+                          className="flex-1 bg-indigo-600 text-white rounded-xl px-4 py-3 font-semibold"
+                        >
+
+                          Review
+
+                        </button>
+
+                      </div>
+
+                    </div>
+
+                    <textarea
+                      value={reviewForm.internal_notes}
+                      onChange={(e) =>
+                        setReviewForm({
+                          ...reviewForm,
+                          internal_notes:
+                            e.target.value,
+                        })
+                      }
+                      placeholder="Internal review notes for agency team"
+                      rows="3"
+                      className="w-full mt-4 border border-gray-200 rounded-xl px-4 py-3"
+                    />
+
+                  </td>
+
+                </tr>
+
+              )}
+
+              </Fragment>
+
             ))}
 
           </tbody>
@@ -218,7 +490,9 @@ export default function BookingTable({
 
       </div>
 
-      {/* PAGINATION */}
+      {/* =====================================================
+          PAGINATION
+      ===================================================== */}
 
       <div className="flex justify-center gap-3 mt-10">
 
@@ -269,6 +543,7 @@ export default function BookingTable({
       </div>
 
     </div>
-
   );
 }
+
+export default memo(BookingTable);
