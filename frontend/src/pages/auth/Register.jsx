@@ -38,7 +38,7 @@ export default function Register() {
 
   const from =
     location.state?.from?.pathname ||
-    "/plan";
+    "/dashboard";
 
   // =====================================================
   // REGISTER

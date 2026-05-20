@@ -45,7 +45,7 @@ export default function Payment() {
 
       toast.error("Booking missing");
 
-      navigate("/plan");
+      navigate("/dashboard/ai-planner");
 
     }
 
@@ -97,7 +97,7 @@ export default function Payment() {
 
       toast.success("Payment successful!");
 
-      navigate("/booking-success", {
+      navigate("/dashboard/booking-success", {
         state: data,
       });
 
@@ -122,7 +122,7 @@ export default function Payment() {
 
       <Toaster position="top-right" />
 
-      <div className="min-h-screen bg-[#f5f9ff] px-4 md:px-6 py-6">
+      <div className="min-h-screen bg-surface px-4 md:px-6 py-6">
 
         <div className="max-w-7xl mx-auto">
 
@@ -154,7 +154,7 @@ export default function Payment() {
 
                 <span className="text-gray-300">→</span>
 
-                <span className="text-blue-600">
+                <span className="text-primary">
                   2. Payment
                 </span>
 
@@ -196,9 +196,9 @@ export default function Payment() {
 
                 </div>
 
-                <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center">
+                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
 
-                  <FaCreditCard className="text-blue-600 text-xl" />
+                  <FaCreditCard className="text-primary text-xl" />
 
                 </div>
 
@@ -225,7 +225,7 @@ export default function Payment() {
                     <input
                       type="text"
                       placeholder="1234 5678 9012 3456"
-                      className="w-full rounded-2xl border border-gray-200 bg-gray-50 pl-14 pr-5 py-4 text-gray-800 outline-none transition-all duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 focus:bg-white"
+                      className="w-full rounded-2xl border border-gray-200 bg-gray-50 pl-14 pr-5 py-4 text-gray-800 outline-none transition-all duration-300 focus:border-primary focus:ring-4 focus:ring-primary/10 focus:bg-white"
                     />
 
                   </div>
@@ -247,7 +247,7 @@ export default function Payment() {
                     <input
                       type="text"
                       placeholder="MM / YY"
-                      className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 text-gray-800 outline-none transition-all duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 focus:bg-white"
+                      className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 text-gray-800 outline-none transition-all duration-300 focus:border-primary focus:ring-4 focus:ring-primary/10 focus:bg-white"
                     />
 
                   </div>
@@ -263,7 +263,7 @@ export default function Payment() {
                     <input
                       type="password"
                       placeholder="***"
-                      className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 text-gray-800 outline-none transition-all duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 focus:bg-white"
+                      className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 text-gray-800 outline-none transition-all duration-300 focus:border-primary focus:ring-4 focus:ring-primary/10 focus:bg-white"
                     />
 
                   </div>
@@ -283,7 +283,7 @@ export default function Payment() {
                   <input
                     type="text"
                     placeholder="John Doe"
-                    className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 text-gray-800 outline-none transition-all duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 focus:bg-white"
+                    className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 text-gray-800 outline-none transition-all duration-300 focus:border-primary focus:ring-4 focus:ring-primary/10 focus:bg-white"
                   />
 
                 </div>
@@ -323,7 +323,7 @@ export default function Payment() {
                 <button
                   onClick={handlePayment}
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 text-white py-4 rounded-2xl font-semibold text-lg shadow-md hover:shadow-lg transition duration-300 flex items-center justify-center gap-3"
+                  className="w-full bg-primary text-white py-4 rounded-2xl font-semibold text-lg shadow-md hover:shadow-lg hover:bg-primary-dark transition duration-300 flex items-center justify-center gap-3"
                 >
 
                   {loading
@@ -370,9 +370,9 @@ export default function Payment() {
 
                 </div>
 
-                <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center">
+                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
 
-                  <FaWallet className="text-blue-600 text-xl" />
+                  <FaWallet className="text-primary text-xl" />
 
                 </div>
 
@@ -388,7 +388,7 @@ export default function Payment() {
 
                     <div className="w-11 h-11 rounded-xl bg-white flex items-center justify-center">
 
-                      <FaMapMarkedAlt className="text-blue-600" />
+                      <FaMapMarkedAlt className="text-primary" />
 
                     </div>
 
@@ -418,7 +418,7 @@ export default function Payment() {
 
                     <div className="w-11 h-11 rounded-xl bg-white flex items-center justify-center">
 
-                      <FaCalendarAlt className="text-blue-600" />
+                      <FaCalendarAlt className="text-primary" />
 
                     </div>
 
@@ -486,19 +486,19 @@ export default function Payment() {
 
               {/* INFO */}
 
-              <div className="mt-5 bg-blue-50 rounded-3xl p-5">
+              <div className="mt-5 bg-primary/10 rounded-3xl p-5">
 
                 <div className="flex gap-4">
 
                   <div className="w-11 h-11 rounded-xl bg-white flex items-center justify-center">
 
-                    <FaShieldAlt className="text-blue-600" />
+                    <FaShieldAlt className="text-primary" />
 
                   </div>
 
                   <div>
 
-                    <h3 className="font-semibold text-blue-700">
+                    <h3 className="font-semibold text-primary">
                       Protected Payment
                     </h3>
 

@@ -105,7 +105,7 @@ export default function BookingDetails() {
             Booking not found
           </h1>
           <button
-            onClick={() => navigate("/my-bookings")}
+            onClick={() => navigate("/dashboard/bookings")}
             className="mt-6 bg-blue-600 text-white px-6 py-3 rounded-xl"
           >
             Back to bookings
@@ -145,7 +145,7 @@ export default function BookingDetails() {
             {canPay && (
               <button
                 onClick={() =>
-                  navigate("/payment", {
+                  navigate("/dashboard/payments", {
                     state: {
                       ...booking,
                       cost: booking.total_cost,

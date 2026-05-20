@@ -38,7 +38,7 @@ export default function BookingSuccess() {
 
     if (!data || !data.booking_id) {
 
-      navigate("/plan");
+      navigate("/dashboard/ai-planner");
 
     }
 
@@ -53,7 +53,7 @@ export default function BookingSuccess() {
     <>
       
 
-      <div className="min-h-screen bg-[#f5f9ff] px-4 md:px-6 py-8">
+      <div className="min-h-screen bg-surface px-4 md:px-6 py-8">
 
         <div className="max-w-5xl mx-auto">
 
@@ -147,9 +147,9 @@ export default function BookingSuccess() {
 
                         <div className="flex items-center gap-4">
 
-                          <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center">
+                          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
 
-                            <FaPlaneDeparture className="text-blue-600 text-xl" />
+                            <FaPlaneDeparture className="text-primary text-xl" />
 
                           </div>
 
@@ -247,11 +247,11 @@ export default function BookingSuccess() {
 
                   {/* STATUS */}
 
-                  <div className="bg-gradient-to-br from-blue-600 to-cyan-500 rounded-[32px] p-8 text-white">
+                  <div className="bg-primary-dark rounded-[32px] p-8 text-white">
 
                     <div className="mb-8">
 
-                      <p className="text-sm text-blue-100 mb-3">
+                      <p className="text-sm text-white/70 mb-3">
                         Booking Status
                       </p>
 
@@ -279,7 +279,7 @@ export default function BookingSuccess() {
                             Booking Completed
                           </h3>
 
-                          <p className="text-sm text-blue-100 mt-1">
+                          <p className="text-sm text-white/70 mt-1">
                             Your booking has been successfully saved
                           </p>
 
@@ -301,7 +301,7 @@ export default function BookingSuccess() {
                             Confirmation Email
                           </h3>
 
-                          <p className="text-sm text-blue-100 mt-1">
+                          <p className="text-sm text-white/70 mt-1">
                             Booking details will be shared shortly
                           </p>
 
@@ -323,7 +323,7 @@ export default function BookingSuccess() {
                             Ready To Travel
                           </h3>
 
-                          <p className="text-sm text-blue-100 mt-1">
+                          <p className="text-sm text-white/70 mt-1">
                             Prepare for your amazing journey
                           </p>
 
@@ -349,7 +349,7 @@ export default function BookingSuccess() {
                     </button>
 
                     <button
-                      onClick={() => navigate("/saved")}
+                      onClick={() => navigate("/dashboard/saved")}
                       className="w-full border border-gray-300 hover:bg-gray-100 text-gray-800 py-4 rounded-2xl font-semibold transition duration-300 flex items-center justify-center gap-3"
                     >
 

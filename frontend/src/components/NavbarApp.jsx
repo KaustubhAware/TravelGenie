@@ -1,4 +1,4 @@
-// src/components/NavbarApp.jsx
+import { useState } from "react";
 
 import logo from "../assets/logo.svg";
 
@@ -13,51 +13,121 @@ import {
 
 import { auth } from "../firebase";
 
+import {
+  FaBars,
+  FaBookmark,
+  FaCalendarCheck,
+  FaCompass,
+  FaRobot,
+  FaSignOutAlt,
+  FaTimes,
+  FaUserCircle,
+  FaBoxOpen,
+} from "react-icons/fa";
+
+import {
+  DASHBOARD_ROUTES,
+  PUBLIC_ROUTES,
+} from "../constants/routes";
+
+/* ===================================================== */
+/* NAV LINKS */
+/* ===================================================== */
+
+const links = [
+
+  {
+    path: DASHBOARD_ROUTES.root,
+    label: "Dashboard",
+    icon: FaCompass,
+  },
+
+  {
+    path: "/dashboard/packages",
+    label: "Packages",
+    icon: FaBoxOpen,
+  },
+
+  {
+    path: DASHBOARD_ROUTES.bookings,
+    label: "Bookings",
+    icon: FaCalendarCheck,
+  },
+
+  {
+    path: DASHBOARD_ROUTES.saved,
+    label: "Saved",
+    icon: FaBookmark,
+  },
+
+  {
+    path: DASHBOARD_ROUTES.aiPlanner,
+    label: "AI Planner",
+    icon: FaRobot,
+  },
+
+  {
+    path: DASHBOARD_ROUTES.profile,
+    label: "Profile",
+    icon: FaUserCircle,
+  },
+
+];
+
+/* ===================================================== */
+/* COMPONENT */
+/* ===================================================== */
+
 const NavbarApp = () => {
 
-  const navigate = useNavigate();
+  const navigate =
+    useNavigate();
 
-  const location = useLocation();
+  const location =
+    useLocation();
 
-  /* ================= ACTIVE LINK ================= */
+  const [open, setOpen] =
+    useState(false);
+
+  /* ===================================================== */
+  /* ACTIVE ROUTE */
+  /* ===================================================== */
 
   const isActive = (path) =>
-    location.pathname === path;
 
-  /* ================= NAV ITEM ================= */
+    location.pathname === path ||
 
-  const navItem = (path, label) => (
+    (path !== DASHBOARD_ROUTES.root &&
 
-    <button
-      onClick={() => navigate(path)}
-      className={`relative px-4 py-2 text-sm font-medium transition-all duration-300 ${
-        isActive(path)
-          ? "text-blue-600"
-          : "text-gray-600 hover:text-blue-600"
-      }`}
-    >
+      location.pathname.startsWith(`${path}/`));
 
-      {label}
-
-      {isActive(path) && (
-
-        <span className="absolute left-0 bottom-0 w-full h-[2px] bg-blue-600 rounded-full"></span>
-
-      )}
-
-    </button>
-
-  );
-
-  /* ================= LOGOUT ================= */
+  /* ===================================================== */
+  /* LOGOUT */
+  /* ===================================================== */
 
   const handleLogout = async () => {
 
     try {
 
+      /* USER TOKENS */
+
+      localStorage.removeItem(
+        "user_token"
+      );
+
+      localStorage.removeItem(
+        "token"
+      );
+
+      /* FIREBASE SIGNOUT */
+
       await signOut(auth);
 
-      navigate("/");
+      /* REDIRECT */
+
+      navigate(
+        PUBLIC_ROUTES.home
+      );
 
     } catch (error) {
 
@@ -67,86 +137,210 @@ const NavbarApp = () => {
 
   };
 
+  /* ===================================================== */
+  /* NAVIGATION */
+  /* ===================================================== */
+
+  const go = (path) => {
+
+    setOpen(false);
+
+    navigate(path);
+
+  };
+
+  /* ===================================================== */
+  /* UI */
+  /* ===================================================== */
+
   return (
 
-    <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-gray-200">
+    <nav className="sticky top-0 z-50 border-b border-white/10 bg-primary-dark/95 text-white shadow-card backdrop-blur-xl">
 
-      <div className="max-w-7xl mx-auto px-6 lg:px-10">
+      <div className="mx-auto max-w-7xl px-4 lg:px-8">
 
-        <div className="h-[78px] flex items-center justify-between">
+        {/* ===================================================== */}
+        {/* MAIN NAVBAR */}
+        {/* ===================================================== */}
 
-          {/* ================================================= */}
-          {/* ================= LOGO ========================= */}
-          {/* ================================================= */}
+        <div className="flex h-[68px] items-center justify-between gap-4">
 
-          <div
-            onClick={() => navigate("/")}
-            className="flex items-center gap-3 cursor-pointer"
+          {/* ===================================================== */}
+          {/* LOGO */}
+          {/* ===================================================== */}
+
+          <button
+            type="button"
+            onClick={() =>
+              go(
+                DASHBOARD_ROUTES.root
+              )
+            }
+            className="flex items-center gap-3 text-left"
           >
 
-            <img
-              src={logo}
-              alt="logo"
-              className="h-10 w-10 object-contain"
-            />
+            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-white/12">
 
-            <div>
+              <img
+                src={logo}
+                alt="TravelGenie"
+                className="h-7 w-7 object-contain"
+              />
 
-              <h1 className="text-xl font-bold text-gray-900 tracking-tight">
+            </span>
+
+            <span>
+
+              <span className="font-heading block text-lg font-bold">
 
                 TravelGenie
 
-              </h1>
+              </span>
 
-            </div>
+              <span className="hidden text-[10px] uppercase tracking-[0.18em] text-white/52 sm:block">
+
+                Trekker Workspace
+
+              </span>
+
+            </span>
+
+          </button>
+
+          {/* ===================================================== */}
+          {/* DESKTOP LINKS */}
+          {/* ===================================================== */}
+
+          <div className="hidden items-center gap-1 rounded-full border border-white/10 bg-white/8 p-1 lg:flex">
+
+            {links.map((link) => (
+
+              <button
+                key={link.path}
+                type="button"
+                onClick={() =>
+                  go(link.path)
+                }
+                className={`rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 ${
+                  isActive(link.path)
+
+                    ? "bg-white text-primary shadow-sm"
+
+                    : "text-white/72 hover:bg-white/10 hover:text-white"
+                }`}
+              >
+
+                {link.label}
+
+              </button>
+
+            ))}
 
           </div>
 
-          {/* ================================================= */}
-          {/* ================= NAV LINKS ==================== */}
-          {/* ================================================= */}
+          {/* ===================================================== */}
+          {/* RIGHT ACTIONS */}
+          {/* ===================================================== */}
 
-          <div className="hidden lg:flex items-center gap-6">
+          <div className="flex items-center gap-2">
 
-            {navItem("/", "Home")}
-
-            {navItem("/plan", "Plan Trip")}
-
-            {navItem("/saved", "Saved Trips")}
-            
-            {navItem("/profile", "Profile")}
-
-            {navItem("/my-bookings", "My Bookings")}
-
-            {navItem("/booking", "Booking")}
-
-            {navItem("/admin", "Admin")}
-
-          </div>
-
-          {/* ================================================= */}
-          {/* ================= RIGHT BUTTONS ================ */}
-          {/* ================================================= */}
-
-          <div className="flex items-center gap-3">
-
-            {/* NEW TRIP */}
+            {/* EXPLORE TREKS */}
 
             <button
-              onClick={() => navigate("/plan")}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-semibold transition duration-300 shadow-sm"
+              type="button"
+              onClick={() =>
+                go(
+                  PUBLIC_ROUTES.treks
+                )
+              }
+              className="hidden rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-white transition hover:bg-accent-dark md:inline-flex"
             >
 
-              New Trip
+              Explore Treks
 
             </button>
 
             {/* LOGOUT */}
 
             <button
+              type="button"
               onClick={handleLogout}
-              className="border border-gray-300 hover:bg-gray-100 text-gray-700 px-6 py-3 rounded-xl text-sm font-semibold transition duration-300"
+              className="hidden items-center gap-2 rounded-full border border-white/14 px-4 py-2.5 text-sm font-semibold text-white/76 transition hover:bg-white/10 hover:text-white md:inline-flex"
             >
+
+              <FaSignOutAlt />
+
+              Logout
+
+            </button>
+
+            {/* MOBILE TOGGLE */}
+
+            <button
+              type="button"
+              onClick={() =>
+                setOpen(
+                  (value) => !value
+                )
+              }
+              className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/14 bg-white/8 lg:hidden"
+              aria-label="Toggle app menu"
+            >
+
+              {open ? (
+                <FaTimes />
+              ) : (
+                <FaBars />
+              )}
+
+            </button>
+
+          </div>
+
+        </div>
+
+        {/* ===================================================== */}
+        {/* MOBILE MENU */}
+        {/* ===================================================== */}
+
+        {open && (
+
+          <div className="grid gap-2 border-t border-white/10 py-4 lg:hidden">
+
+            {links.map((link) => (
+
+              <button
+                key={link.path}
+                type="button"
+                onClick={() =>
+                  go(link.path)
+                }
+                className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
+                  isActive(link.path)
+
+                    ? "bg-white text-primary"
+
+                    : "bg-white/8 text-white/82 hover:bg-white/10"
+                }`}
+              >
+
+                <link.icon />
+
+                {link.label}
+
+              </button>
+
+            ))}
+
+            {/* MOBILE LOGOUT */}
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="flex items-center gap-3 rounded-2xl bg-accent px-4 py-3 text-left text-sm font-semibold text-white"
+            >
+
+              <FaSignOutAlt />
 
               Logout
 
@@ -154,7 +348,7 @@ const NavbarApp = () => {
 
           </div>
 
-        </div>
+        )}
 
       </div>
 
@@ -164,4 +358,4 @@ const NavbarApp = () => {
 
 };
 
-export default NavbarApp;
+export default NavbarApp;   

@@ -1,38 +1,31 @@
 import { apiRequest } from "../services/httpClient";
-
+import { buildAuthHeaders, getAuthToken } from "./authToken";
 import { env } from "../config/env";
 
-export const fetchWithAuth = async (
-  url,
-  options = {}
-) => {
+export const fetchWithAuth = async (url, options = {}) => {
+  const token = getAuthToken();
 
-  const token =
-    localStorage.getItem("token");
+  if (!token) {
+    throw new Error("Not authenticated");
+  }
 
-  const res = await fetch(
-    env.API_BASE_URL + url,
-    {
-      ...options,
-
-      headers: {
-        "Content-Type":
-          "application/json",
-
-        Authorization:
-          `Bearer ${token}`,
-
-        ...(options.headers || {}),
-      },
-    }
-  );
-
-  // =========================================
-  // HANDLE UNAUTHORIZED
-  // =========================================
+  const res = await fetch(`${env.API_BASE_URL}${url}`, {
+    ...options,
+    headers: buildAuthHeaders(options.headers || {}),
+  });
 
   if (res.status === 401) {
+  console.error("401 Unauthorized");
 
+  const data = await res.clone().json().catch(() => null);
+
+  console.log("AUTH ERROR RESPONSE:", data);
+
+  // ONLY logout if token truly invalid
+  if (
+    data?.detail === "Invalid token" ||
+    data?.message === "Token expired"
+  ) {
     localStorage.removeItem("token");
 
     const isAdminArea =
@@ -42,6 +35,7 @@ export const fetchWithAuth = async (
       ? "/admin/login"
       : "/login";
   }
+}
 
   return res;
 };

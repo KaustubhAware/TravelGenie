@@ -1,0 +1,627 @@
+export const featuredTreks = [
+  {
+    id: "kedarkantha",
+    slug: "kedarkantha-winter-trek",
+    title: "Kedarkantha Winter Trek",
+    location: "Uttarakhand",
+    region: "Garhwal Himalayas",
+    image:
+      "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1400&q=80",
+    gallery: [
+      "https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=900&q=80",
+    ],
+    difficulty: "Moderate",
+    duration: "6 Days",
+    altitude: "12,500 ft",
+    rating: 4.9,
+    reviews: 284,
+    price: 8999,
+    season: "Dec - Apr",
+    departures: 8,
+    nextDeparture: "12 Jan 2027",
+    groupSize: "18 trekkers",
+    mood: "Snowline forests, frozen lake camps, and a sunrise summit ridge.",
+    promise: "Best first Himalayan summit in winter",
+    coordinates: [31.022, 78.169],
+    overview:
+      "A cinematic winter summit trek through pine forests, Juda Ka Talab, and wide snow ridges built for first Himalayan summit attempts with professional guide support.",
+    highlights: [
+      "Snow summit push with sunrise views across Swargarohini and Bandarpoonch",
+      "Operator-led acclimatization briefings and gear checks before ascent",
+      "Forest camps, ridge walks, and beginner-friendly mountain leadership",
+      "AI add-ons for gear lists, fitness prep, and weather-aware packing",
+    ],
+    facts: [
+      { label: "Region", value: "Garhwal Himalayas" },
+      { label: "Basecamp", value: "Sankri" },
+      { label: "Trail type", value: "Summit circuit" },
+      { label: "Best for", value: "First snow trek" },
+    ],
+    altitudeProfile: [
+      { day: "Day 1", place: "Sankri", altitude: "6,400 ft" },
+      { day: "Day 2", place: "Juda Ka Talab", altitude: "9,100 ft" },
+      { day: "Day 3", place: "Base Camp", altitude: "11,250 ft" },
+      { day: "Day 4", place: "Kedarkantha Summit", altitude: "12,500 ft" },
+    ],
+    itinerary: [
+      {
+        day: 1,
+        title: "Dehradun to Sankri",
+        altitude: "6,400 ft",
+        distance: "190 km drive",
+        camp: "Sankri guesthouse",
+        story:
+          "Enter Govind Wildlife Sanctuary, complete document checks, and meet the expedition lead for a mountain safety briefing.",
+      },
+      {
+        day: 2,
+        title: "Sankri to Juda Ka Talab",
+        altitude: "9,100 ft",
+        distance: "4 km trek",
+        camp: "Forest camp",
+        story:
+          "Climb through oak and pine forest to a frozen lake campsite with an evening gear and layering review.",
+      },
+      {
+        day: 3,
+        title: "Juda Ka Talab to Base Camp",
+        altitude: "11,250 ft",
+        distance: "4 km trek",
+        camp: "Kedarkantha base camp",
+        story:
+          "Move above the treeline, learn snow-walking basics, and settle into the summit camp below the ridge.",
+      },
+      {
+        day: 4,
+        title: "Summit Kedarkantha",
+        altitude: "12,500 ft",
+        distance: "6 km trek",
+        camp: "Hargaon camp",
+        summit: true,
+        story:
+          "Start before dawn for the summit push, watch the Himalayan skyline light up, then descend to Hargaon.",
+      },
+    ],
+    departuresList: [
+      { date: "12 Jan 2027", seats: 8, status: "Filling fast", guide: "Aarav Negi" },
+      { date: "19 Jan 2027", seats: 14, status: "Open", guide: "Meera Rawat" },
+      { date: "02 Feb 2027", seats: 11, status: "Open", guide: "Tsering Paljor" },
+    ],
+    faqs: [
+      ["Is Kedarkantha good for beginners?", "Yes, with basic fitness and the guided winter briefing included in this package."],
+      ["Does AI change the package?", "No. AI only personalizes preparation, packing, and optional acclimatization advice."],
+    ],
+  },
+  {
+    id: "hampta-pass",
+    slug: "hampta-pass-crossover",
+    title: "Hampta Pass Crossover",
+    location: "Himachal Pradesh",
+    region: "Kullu-Lahaul",
+    image:
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1400&q=80",
+    gallery: [
+      "https://images.unsplash.com/photo-1465056836041-7f43ac27dcb7?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=900&q=80",
+    ],
+    difficulty: "Moderate-Hard",
+    duration: "5 Days",
+    altitude: "14,100 ft",
+    rating: 4.8,
+    reviews: 196,
+    price: 10499,
+    season: "Jun - Sep",
+    departures: 5,
+    nextDeparture: "18 Jun 2027",
+    groupSize: "16 trekkers",
+    mood: "Green Kullu valleys give way to Lahaul's wide, stark mountain desert.",
+    promise: "A compact high-pass crossover",
+    coordinates: [32.246, 77.489],
+    overview:
+      "A dramatic crossover from lush Kullu valleys to the stark Lahaul landscape, designed for trekkers who want a high-pass experience without a long expedition window.",
+    highlights: [
+      "Cross Hampta Pass with glacier views and rapid landscape change",
+      "Camp beside Jobra, Balu Ka Ghera, and Shea Goru",
+      "Operator-managed road logistics for Chandratal conditions",
+      "AI weather and fitness guidance for pass-crossing readiness",
+    ],
+    facts: [
+      { label: "Region", value: "Kullu-Lahaul" },
+      { label: "Basecamp", value: "Jobra" },
+      { label: "Trail type", value: "Crossover pass" },
+      { label: "Best for", value: "Monsoon escape" },
+    ],
+    altitudeProfile: [
+      { day: "Day 1", place: "Jobra", altitude: "9,800 ft" },
+      { day: "Day 2", place: "Balu Ka Ghera", altitude: "11,900 ft" },
+      { day: "Day 3", place: "Hampta Pass", altitude: "14,100 ft" },
+      { day: "Day 4", place: "Chandratal", altitude: "14,000 ft" },
+    ],
+    itinerary: [
+      {
+        day: 1,
+        title: "Manali to Jobra, trek to Chika",
+        altitude: "10,100 ft",
+        distance: "2 km trek",
+        camp: "Chika camp",
+        story:
+          "Begin in pine forest and open meadows while the operations team checks permits and group equipment.",
+      },
+      {
+        day: 2,
+        title: "Chika to Balu Ka Ghera",
+        altitude: "11,900 ft",
+        distance: "6 km trek",
+        camp: "Balu Ka Ghera",
+        story:
+          "Follow the river valley into boulder sections and prepare for the pass-crossing window.",
+      },
+      {
+        day: 3,
+        title: "Cross Hampta Pass",
+        altitude: "14,100 ft",
+        distance: "7 km trek",
+        camp: "Shea Goru",
+        summit: true,
+        story:
+          "Climb to the pass, move through snowfields if conditions allow, and descend into Lahaul terrain.",
+      },
+    ],
+    departuresList: [
+      { date: "18 Jun 2027", seats: 6, status: "Filling fast", guide: "Rohan Thakur" },
+      { date: "02 Jul 2027", seats: 13, status: "Open", guide: "Nima Dorje" },
+      { date: "16 Jul 2027", seats: 9, status: "Open", guide: "Kavya Rana" },
+    ],
+    faqs: [
+      ["Is Chandratal always included?", "It depends on road and weather conditions. Operators confirm it close to departure."],
+      ["How hard is the pass day?", "It is the longest day and needs strong stamina, but guides pace the group conservatively."],
+    ],
+  },
+  {
+    id: "roopkund",
+    slug: "roopkund-mystery-lake",
+    title: "Roopkund Mystery Lake Trek",
+    location: "Uttarakhand",
+    region: "Garhwal Himalayas",
+    image:
+      "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1400&q=80",
+    gallery: [
+      "https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1445308394109-4ec2920981b1?auto=format&fit=crop&w=900&q=80",
+    ],
+    difficulty: "Hard",
+    duration: "8 Days",
+    altitude: "15,750 ft",
+    rating: 4.7,
+    reviews: 142,
+    price: 14999,
+    season: "May - Jun, Sep - Oct",
+    departures: 4,
+    nextDeparture: "14 Sep 2027",
+    groupSize: "15 trekkers",
+    mood: "Big meadows, high camps, and a tougher ridge-line expedition feel.",
+    promise: "For experienced altitude-ready trekkers",
+    coordinates: [30.262, 79.731],
+    overview:
+      "A high-altitude legacy route through Bedni Bugyal and alpine ridges, positioned for experienced trekkers who want a tougher Himalayan objective.",
+    highlights: [
+      "Walk through Bedni and Ali Bugyal, two of India's grandest meadows",
+      "High-altitude camp operations with strict safety controls",
+      "Ridge sections, glacial terrain, and expedition-style pacing",
+      "AI readiness checks for altitude risk and gear planning",
+    ],
+    facts: [
+      { label: "Region", value: "Garhwal Himalayas" },
+      { label: "Basecamp", value: "Lohajung" },
+      { label: "Trail type", value: "High-altitude circuit" },
+      { label: "Best for", value: "Experienced trekkers" },
+    ],
+    altitudeProfile: [
+      { day: "Day 1", place: "Lohajung", altitude: "7,700 ft" },
+      { day: "Day 3", place: "Bedni Bugyal", altitude: "11,700 ft" },
+      { day: "Day 5", place: "Bhagwabasa", altitude: "14,100 ft" },
+      { day: "Day 6", place: "Roopkund", altitude: "15,750 ft" },
+    ],
+    itinerary: [
+      {
+        day: 1,
+        title: "Kathgodam to Lohajung",
+        altitude: "7,700 ft",
+        distance: "250 km drive",
+        camp: "Lohajung lodge",
+        story:
+          "Complete onboarding, medical disclosure, and pack checks before entering the expedition route.",
+      },
+      {
+        day: 2,
+        title: "Lohajung to Didna",
+        altitude: "8,530 ft",
+        distance: "7 km trek",
+        camp: "Didna village",
+        story:
+          "Warm up through forest trails and mountain villages with a steady gain profile.",
+      },
+      {
+        day: 3,
+        title: "Didna to Bedni Bugyal",
+        altitude: "11,700 ft",
+        distance: "10 km trek",
+        camp: "Meadow camp",
+        story:
+          "Climb into wide alpine grasslands with Trishul views and a structured acclimatization walk.",
+      },
+    ],
+    departuresList: [
+      { date: "14 Sep 2027", seats: 5, status: "Limited", guide: "Dev Bisht" },
+      { date: "28 Sep 2027", seats: 10, status: "Open", guide: "Sonam Tamang" },
+    ],
+    faqs: [
+      ["Is this route beginner-friendly?", "No. It is best for trekkers with prior high-altitude experience."],
+      ["How does TravelGenie manage risk?", "The workflow includes guide assignment, medical checks, staged approval, and weather-aware operations."],
+    ],
+  },
+  {
+    id: "valley-of-flowers",
+    slug: "valley-of-flowers",
+    title: "Valley of Flowers Trek",
+    location: "Uttarakhand",
+    region: "Nanda Devi Biosphere",
+    image:
+      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=80",
+    gallery: [
+      "https://images.unsplash.com/photo-1544735716-392fe8aba1ef?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=900&q=80",
+    ],
+    difficulty: "Easy-Moderate",
+    duration: "6 Days",
+    altitude: "14,400 ft",
+    rating: 4.9,
+    reviews: 318,
+    price: 9499,
+    season: "Jul - Sep",
+    departures: 6,
+    nextDeparture: "21 Jul 2027",
+    groupSize: "20 trekkers",
+    mood: "Mist, waterfalls, alpine flowers, and a softer Himalayan rhythm.",
+    promise: "Peak bloom trekking for nature lovers",
+    coordinates: [30.728, 79.605],
+    overview:
+      "A monsoon-season floral trek into the Nanda Devi Biosphere, combining accessible trails, Hemkund Sahib, and rich naturalist-led storytelling.",
+    highlights: [
+      "Explore protected alpine flower valleys during peak bloom season",
+      "Optional Hemkund Sahib climb with conservative pacing",
+      "Ideal for families, photographers, and softer adventure groups",
+      "AI recommendations for bloom windows and rain-ready packing",
+    ],
+    facts: [
+      { label: "Region", value: "Nanda Devi Biosphere" },
+      { label: "Basecamp", value: "Govindghat" },
+      { label: "Trail type", value: "Valley walk" },
+      { label: "Best for", value: "Nature and photography" },
+    ],
+    altitudeProfile: [
+      { day: "Day 1", place: "Govindghat", altitude: "6,300 ft" },
+      { day: "Day 2", place: "Ghangaria", altitude: "10,000 ft" },
+      { day: "Day 3", place: "Valley of Flowers", altitude: "11,500 ft" },
+      { day: "Day 4", place: "Hemkund Sahib", altitude: "14,100 ft" },
+    ],
+    itinerary: [
+      {
+        day: 1,
+        title: "Rishikesh to Govindghat",
+        altitude: "6,300 ft",
+        distance: "270 km drive",
+        camp: "Govindghat stay",
+        story:
+          "Drive along the Alaknanda valley and complete entry formalities for the biosphere route.",
+      },
+      {
+        day: 2,
+        title: "Govindghat to Ghangaria",
+        altitude: "10,000 ft",
+        distance: "9 km trek",
+        camp: "Ghangaria lodge",
+        story:
+          "Follow a pilgrim trail through waterfalls and forest, keeping the pace relaxed for the next day's valley walk.",
+      },
+      {
+        day: 3,
+        title: "Valley of Flowers exploration",
+        altitude: "11,500 ft",
+        distance: "6 km trek",
+        camp: "Ghangaria lodge",
+        story:
+          "Spend the day inside the national park with guided naturalist notes and photography-friendly pacing.",
+      },
+    ],
+    departuresList: [
+      { date: "21 Jul 2027", seats: 12, status: "Open", guide: "Ishita Joshi" },
+      { date: "04 Aug 2027", seats: 7, status: "Filling fast", guide: "Pema Bhutia" },
+      { date: "18 Aug 2027", seats: 15, status: "Open", guide: "Arjun Rana" },
+    ],
+    faqs: [
+      ["Will it rain during this trek?", "Yes, it is a monsoon trek. Operators include rain gear guidance and route-condition updates."],
+      ["Is Hemkund Sahib mandatory?", "No. It is optional and depends on fitness, weather, and guide assessment."],
+    ],
+  },
+  {
+    id: "kashmir-great-lakes",
+    slug: "kashmir-great-lakes",
+    title: "Kashmir Great Lakes Trek",
+    location: "Kashmir",
+    region: "Sonamarg Himalayas",
+    image:
+      "https://images.unsplash.com/photo-1596394514708-b0fdf403d2ee?auto=format&fit=crop&w=1400&q=80",
+    gallery: [
+      "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=900&q=80",
+    ],
+    difficulty: "Moderate-Hard",
+    duration: "7 Days",
+    altitude: "13,750 ft",
+    rating: 4.9,
+    reviews: 226,
+    price: 16999,
+    season: "Jul - Sep",
+    departures: 7,
+    nextDeparture: "07 Jul 2027",
+    groupSize: "16 trekkers",
+    mood: "Turquoise lakes, rolling passes, and meadow camps under sharp Kashmir ridges.",
+    promise: "India's most cinematic alpine lake trail",
+    coordinates: [34.301, 75.295],
+    overview:
+      "A week-long alpine traverse through Vishansar, Gadsar, Satsar, and Gangbal lakes, built for trekkers ready for long walking days and high meadow camps.",
+    highlights: [
+      "Cross multiple lake basins and high passes in one continuous traverse",
+      "Camp beside iconic Kashmir meadows with guide-managed logistics",
+      "Long-distance trekking rhythm with daily altitude and weather checks",
+      "AI packing notes for rain, cold nights, and long trail days",
+    ],
+    facts: [
+      { label: "Region", value: "Sonamarg Himalayas" },
+      { label: "Basecamp", value: "Shitkadi" },
+      { label: "Trail type", value: "Alpine traverse" },
+      { label: "Best for", value: "Scenic endurance" },
+    ],
+    altitudeProfile: [
+      { day: "Day 1", place: "Shitkadi", altitude: "7,800 ft" },
+      { day: "Day 2", place: "Nichnai", altitude: "11,800 ft" },
+      { day: "Day 4", place: "Gadsar Pass", altitude: "13,750 ft" },
+      { day: "Day 6", place: "Gangbal", altitude: "11,500 ft" },
+    ],
+    itinerary: [
+      {
+        day: 1,
+        title: "Arrive at Shitkadi",
+        altitude: "7,800 ft",
+        distance: "Drive and briefing",
+        camp: "Shitkadi camp",
+        story:
+          "Meet the trek crew near Sonamarg, complete gear checks, and settle into the expedition rhythm.",
+      },
+      {
+        day: 2,
+        title: "Shitkadi to Nichnai",
+        altitude: "11,800 ft",
+        distance: "11 km trek",
+        camp: "Nichnai camp",
+        story:
+          "Climb through maple, pine, and open meadows toward the first high camp of the traverse.",
+      },
+      {
+        day: 3,
+        title: "Nichnai Pass to Vishansar",
+        altitude: "12,000 ft",
+        distance: "12 km trek",
+        camp: "Vishansar lake camp",
+        story:
+          "Cross the pass and descend into the first major lake basin with time for acclimatized exploration.",
+      },
+      {
+        day: 4,
+        title: "Gadsar Pass crossing",
+        altitude: "13,750 ft",
+        distance: "10 km trek",
+        camp: "Gadsar camp",
+        summit: true,
+        story:
+          "A demanding pass day with wide lake views, snow patches in early season, and a careful descent.",
+      },
+    ],
+    departuresList: [
+      { date: "07 Jul 2027", seats: 8, status: "Filling fast", guide: "Yasir Lone" },
+      { date: "21 Jul 2027", seats: 12, status: "Open", guide: "Imran Shah" },
+      { date: "11 Aug 2027", seats: 9, status: "Open", guide: "Aaliya Mir" },
+    ],
+    faqs: [
+      ["How fit should I be?", "You should be comfortable walking 10-12 km on consecutive mountain days."],
+      ["Is this trek weather sensitive?", "Yes. Operators monitor rain, pass conditions, and campsite access before each departure."],
+    ],
+  },
+  {
+    id: "sandakphu",
+    slug: "sandakphu-singalila-ridge",
+    title: "Sandakphu Singalila Ridge",
+    location: "West Bengal",
+    region: "Eastern Himalaya",
+    image:
+      "https://images.unsplash.com/photo-1544735716-392fe8aba1ef?auto=format&fit=crop&w=1400&q=80",
+    gallery: [
+      "https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1465056836041-7f43ac27dcb7?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=900&q=80",
+    ],
+    difficulty: "Moderate",
+    duration: "6 Days",
+    altitude: "11,930 ft",
+    rating: 4.8,
+    reviews: 174,
+    price: 11999,
+    season: "Mar - May, Oct - Dec",
+    departures: 5,
+    nextDeparture: "19 Oct 2027",
+    groupSize: "18 trekkers",
+    mood: "Ridge walks, tea-house nights, rhododendron forests, and Kanchenjunga sunrise views.",
+    promise: "A cultural ridge trek with big mountain views",
+    coordinates: [27.105, 88.001],
+    overview:
+      "A scenic ridge walk through Singalila National Park with views of Kanchenjunga, Everest, Lhotse, and Makalu on clear mornings.",
+    highlights: [
+      "Walk along the India-Nepal border through forest and ridge villages",
+      "Tea-house style nights with lighter camping logistics",
+      "Kanchenjunga and Sleeping Buddha sunrise viewpoints",
+      "Great fit for trekkers wanting culture, views, and moderate effort",
+    ],
+    facts: [
+      { label: "Region", value: "Eastern Himalaya" },
+      { label: "Basecamp", value: "Manebhanjan" },
+      { label: "Trail type", value: "Ridge walk" },
+      { label: "Best for", value: "Views and culture" },
+    ],
+    altitudeProfile: [
+      { day: "Day 1", place: "Manebhanjan", altitude: "6,400 ft" },
+      { day: "Day 2", place: "Tumling", altitude: "9,600 ft" },
+      { day: "Day 4", place: "Sandakphu", altitude: "11,930 ft" },
+      { day: "Day 5", place: "Gurdum", altitude: "7,500 ft" },
+    ],
+    itinerary: [
+      {
+        day: 1,
+        title: "Drive to Manebhanjan",
+        altitude: "6,400 ft",
+        distance: "85 km drive",
+        camp: "Mountain lodge",
+        story:
+          "Reach the trailhead, meet the local crew, and prepare for the Singalila ridge route.",
+      },
+      {
+        day: 2,
+        title: "Manebhanjan to Tumling",
+        altitude: "9,600 ft",
+        distance: "11 km trek",
+        camp: "Tumling tea house",
+        story:
+          "Climb through forested tracks and border villages with early views of the eastern ranges.",
+      },
+      {
+        day: 3,
+        title: "Tumling to Kalipokhri",
+        altitude: "10,400 ft",
+        distance: "13 km trek",
+        camp: "Kalipokhri lodge",
+        story:
+          "Traverse through Singalila forest and settle near the sacred black lake below Sandakphu.",
+      },
+      {
+        day: 4,
+        title: "Summit Sandakphu",
+        altitude: "11,930 ft",
+        distance: "6 km trek",
+        camp: "Sandakphu lodge",
+        summit: true,
+        story:
+          "Reach the highest point of West Bengal and watch the Sleeping Buddha range unfold.",
+      },
+    ],
+    departuresList: [
+      { date: "19 Oct 2027", seats: 10, status: "Open", guide: "Pemba Sherpa" },
+      { date: "02 Nov 2027", seats: 6, status: "Filling fast", guide: "Rinchen Tamang" },
+    ],
+    faqs: [
+      ["Is Sandakphu a camping trek?", "Most nights are lodge or tea-house based, making logistics lighter than remote camp treks."],
+      ["When are the best views?", "Autumn and early winter usually offer the clearest mountain visibility."],
+    ],
+  },
+  {
+    id: "triund",
+    slug: "triund-weekend-trek",
+    title: "Triund Weekend Trek",
+    location: "Himachal Pradesh",
+    region: "Dhauladhar Range",
+    image:
+      "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1400&q=80",
+    gallery: [
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=900&q=80",
+    ],
+    difficulty: "Easy-Moderate",
+    duration: "2 Days",
+    altitude: "9,350 ft",
+    rating: 4.7,
+    reviews: 392,
+    price: 3499,
+    season: "Mar - Jun, Sep - Dec",
+    departures: 12,
+    nextDeparture: "06 Apr 2027",
+    groupSize: "22 trekkers",
+    mood: "A quick Dhauladhar escape with forest trails, ridge camps, and McLeodganj energy.",
+    promise: "Best weekend trek for new adventurers",
+    coordinates: [32.257, 76.35],
+    overview:
+      "A short but memorable weekend trek above Dharamkot, ideal for beginners, backpackers, and groups wanting a guided mountain camp without a long leave window.",
+    highlights: [
+      "Short forest ascent to a wide Dhauladhar viewpoint ridge",
+      "Beginner-friendly guide pacing and camp support",
+      "Works well for corporate groups, students, and first-time trekkers",
+      "AI preparation notes for quick packing and weather shifts",
+    ],
+    facts: [
+      { label: "Region", value: "Dhauladhar Range" },
+      { label: "Basecamp", value: "Dharamkot" },
+      { label: "Trail type", value: "Weekend ridge" },
+      { label: "Best for", value: "First-time groups" },
+    ],
+    altitudeProfile: [
+      { day: "Day 1", place: "Dharamkot", altitude: "6,900 ft" },
+      { day: "Day 1", place: "Triund Ridge", altitude: "9,350 ft" },
+      { day: "Day 2", place: "McLeodganj", altitude: "6,830 ft" },
+    ],
+    itinerary: [
+      {
+        day: 1,
+        title: "Dharamkot to Triund",
+        altitude: "9,350 ft",
+        distance: "7 km trek",
+        camp: "Triund ridge camp",
+        summit: true,
+        story:
+          "Climb through oak and rhododendron forest to a ridge campsite facing the Dhauladhar wall.",
+      },
+      {
+        day: 2,
+        title: "Triund to McLeodganj",
+        altitude: "6,830 ft",
+        distance: "7 km descent",
+        camp: "Trip ends",
+        story:
+          "Wake to mountain light, descend at a relaxed pace, and close the trip with cafe time in McLeodganj.",
+      },
+    ],
+    departuresList: [
+      { date: "06 Apr 2027", seats: 16, status: "Open", guide: "Nikhil Rana" },
+      { date: "13 Apr 2027", seats: 9, status: "Filling fast", guide: "Aditi Thakur" },
+      { date: "20 Apr 2027", seats: 18, status: "Open", guide: "Karan Negi" },
+    ],
+    faqs: [
+      ["Is Triund beginner friendly?", "Yes. It is one of the most accessible guided weekend treks in Himachal."],
+      ["Can groups book private batches?", "Operators can review private group requests through the booking workflow."],
+    ],
+  },
+];
+
+export const heroSlides = featuredTreks.map((trek) => ({
+  name: trek.title,
+  location: trek.location,
+  image: trek.image,
+  slug: trek.slug,
+}));
+
+export const getTrekBySlug = (slug) =>
+  featuredTreks.find((trek) => trek.slug === slug);

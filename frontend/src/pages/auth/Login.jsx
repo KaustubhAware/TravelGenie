@@ -37,7 +37,7 @@ export default function Login() {
 
   const from =
     location.state?.from?.pathname ||
-    "/plan";
+    "/dashboard";
 
   // =====================================================
   // LOGIN

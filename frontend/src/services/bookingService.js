@@ -1,32 +1,44 @@
+import { hasAuthToken } from "../utils/authToken";
 import { apiRequest } from "./httpClient";
 
+const requireAuth = () => {
+  if (!hasAuthToken()) {
+    throw new Error("Not authenticated");
+  }
+};
+
 export const bookingService = {
-  getAdminBookings: () =>
-    apiRequest("/get-bookings"),
+  getAdminBookings: () => {
+    requireAuth();
+    return apiRequest("/get-bookings");
+  },
 
-  updateStatus: (booking_id, status) =>
-    apiRequest("/admin/update-status", {
+  updateStatus: (booking_id, status) => {
+    requireAuth();
+    return apiRequest("/admin/update-status", {
       method: "POST",
-      body: JSON.stringify({
-        booking_id,
-        status,
-      }),
-    }),
+      body: JSON.stringify({ booking_id, status }),
+    });
+  },
 
-  reviewBooking: (payload) =>
-    apiRequest("/admin/review-booking", {
+  reviewBooking: (payload) => {
+    requireAuth();
+    return apiRequest("/admin/review-booking", {
       method: "POST",
       body: JSON.stringify(payload),
-    }),
+    });
+  },
 
-  cancelBooking: (booking_id) =>
-    apiRequest("/admin/cancel-booking", {
+  cancelBooking: (booking_id) => {
+    requireAuth();
+    return apiRequest("/admin/cancel-booking", {
       method: "POST",
-      body: JSON.stringify({
-        booking_id,
-      }),
-    }),
+      body: JSON.stringify({ booking_id }),
+    });
+  },
 
-  getMyBookings: () =>
-    apiRequest("/my-bookings"),
+  getMyBookings: () => {
+    requireAuth();
+    return apiRequest("/my-bookings");
+  },
 };

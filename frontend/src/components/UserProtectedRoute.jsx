@@ -1,31 +1,42 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
+
 import { auth } from "../firebase";
+import RouteLoader from "./RouteLoader";
+import { hasAuthToken } from "../utils/authToken";
 
 export default function UserProtectedRoute({ children }) {
-  const [user, setUser] = useState(undefined); // undefined = loading
+  const [authState, setAuthState] = useState("loading");
   const location = useLocation();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (u) => {
-      setUser(u);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        setAuthState("guest");
+        return;
+      }
+
+      try {
+        const token = await user.getIdToken();
+        if (token) {
+          localStorage.setItem("token", token);
+        }
+      } catch {
+        // Keep existing token if refresh fails
+      }
+
+      setAuthState(hasAuthToken() ? "authenticated" : "guest");
     });
 
-    return () => unsubscribe(); // ✅ cleanup (important)
+    return () => unsubscribe();
   }, []);
 
-  // 🔄 Better loading UI (SaaS feel)
-  if (user === undefined) {
-    return (
-      <div className="flex items-center justify-center h-screen text-gray-500">
-        Checking authentication...
-      </div>
-    );
+  if (authState === "loading") {
+    return <RouteLoader label="Checking authentication..." />;
   }
 
-  // 🔐 Not logged in → go to login (with memory)
-  if (!user) {
+  if (authState !== "authenticated") {
     return (
       <Navigate
         to="/login"
@@ -35,6 +46,5 @@ export default function UserProtectedRoute({ children }) {
     );
   }
 
-  // ✅ Logged in
   return children;
 }

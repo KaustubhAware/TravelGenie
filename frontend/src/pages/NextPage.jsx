@@ -89,8 +89,6 @@ export default function NextPage() {
 
     try {
 
-      /* ================= PAYLOAD ================= */
-
       const payload = {
 
         ...form,
@@ -153,8 +151,6 @@ export default function NextPage() {
         );
 
       }
-
-      /* ================= FIXED RESULT ================= */
 
       setResult({
 
@@ -334,117 +330,171 @@ export default function NextPage() {
 
   return (
 
-    <div className="h-screen overflow-hidden bg-[#f5f9ff] px-4 md:px-6 pt-4 pb-4">
+    <div className="min-h-screen bg-[#f4f7fb]">
 
-      <div className="max-w-7xl mx-auto h-full">
+      {/* PAGE CONTAINER */}
 
-        <div className="grid lg:grid-cols-[340px_1fr] gap-5 h-[calc(100vh-92px)]">
+      <div className="max-w-[1700px] mx-auto px-4 md:px-6 py-6">
+
+        {/* HERO */}
+
+        {!result && !loading && (
+
+          <div className="relative overflow-hidden rounded-[32px] bg-primary-dark mb-8 p-8 md:p-12">
+
+            <img
+              src="https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=1400&q=80"
+              alt="Himalayan expedition"
+              className="absolute inset-0 h-full w-full object-cover opacity-30"
+            />
+
+            <div className="absolute inset-0 bg-gradient-to-r from-primary-dark via-primary-dark/90 to-primary-dark/40" />
+
+            <div className="relative z-10 max-w-4xl">
+
+              <p className="text-accent font-semibold tracking-[0.2em] uppercase mb-4">
+
+                AI Trek Assistant
+
+              </p>
+
+              <h1 className="text-4xl md:text-6xl font-black text-white leading-tight">
+
+                Build intelligent itineraries
+                for real agency workflows
+
+              </h1>
+
+              <p className="text-white/75 mt-6 text-lg leading-relaxed max-w-3xl">
+
+                Customize preparation,
+                route notes,
+                weather guidance,
+                and booking-ready trek
+                context while curated
+                packages remain primary.
+
+              </p>
+
+            </div>
+
+          </div>
+
+        )}
+
+        {/* MAIN LAYOUT */}
+
+        <div className="grid grid-cols-1 xl:grid-cols-[360px_1fr] gap-6 items-start">
 
           {/* LEFT PANEL */}
 
-          <div className="bg-white rounded-[26px] border border-gray-200 shadow-sm h-full overflow-hidden">
+          <div className="xl:sticky xl:top-24 self-start">
 
-            <div className="p-5">
+            <div className="bg-white rounded-[26px] border border-gray-200 shadow-sm overflow-hidden">
 
-              <div className="space-y-4">
+              <div className="p-5">
 
-                <div>
+                <div className="space-y-4">
 
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <div>
 
-                    Destination
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
 
-                  </label>
+                      Destination
 
-                  <input
-                    name="destination"
-                    placeholder="Where do you want to go?"
-                    value={form.destination}
-                    onChange={handleChange}
-                    className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-3"
-                  />
-
-                </div>
-
-                <div>
-
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-
-                    Budget
-
-                  </label>
-
-                  <div className="relative">
-
-                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-medium">
-
-                      ₹
-
-                    </span>
+                    </label>
 
                     <input
-                      name="budget"
-                      type="number"
-                      value={form.budget}
+                      name="destination"
+                      placeholder="Where do you want to go?"
+                      value={form.destination}
                       onChange={handleChange}
-                      className="w-full rounded-2xl border border-gray-200 bg-gray-50 pl-10 pr-5 py-3"
+                      className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-3"
                     />
 
                   </div>
 
+                  <div>
+
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+
+                      Budget
+
+                    </label>
+
+                    <div className="relative">
+
+                      <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-medium">
+
+                        ₹
+
+                      </span>
+
+                      <input
+                        name="budget"
+                        type="number"
+                        value={form.budget}
+                        onChange={handleChange}
+                        className="w-full rounded-2xl border border-gray-200 bg-gray-50 pl-10 pr-5 py-3"
+                      />
+
+                    </div>
+
+                  </div>
+
+                  <div>
+
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+
+                      Number of Days
+
+                    </label>
+
+                    <input
+                      name="days"
+                      type="number"
+                      value={form.days}
+                      onChange={handleChange}
+                      className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-3"
+                    />
+
+                  </div>
+
+                  <div>
+
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+
+                      Travel Preferences
+
+                    </label>
+
+                    <textarea
+                      name="preferences"
+                      rows="5"
+                      value={form.preferences}
+                      onChange={handleChange}
+                      className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-3 resize-none"
+                    />
+
+                  </div>
+
+                  <button
+                    onClick={handleSubmit}
+                    disabled={loading}
+                    className="w-full bg-primary text-white py-4 rounded-2xl font-semibold flex items-center justify-center gap-3 transition hover:bg-primary-dark"
+                  >
+
+                    {loading
+                      ? "Generating..."
+                      : "Generate AI Trip"}
+
+                    {!loading && (
+                      <FaArrowRight />
+                    )}
+
+                  </button>
+
                 </div>
-
-                <div>
-
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-
-                    Number of Days
-
-                  </label>
-
-                  <input
-                    name="days"
-                    type="number"
-                    value={form.days}
-                    onChange={handleChange}
-                    className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-3"
-                  />
-
-                </div>
-
-                <div>
-
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-
-                    Travel Preferences
-
-                  </label>
-
-                  <textarea
-                    name="preferences"
-                    rows="4"
-                    value={form.preferences}
-                    onChange={handleChange}
-                    className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-3"
-                  />
-
-                </div>
-
-                <button
-                  onClick={handleSubmit}
-                  disabled={loading}
-                  className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 text-white py-3 rounded-2xl font-semibold flex items-center justify-center gap-3"
-                >
-
-                  {loading
-                    ? "Generating..."
-                    : "Generate AI Trip"}
-
-                  {!loading && (
-                    <FaArrowRight />
-                  )}
-
-                </button>
 
               </div>
 
@@ -454,90 +504,85 @@ export default function NextPage() {
 
           {/* RIGHT PANEL */}
 
-          <div className="bg-white rounded-[26px] border border-gray-200 shadow-sm p-5 h-full overflow-hidden">
+          <div className="min-w-0">
 
-            {!result && !loading && (
+            <div className="bg-white rounded-[26px] border border-gray-200 shadow-sm overflow-hidden">
 
-              <div className="relative h-full overflow-hidden rounded-[28px] bg-[#071120] p-8 flex items-center">
+              <div className="p-4 md:p-6">
 
-                <div className="max-w-xl">
+                {loading && (
 
-                  <p className="text-blue-200 font-semibold mb-4">
-                    AI Travel Operations
-                  </p>
+                  <div className="flex flex-col items-center justify-center min-h-[500px]">
 
-                  <h2 className="text-5xl font-bold text-white leading-tight">
-                    Build intelligent itineraries for real agency workflows
-                  </h2>
+                    <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
 
-                  <p className="text-blue-100 mt-6 leading-relaxed">
-                    Generate day-wise plans, hotels, restaurants, budgets, maps, and booking-ready trip data from a single workspace.
-                  </p>
+                    <p className="text-gray-600 mt-8 text-lg">
 
-                  <div className="grid md:grid-cols-3 gap-4 mt-10">
+                      Generating your itinerary...
 
-                    {["Itinerary", "Budget", "Booking"].map((item) => (
+                    </p>
 
-                      <div
-                        key={item}
-                        className="border border-white/10 bg-white/10 rounded-2xl p-5 text-white"
-                      >
+                  </div>
 
-                        <p className="font-semibold">
-                          {item}
-                        </p>
+                )}
 
-                        <p className="text-sm text-blue-100 mt-2">
-                          Enterprise ready
-                        </p>
+                {result && (
 
+                  <Suspense
+                    fallback={
+                      <div className="h-[400px] flex items-center justify-center text-gray-500">
+                        Preparing AI trip workspace...
                       </div>
+                    }
+                  >
 
-                    ))}
+                    <AITripResult
+                      result={result}
+                      saveTrip={saveTrip}
+                      saving={saving}
+                      navigate={navigate}
+                      form={form}
+                    />
+
+                  </Suspense>
+
+                )}
+
+                {!result && !loading && (
+
+                  <div className="min-h-[500px] flex items-center justify-center text-center px-6">
+
+                    <div>
+
+                      <h2 className="text-3xl md:text-4xl font-black text-gray-900">
+
+                        Your AI itinerary
+                        will appear here
+
+                      </h2>
+
+                      <p className="mt-4 text-gray-500 max-w-2xl">
+
+                        Generate complete
+                        trekking itineraries,
+                        budgets,
+                        hotels,
+                        restaurants,
+                        weather insights,
+                        and booking-ready
+                        travel plans.
+
+                      </p>
+
+                    </div>
 
                   </div>
 
-                </div>
+                )}
 
               </div>
 
-            )}
-
-            {loading && (
-
-              <div className="flex flex-col items-center justify-center h-full">
-
-                <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-
-                <p className="text-gray-600 mt-8 text-lg">
-
-                  Generating your itinerary...
-
-                </p>
-
-              </div>
-
-            )}
-
-            {result && (
-
-              <Suspense
-                fallback={
-                  <div className="h-full flex items-center justify-center text-gray-500">
-                    Preparing AI trip workspace...
-                  </div>
-                }
-              >
-                <AITripResult
-                  result={result}
-                  saveTrip={saveTrip}
-                  saving={saving}
-                  navigate={navigate}
-                  form={form}
-                />
-              </Suspense>
-
-            )}
+            </div>
 
           </div>
 

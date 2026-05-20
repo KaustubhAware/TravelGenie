@@ -1,7 +1,3 @@
-// =====================================================
-// AI TRIP RESULT
-// =====================================================
-
 import {
   lazy,
   Suspense,
@@ -17,7 +13,10 @@ import HotelRecommendationCard from "./HotelRecommendationCard";
 import RestaurantRecommendationCard from "./RestaurantRecommendationCard";
 
 import WeatherCard from "./WeatherCard";
-const TravelMap = lazy(() => import("./TravelMap"));
+
+const TravelMap = lazy(() =>
+  import("./TravelMap")
+);
 
 export default function AITripResult({
   result = {},
@@ -26,63 +25,54 @@ export default function AITripResult({
   navigate,
   form,
 }) {
+
   const downloadTripPDF = async () => {
-    const { exportTripPDF } = await import(
-      "../../utils/exportPDF"
-    );
+
+    const { exportTripPDF } =
+      await import("../../utils/exportPDF");
 
     exportTripPDF(
       "trip-pdf",
       form.destination
     );
+
   };
 
-  // =====================================================
-  // SAFE DATA
-  // =====================================================
+  /* ===================================================== */
+  /* SAFE DATA */
+  /* ===================================================== */
 
   const {
-
     itinerary = [],
-
     recommendations = [],
-
     estimated_cost = 0,
-
     sentiment = "Neutral",
-
     budget_breakdown = {},
-
     travel_tips = [],
-
     hotel_recommendations = [],
-
     restaurant_recommendations = [],
-
     weather = {},
-
     crowd_insights = [],
-
   } = result;
 
-  // =====================================================
-  // UI
-  // =====================================================
+  /* ===================================================== */
+  /* UI */
+  /* ===================================================== */
 
   return (
 
     <div
       id="trip-pdf"
-      className="space-y-8 overflow-y-auto h-full pr-2"
+      className="space-y-8 pb-10"
     >
 
-      {/* ================================================= */}
-      {/* TOP SECTION */}
-      {/* ================================================= */}
+      {/* ===================================================== */}
+      {/* TOP CARDS */}
+      {/* ===================================================== */}
 
-      <div className="grid lg:grid-cols-3 gap-5">
+      <div className="grid xl:grid-cols-3 gap-5">
 
-        <div className="lg:col-span-2">
+        <div className="xl:col-span-2">
 
           <BudgetCard
             cost={estimated_cost}
@@ -90,7 +80,7 @@ export default function AITripResult({
 
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-[28px] p-6">
+        <div className="bg-white border border-gray-200 rounded-[28px] p-6 shadow-sm">
 
           <p className="text-sm text-gray-500 mb-2">
 
@@ -98,7 +88,7 @@ export default function AITripResult({
 
           </p>
 
-          <h2 className="text-4xl font-bold text-gray-900">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
 
             {sentiment}
 
@@ -108,53 +98,67 @@ export default function AITripResult({
 
       </div>
 
-      {/* ================================================= */}
+      {/* ===================================================== */}
       {/* WEATHER */}
-      {/* ================================================= */}
+      {/* ===================================================== */}
 
-      <WeatherCard
-        weather={weather}
-      />
+      {Object.keys(weather || {}).length > 0 && (
 
-      {/* ================================================= */}
+        <WeatherCard weather={weather} />
+
+      )}
+
+      {/* ===================================================== */}
       {/* MAP */}
-      {/* ================================================= */}
+      {/* ===================================================== */}
 
       <Suspense
         fallback={
+
           <div className="bg-white border border-gray-200 rounded-[28px] p-8 text-gray-500">
+
             Loading map insights...
+
           </div>
+
         }
       >
+
         <TravelMap
           destination={form.destination}
           hotels={hotel_recommendations}
-          restaurants={
-            restaurant_recommendations
-          }
+          restaurants={restaurant_recommendations}
         />
+
       </Suspense>
 
-      {/* ================================================= */}
-      {/* RECOMMENDED PLACES */}
-      {/* ================================================= */}
+      {/* ===================================================== */}
+      {/* RECOMMENDATIONS */}
+      {/* ===================================================== */}
 
-      <PreferenceChips
-        recommendations={recommendations}
-      />
+      {recommendations.length > 0 && (
 
-      {/* ================================================= */}
+        <PreferenceChips
+          recommendations={recommendations}
+        />
+
+      )}
+
+      {/* ===================================================== */}
       {/* BUDGET BREAKDOWN */}
-      {/* ================================================= */}
+      {/* ===================================================== */}
 
-      <BudgetBreakdownCard
-        breakdown={budget_breakdown}
-      />
+      {Object.keys(budget_breakdown || {}).length > 0 && (
 
-      {/* ================================================= */}
-      {/* HOTEL RECOMMENDATIONS */}
-      {/* ================================================= */}
+        <BudgetBreakdownCard
+          breakdown={budget_breakdown}
+        />
+
+      )}
+
+      {/* ===================================================== */}
+      {/* HOTELS */}
+      {/* ===================================================== */}
 
       {hotel_recommendations.length > 0 && (
 
@@ -162,7 +166,7 @@ export default function AITripResult({
 
           <div className="mb-6">
 
-            <h2 className="text-3xl font-bold text-gray-900">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
 
               Hotel Recommendations
 
@@ -176,7 +180,7 @@ export default function AITripResult({
 
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid lg:grid-cols-2 gap-6">
 
             {hotel_recommendations.map(
 
@@ -197,9 +201,9 @@ export default function AITripResult({
 
       )}
 
-      {/* ================================================= */}
+      {/* ===================================================== */}
       {/* RESTAURANTS */}
-      {/* ================================================= */}
+      {/* ===================================================== */}
 
       {restaurant_recommendations.length > 0 && (
 
@@ -207,7 +211,7 @@ export default function AITripResult({
 
           <div className="mb-6">
 
-            <h2 className="text-3xl font-bold text-gray-900">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
 
               Restaurant Recommendations
 
@@ -221,7 +225,7 @@ export default function AITripResult({
 
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid lg:grid-cols-2 gap-6">
 
             {restaurant_recommendations.map(
 
@@ -242,17 +246,17 @@ export default function AITripResult({
 
       )}
 
-      {/* ================================================= */}
+      {/* ===================================================== */}
       {/* CROWD INSIGHTS */}
-      {/* ================================================= */}
+      {/* ===================================================== */}
 
       {crowd_insights.length > 0 && (
 
-        <section className="bg-white border border-gray-200 rounded-[28px] p-6">
+        <section className="bg-white border border-gray-200 rounded-[28px] p-6 shadow-sm">
 
           <div className="mb-6">
 
-            <h2 className="text-3xl font-bold text-gray-900">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
 
               Crowd Insights
 
@@ -268,52 +272,46 @@ export default function AITripResult({
 
           <div className="space-y-4">
 
-            {crowd_insights.map(
+            {crowd_insights.map((item, index) => (
 
-              (item, index) => (
+              <div
+                key={index}
+                className="border border-gray-200 rounded-2xl p-5"
+              >
 
-                <div
-                  key={index}
-                  className="border border-gray-200 rounded-2xl p-5"
-                >
+                <div className="flex items-center justify-between gap-4 flex-wrap">
 
-                  <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold text-gray-900">
 
-                    <h3 className="text-lg font-bold text-gray-900">
+                    {item.place}
 
-                      {item.place}
+                  </h3>
 
-                    </h3>
+                  <span
+                    className={`px-4 py-2 rounded-full text-sm font-semibold ${
+                      item.crowd_level === "High"
+                        ? "bg-red-100 text-red-600"
+                        : item.crowd_level === "Medium"
+                        ? "bg-yellow-100 text-yellow-700"
+                        : "bg-green-100 text-green-700"
+                    }`}
+                  >
 
-                    <span
-                      className={`px-4 py-2 rounded-full text-sm font-semibold ${
-                        item.crowd_level === "High"
-                          ? "bg-red-100 text-red-600"
-                          : item.crowd_level === "Medium"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-green-100 text-green-700"
-                      }`}
-                    >
+                    {item.crowd_level}
 
-                      {item.crowd_level}
-
-                    </span>
-
-                  </div>
-
-                  <p className="text-gray-500 mt-3">
-
-                    Best Time:
-                    {" "}
-                    {item.best_time}
-
-                  </p>
+                  </span>
 
                 </div>
 
-              )
+                <p className="text-gray-500 mt-3">
 
-            )}
+                  Best Time: {item.best_time}
+
+                </p>
+
+              </div>
+
+            ))}
 
           </div>
 
@@ -321,66 +319,71 @@ export default function AITripResult({
 
       )}
 
-      {/* ================================================= */}
+      {/* ===================================================== */}
       {/* ITINERARY */}
-      {/* ================================================= */}
+      {/* ===================================================== */}
 
-      <section>
+      {itinerary.length > 0 && (
 
-        <div className="mb-6">
+        <section>
 
-          <h2 className="text-4xl font-bold text-gray-900">
+          <div className="mb-6">
 
-            AI Generated Itinerary
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
 
-          </h2>
+              AI Generated Itinerary
 
-          <p className="text-gray-500 mt-2">
+            </h2>
 
-            Smart AI travel planning
+            <p className="text-gray-500 mt-2">
 
-          </p>
+              Smart AI travel planning
 
-        </div>
+            </p>
 
-        <div className="space-y-5">
+          </div>
 
-          {itinerary.map((day, index) => (
+          <div className="space-y-5">
 
-            <DayPlanCard
-              key={index}
-              day={day}
-              index={index}
-            />
+            {itinerary.map((day, index) => (
 
-          ))}
+              <DayPlanCard
+                key={index}
+                day={day}
+                index={index}
+              />
 
-        </div>
+            ))}
 
-      </section>
+          </div>
 
-      {/* ================================================= */}
+        </section>
+
+      )}
+
+      {/* ===================================================== */}
       {/* TRAVEL TIPS */}
-      {/* ================================================= */}
+      {/* ===================================================== */}
 
-      <TravelTipsCard
-        tips={travel_tips}
-      />
+      {travel_tips.length > 0 && (
 
-      {/* ================================================= */}
-      {/* ACTION BUTTONS */}
-      {/* ================================================= */}
+        <TravelTipsCard
+          tips={travel_tips}
+        />
 
-      <div className="grid md:grid-cols-3 gap-4 pb-6">
+      )}
+
+      {/* ===================================================== */}
+      {/* ACTIONS */}
+      {/* ===================================================== */}
+
+      <div className="grid md:grid-cols-3 gap-4 pt-2">
 
         {/* PDF */}
 
         <button
-
           onClick={downloadTripPDF}
-
-          className="border border-blue-300 bg-blue-50 hover:bg-blue-100 text-blue-700 py-4 rounded-2xl font-semibold transition duration-300"
-
+          className="h-14 rounded-2xl border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold transition"
         >
 
           Download PDF
@@ -390,49 +393,33 @@ export default function AITripResult({
         {/* SAVE */}
 
         <button
-
           onClick={saveTrip}
-
           disabled={saving}
-
-          className="border border-gray-300 bg-white hover:bg-gray-100 text-gray-800 py-4 rounded-2xl font-semibold transition duration-300"
-
+          className="h-14 rounded-2xl border border-gray-300 bg-white hover:bg-gray-100 text-gray-800 font-semibold transition"
         >
 
-          {saving
-            ? "Saving..."
-            : "Save Trip"}
+          {saving ? "Saving..." : "Save Trip"}
 
         </button>
 
         {/* BOOK */}
 
         <button
-
           onClick={() =>
 
-            navigate("/booking", {
+            navigate("/dashboard/booking", {
 
               state: {
-
-                destination:
-                  form.destination,
-
-                days:
-                  form.days,
-
-                budget:
-                  estimated_cost,
-
+                destination: form.destination,
+                days: form.days,
+                budget: estimated_cost,
                 ...result,
-
               },
 
             })
 
           }
-
-          className="bg-gradient-to-r from-blue-600 to-cyan-500 text-white py-4 rounded-2xl font-semibold shadow-md hover:shadow-lg transition duration-300"
+          className="h-14 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-semibold shadow-md hover:shadow-xl transition"
 
         >
 

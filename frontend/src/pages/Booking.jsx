@@ -49,7 +49,7 @@ export default function Booking() {
   /* ================= INPUT STYLE ================= */
 
   const inputStyle =
-    "w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 text-gray-800 outline-none transition-all duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 focus:bg-white";
+    "w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 text-gray-800 outline-none transition-all duration-300 focus:border-primary focus:ring-4 focus:ring-primary/10 focus:bg-white";
 
   /* ================= HANDLE CHANGE ================= */
 
@@ -134,7 +134,7 @@ export default function Booking() {
 
       toast.success("Booking request submitted");
 
-      navigate("/my-bookings", {
+      navigate("/dashboard/bookings", {
         state: {
           ...form,
           ...tripData,
@@ -161,7 +161,7 @@ export default function Booking() {
     <>
       <Toaster position="top-right" />
 
-      <div className="min-h-screen bg-[#f5f9ff] px-4 md:px-6 pt-4 pb-10">
+      <div className="min-h-screen bg-surface px-4 md:px-6 pt-4 pb-10">
 
         {/* ================= HEADER ================= */}
 
@@ -187,7 +187,7 @@ export default function Booking() {
 
               <div className="flex items-center gap-4 text-sm font-medium">
 
-                <span className="text-blue-600">
+                <span className="text-primary">
                   1. Booking
                 </span>
 
@@ -431,7 +431,7 @@ export default function Booking() {
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="w-full mt-8 bg-gradient-to-r from-blue-600 to-cyan-500 text-white py-4 rounded-2xl font-semibold text-lg shadow-md hover:shadow-lg transition duration-300 flex items-center justify-center gap-3"
+              className="w-full mt-8 bg-primary text-white py-4 rounded-2xl font-semibold text-lg shadow-md hover:shadow-lg hover:bg-primary-dark transition duration-300 flex items-center justify-center gap-3"
             >
 
               {loading
@@ -464,9 +464,9 @@ export default function Booking() {
 
               </div>
 
-              <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center">
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
 
-                <FaMapMarkedAlt className="text-blue-600 text-2xl" />
+                <FaMapMarkedAlt className="text-primary text-2xl" />
 
               </div>
 
@@ -482,7 +482,7 @@ export default function Booking() {
 
                   <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center">
 
-                    <FaPlaneDeparture className="text-blue-600" />
+                    <FaPlaneDeparture className="text-primary" />
 
                   </div>
 
@@ -510,7 +510,7 @@ export default function Booking() {
 
                   <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center">
 
-                    <FaCalendarAlt className="text-blue-600" />
+                    <FaCalendarAlt className="text-primary" />
 
                   </div>
 
@@ -538,7 +538,7 @@ export default function Booking() {
 
                   <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center">
 
-                    <FaUsers className="text-blue-600" />
+                    <FaUsers className="text-primary" />
 
                   </div>
 
@@ -562,13 +562,13 @@ export default function Booking() {
 
             {/* PRICE */}
 
-            <div className="mt-8 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-3xl p-7 text-white">
+            <div className="mt-8 bg-primary-dark rounded-3xl p-7 text-white">
 
               <div className="flex items-center justify-between">
 
                 <div>
 
-                  <p className="text-sm text-blue-100">
+                  <p className="text-sm text-white/70">
                     Total Cost
                   </p>
 

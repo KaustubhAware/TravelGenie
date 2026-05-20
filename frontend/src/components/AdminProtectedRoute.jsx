@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 
+import { env } from "../config/env";
+import { getAuthToken } from "../utils/authToken";
+import RouteLoader from "./RouteLoader";
+
 export default function AdminProtectedRoute({ children }) {
   const [isValid, setIsValid] = useState(null);
 
   useEffect(() => {
     const verify = async () => {
-      const token = localStorage.getItem("token");
+      const token = getAuthToken();
 
       if (!token) {
         setIsValid(false);
@@ -14,7 +18,7 @@ export default function AdminProtectedRoute({ children }) {
       }
 
       try {
-        const res = await fetch("http://127.0.0.1:8000/api/admin/stats", {
+        const res = await fetch(`${env.API_BASE_URL}/admin/stats`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -34,7 +38,9 @@ export default function AdminProtectedRoute({ children }) {
     verify();
   }, []);
 
-  if (isValid === null) return <p>Checking admin...</p>;
+  if (isValid === null) {
+    return <RouteLoader label="Checking admin access..." />;
+  }
 
-  return isValid ? children : <Navigate to="/admin/login" />;
+  return isValid ? children : <Navigate to="/admin/login" replace />;
 }

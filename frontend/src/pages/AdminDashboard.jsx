@@ -6,6 +6,7 @@ import AdminLayout from "../layouts/AdminLayout";
 
 import StatCard from "../components/admin/StatCard";
 import BookingTable from "../components/admin/BookingTable";
+import GlassCard from "../components/ui/GlassCard";
 
 import RevenueChart from "../components/admin/charts/RevenueChart";
 import StatusChart from "../components/admin/charts/StatusChart";
@@ -310,7 +311,7 @@ export default function AdminDashboard() {
         ],
 
         backgroundColor:
-          "#2563eb",
+          "#1F4D3E",
 
         borderRadius: 16,
       },
@@ -339,8 +340,8 @@ export default function AdminDashboard() {
 
         backgroundColor: [
           "#22c55e",
-          "#2563eb",
-          "#0ea5e9",
+          "#1F4D3E",
+          "#E67E22",
           "#facc15",
           "#94a3b8",
         ],
@@ -365,10 +366,10 @@ export default function AdminDashboard() {
         ),
 
         borderColor:
-          "#2563eb",
+          "#E67E22",
 
         backgroundColor:
-          "#2563eb",
+          "#E67E22",
 
         tension: 0.4,
 
@@ -396,7 +397,7 @@ export default function AdminDashboard() {
           ),
 
         backgroundColor:
-          "#0ea5e9",
+          "#1F4D3E",
 
         borderRadius: 12,
       },
@@ -436,9 +437,9 @@ export default function AdminDashboard() {
               title="Total Bookings"
               value={stats.total}
               icon={
-                <FaSuitcaseRolling className="text-blue-600 text-2xl" />
+                <FaSuitcaseRolling className="text-primary text-2xl" />
               }
-              bgColor="bg-blue-50"
+              bgColor="bg-primary/10"
               textColor="text-gray-900"
             />
 
@@ -466,30 +467,30 @@ export default function AdminDashboard() {
               title="Payment Pending"
               value={stats.payment_pending}
               icon={
-                <FaClock className="text-sky-600 text-2xl" />
+                <FaClock className="text-accent text-2xl" />
               }
-              bgColor="bg-sky-50"
-              textColor="text-sky-600"
+              bgColor="bg-accent/10"
+              textColor="text-accent"
             />
 
             <StatCard
               title="Total Revenue"
               value={`Rs. ${stats.revenue}`}
               icon={
-                <FaMoneyBillWave className="text-cyan-600 text-2xl" />
+                <FaMoneyBillWave className="text-primary text-2xl" />
               }
-              bgColor="bg-cyan-50"
-              textColor="text-cyan-600"
+              bgColor="bg-primary/10"
+              textColor="text-primary"
             />
 
             <StatCard
               title="Total Clients"
               value={stats.clients}
               icon={
-                <FaUsers className="text-indigo-600 text-2xl" />
+                <FaUsers className="text-primary text-2xl" />
               }
-              bgColor="bg-indigo-50"
-              textColor="text-indigo-600"
+              bgColor="bg-primary/10"
+              textColor="text-primary"
             />
 
           </div>
@@ -536,9 +537,9 @@ export default function AdminDashboard() {
 
             {[
               ["Pending Requests", stats.pending || 0, "text-yellow-600", "bg-yellow-50"],
-              ["Approved Bookings", stats.approved || 0, "text-blue-600", "bg-blue-50"],
+              ["Approved Bookings", stats.approved || 0, "text-primary", "bg-primary/10"],
               ["Rejected Requests", bookings.filter((b) => b.status === "rejected").length, "text-red-600", "bg-red-50"],
-              ["Payment Pending", stats.payment_pending || 0, "text-sky-600", "bg-sky-50"],
+              ["Payment Pending", stats.payment_pending || 0, "text-accent", "bg-accent/10"],
             ].map(([title, value, text, bg]) => (
 
               <div
@@ -562,7 +563,7 @@ export default function AdminDashboard() {
 
           <div className="grid lg:grid-cols-[1fr_420px] gap-6 mb-8">
 
-            <div className="bg-white border border-gray-100 rounded-[28px] p-6 shadow-lg">
+            <GlassCard className="p-6">
 
               <div className="flex justify-between items-center mb-6">
 
@@ -578,7 +579,7 @@ export default function AdminDashboard() {
 
                 </div>
 
-                <div className="bg-blue-50 text-blue-700 rounded-2xl px-5 py-3 font-bold">
+                <div className="bg-primary/10 text-primary rounded-2xl px-5 py-3 font-bold">
                   {advancedAnalytics.retention_rate || 0}% retention
                 </div>
 
@@ -590,7 +591,7 @@ export default function AdminDashboard() {
 
                   <div
                     key={item.destination}
-                    className="bg-[#f8fbff] rounded-2xl p-5"
+                    className="bg-surface rounded-2xl p-5"
                   >
 
                     <p className="text-gray-500 text-sm">
@@ -611,9 +612,9 @@ export default function AdminDashboard() {
 
               </div>
 
-            </div>
+            </GlassCard>
 
-            <div className="bg-white border border-gray-100 rounded-[28px] p-6 shadow-lg">
+            <GlassCard className="p-6">
 
               <h2 className="text-2xl font-bold text-gray-900 mb-5">
                 Recent Activity
@@ -648,7 +649,7 @@ export default function AdminDashboard() {
 
               </div>
 
-            </div>
+            </GlassCard>
 
           </div>
 

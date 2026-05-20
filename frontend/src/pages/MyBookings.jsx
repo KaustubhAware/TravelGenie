@@ -8,6 +8,8 @@ import { useNavigate } from "react-router-dom";
 import { auth } from "../firebase";
 import { exportInvoicePDF } from "../utils/exportPDF";
 import { bookingService } from "../services/bookingService";
+import { hasAuthToken } from "../utils/authToken";
+import { DASHBOARD_ROUTES } from "../constants/routes";
 
 import {
   FaCalendarAlt,
@@ -37,7 +39,7 @@ const statusConfig = {
   },
   approved: {
     label: "Approved",
-    className: "bg-blue-100 text-blue-700",
+    className: "bg-primary/10 text-primary",
     icon: FaCheckCircle,
   },
   paid: {
@@ -78,9 +80,12 @@ export default function MyBookings() {
     const loadBookings = async () => {
       try {
         const user = auth.currentUser;
-        if (!user) return;
+        if (!user || !hasAuthToken()) return;
 
-        await user.getIdToken();
+        const token = await user.getIdToken();
+        if (token) {
+          localStorage.setItem("token", token);
+        }
 
         const data =
           await bookingService.getMyBookings();
@@ -122,7 +127,7 @@ export default function MyBookings() {
   }), [bookings]);
 
   const goToPayment = (booking) => {
-    navigate("/payment", {
+    navigate(DASHBOARD_ROUTES.payments, {
       state: {
         ...booking,
         cost: booking.total_cost || booking.budget,
@@ -131,7 +136,7 @@ export default function MyBookings() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f5f9ff] px-6 py-10">
+    <div className="min-h-screen bg-surface px-6 py-10">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900">
@@ -218,21 +223,21 @@ export default function MyBookings() {
 
                 <div className="space-y-4">
                   <div className="flex items-center gap-3 text-gray-700">
-                    <FaCalendarAlt className="text-blue-600" />
+                    <FaCalendarAlt className="text-primary" />
                     <span>{booking.days} Days</span>
                   </div>
                   <div className="flex items-center gap-3 text-gray-700">
-                    <FaMoneyBillWave className="text-blue-600" />
+                    <FaMoneyBillWave className="text-primary" />
                     <span>Rs. {booking.total_cost || booking.budget}</span>
                   </div>
                   <div className="flex items-center gap-3 text-gray-700">
-                    <FaMapMarkedAlt className="text-blue-600" />
+                    <FaMapMarkedAlt className="text-primary" />
                     <span>{booking.name}</span>
                   </div>
                 </div>
 
                 {booking.assigned_agent && (
-                  <div className="mt-5 bg-blue-50 rounded-2xl p-4 text-sm text-blue-700">
+                  <div className="mt-5 bg-primary/10 rounded-2xl p-4 text-sm text-primary">
                     Assigned Agent: {booking.assigned_agent}
                   </div>
                 )}
@@ -240,7 +245,7 @@ export default function MyBookings() {
                 <div className="mt-6 pt-6 border-t border-gray-100 flex flex-wrap gap-3">
                   <button
                     onClick={() =>
-                      navigate(`/booking/${booking.booking_id}`)
+                      navigate(DASHBOARD_ROUTES.bookingDetail(booking.booking_id))
                     }
                     className="px-5 py-3 rounded-xl border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50"
                   >
@@ -250,7 +255,7 @@ export default function MyBookings() {
                   {canPay && (
                     <button
                       onClick={() => goToPayment(booking)}
-                      className="px-5 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700"
+                      className="px-5 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary-dark"
                     >
                       Pay Now
                     </button>

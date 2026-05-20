@@ -21,7 +21,6 @@ import "leaflet/dist/leaflet.css";
 delete L.Icon.Default.prototype._getIconUrl;
 
 L.Icon.Default.mergeOptions({
-
   iconRetinaUrl:
     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
 
@@ -30,7 +29,6 @@ L.Icon.Default.mergeOptions({
 
   shadowUrl:
     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-
 });
 
 /* ===================================================== */
@@ -38,13 +36,9 @@ L.Icon.Default.mergeOptions({
 /* ===================================================== */
 
 function TravelMap({
-
   destination,
-
   hotels = [],
-
   restaurants = [],
-
 }) {
 
   /* ===================================================== */
@@ -56,107 +50,81 @@ function TravelMap({
     []
   );
 
+  /* ===================================================== */
+  /* SAFE LIMITED DATA */
+  /* ===================================================== */
+
   const hotelMarkers = useMemo(
-    () => hotels.slice(0, 8),
+    () => hotels.slice(0, 5),
     [hotels]
   );
 
   const restaurantMarkers = useMemo(
-    () => restaurants.slice(0, 8),
+    () => restaurants.slice(0, 5),
     [restaurants]
   );
 
+  /* ===================================================== */
+  /* UI */
+  /* ===================================================== */
+
   return (
 
-    <div className="bg-white border border-gray-200 rounded-[28px] overflow-hidden">
+    <section className="bg-white border border-gray-200 rounded-[28px] overflow-hidden shadow-sm">
 
-      <div className="p-6 border-b border-gray-100">
+      {/* HEADER */}
 
-        <h2 className="text-3xl font-bold text-gray-900">
+      <div className="px-6 py-5 border-b border-gray-100">
+
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
 
           AI Travel Map
 
         </h2>
 
-        <p className="text-gray-500 mt-1">
+        <p className="text-gray-500 mt-1 text-sm md:text-base">
 
-          Smart location visualization
+          Smart location visualization for your itinerary
 
         </p>
 
       </div>
 
-      <MapContainer
-        center={center}
-        zoom={11}
-        scrollWheelZoom={true}
-        className="h-[500px] w-full"
-      >
+      {/* MAP WRAPPER */}
 
-        {/* MAP TILES */}
+      <div className="relative">
 
-        <TileLayer
-          attribution='&copy; OpenStreetMap contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+        <MapContainer
+          center={center}
+          zoom={11}
+          scrollWheelZoom={false}
+          className="w-full h-[320px] md:h-[420px] z-0"
+        >
 
-        {/* DESTINATION */}
+          {/* MAP TILES */}
 
-        <Marker position={center}>
+          <TileLayer
+            attribution='&copy; OpenStreetMap contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
 
-          <Popup>
+          {/* MAIN DESTINATION */}
 
-            <div>
-
-              <h3 className="font-bold">
-
-                {destination}
-
-              </h3>
-
-              <p>
-
-                Main destination
-
-              </p>
-
-            </div>
-
-          </Popup>
-
-        </Marker>
-
-        {/* HOTELS */}
-
-        {hotelMarkers.map((hotel, index) => (
-
-          <Marker
-            key={index}
-            position={[
-  center[0] + 0.01 * index,
-  center[1] + 0.01 * index,
-]}
-          >
+          <Marker position={center}>
 
             <Popup>
 
-              <div className="space-y-2">
+              <div className="min-w-[160px]">
 
-                <h3 className="font-bold">
+                <h3 className="font-bold text-gray-900">
 
-                  {hotel.name}
+                  {destination || "Destination"}
 
                 </h3>
 
-                <p>
+                <p className="text-sm text-gray-500 mt-1">
 
-                  ⭐ {hotel.rating}
-
-                </p>
-
-                <p>
-
-                  {hotel.price_range}
+                  Main trip location
 
                 </p>
 
@@ -166,53 +134,95 @@ function TravelMap({
 
           </Marker>
 
-        ))}
+          {/* HOTELS */}
 
-        {/* RESTAURANTS */}
+          {hotelMarkers.map((hotel, index) => (
 
-        {restaurantMarkers.map((restaurant, index) => (
+            <Marker
+              key={`hotel-${index}`}
+              position={[
+                center[0] + 0.015 * (index + 1),
+                center[1] + 0.008 * (index + 1),
+              ]}
+            >
 
-          <Marker
-            key={index}
-            position={[
-  center[0] + 0.01 * index,
-  center[1] + 0.01 * index,
-]}
-          >
+              <Popup>
 
-            <Popup>
+                <div className="space-y-1 min-w-[180px]">
 
-              <div className="space-y-2">
+                  <h3 className="font-bold text-gray-900">
 
-                <h3 className="font-bold">
+                    {hotel.name}
 
-                  {restaurant.name}
+                  </h3>
 
-                </h3>
+                  <p className="text-sm text-gray-600">
 
-                <p>
+                    ⭐ {hotel.rating || "4.5"}
 
-                  {restaurant.cuisine}
+                  </p>
 
-                </p>
+                  <p className="text-sm text-gray-500">
 
-                <p>
+                    {hotel.price_range || "Moderate"}
 
-                  ⭐ {restaurant.rating}
+                  </p>
 
-                </p>
+                </div>
 
-              </div>
+              </Popup>
 
-            </Popup>
+            </Marker>
 
-          </Marker>
+          ))}
 
-        ))}
+          {/* RESTAURANTS */}
 
-      </MapContainer>
+          {restaurantMarkers.map((restaurant, index) => (
 
-    </div>
+            <Marker
+              key={`restaurant-${index}`}
+              position={[
+                center[0] - 0.012 * (index + 1),
+                center[1] - 0.009 * (index + 1),
+              ]}
+            >
+
+              <Popup>
+
+                <div className="space-y-1 min-w-[180px]">
+
+                  <h3 className="font-bold text-gray-900">
+
+                    {restaurant.name}
+
+                  </h3>
+
+                  <p className="text-sm text-gray-600">
+
+                    {restaurant.cuisine || "Multi Cuisine"}
+
+                  </p>
+
+                  <p className="text-sm text-gray-500">
+
+                    ⭐ {restaurant.rating || "4.4"}
+
+                  </p>
+
+                </div>
+
+              </Popup>
+
+            </Marker>
+
+          ))}
+
+        </MapContainer>
+
+      </div>
+
+    </section>
 
   );
 

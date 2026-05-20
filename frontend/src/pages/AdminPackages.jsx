@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+
 import { fetchWithAuth } from "../utils/api";
 
 import {
@@ -29,20 +30,58 @@ export default function AdminPackages() {
   const [editingPackage, setEditingPackage] =
     useState(null);
 
+  /* ===================================================== */
+  /* FORM DATA */
+  /* ===================================================== */
+
   const [formData, setFormData] =
     useState({
+
       title: "",
+
       destination: "",
+
       duration: "",
+
       price: "",
+
       description: "",
+
       image: "",
+
       services: "",
+
+      category: "",
+
+      difficulty: "",
+
+      group_size: "",
+
+      best_season: "",
+
+      altitude: "",
+
+      included: "",
+
+      excluded: "",
+
+      itinerary: "",
+
+      hotel_details: "",
+
+      transport_details: "",
+
+      gallery: "",
+
+      rating: "",
+
+      featured: false,
+
     });
 
-  // =====================================================
-  // FETCH PACKAGES
-  // =====================================================
+  /* ===================================================== */
+  /* FETCH PACKAGES */
+  /* ===================================================== */
 
   const fetchPackages = async () => {
 
@@ -50,19 +89,25 @@ export default function AdminPackages() {
 
       setLoading(true);
 
-      const res = await fetchWithAuth(
-        "/packages"
+      const res =
+        await fetchWithAuth(
+          "/packages"
+        );
+
+      const data =
+        await res.json();
+
+      setPackages(
+        data.packages || []
       );
-
-      const data = await res.json();
-
-      setPackages(data.packages || []);
 
     } catch (err) {
 
       console.error(err);
 
-      alert("Failed to load packages");
+      alert(
+        "Failed to load packages"
+      );
 
     } finally {
 
@@ -78,43 +123,92 @@ export default function AdminPackages() {
 
   }, []);
 
-  // =====================================================
-  // HANDLE INPUT CHANGE
-  // =====================================================
+  /* ===================================================== */
+  /* HANDLE CHANGE */
+  /* ===================================================== */
 
   const handleChange = (e) => {
 
+    const {
+      name,
+      value,
+      type,
+      checked,
+    } = e.target;
+
     setFormData({
+
       ...formData,
-      [e.target.name]:
-        e.target.value,
+
+      [name]:
+
+        type === "checkbox"
+
+          ? checked
+
+          : value,
+
     });
 
   };
 
-  // =====================================================
-  // RESET FORM
-  // =====================================================
+  /* ===================================================== */
+  /* RESET FORM */
+  /* ===================================================== */
 
   const resetForm = () => {
 
     setFormData({
+
       title: "",
+
       destination: "",
+
       duration: "",
+
       price: "",
+
       description: "",
+
       image: "",
+
       services: "",
+
+      category: "",
+
+      difficulty: "",
+
+      group_size: "",
+
+      best_season: "",
+
+      altitude: "",
+
+      included: "",
+
+      excluded: "",
+
+      itinerary: "",
+
+      hotel_details: "",
+
+      transport_details: "",
+
+      gallery: "",
+
+      rating: "",
+
+      featured: false,
+
     });
 
     setEditingPackage(null);
 
   };
 
-  // =====================================================
-  // ADD PACKAGE
-  // =====================================================
+  /* ===================================================== */
+  /* ADD PACKAGE */
+  /* ===================================================== */
 
   const addPackage = async () => {
 
@@ -141,48 +235,102 @@ export default function AdminPackages() {
 
       console.error(err);
 
-      alert("Failed to add package");
+      alert(
+        "Failed to add package"
+      );
 
     }
 
   };
 
-  // =====================================================
-  // EDIT PACKAGE
-  // =====================================================
+  /* ===================================================== */
+  /* EDIT PACKAGE */
+  /* ===================================================== */
 
   const editPackage = (pkg) => {
 
     setEditingPackage(pkg.id);
 
     setFormData({
-      title: pkg.title || "",
+
+      title:
+        pkg.title || "",
+
       destination:
         pkg.destination || "",
+
       duration:
         pkg.duration || "",
-      price: pkg.price || "",
+
+      price:
+        pkg.price || "",
+
       description:
         pkg.description || "",
-      image: pkg.image || "",
+
+      image:
+        pkg.image || "",
+
       services:
         pkg.services || "",
+
+      category:
+        pkg.category || "",
+
+      difficulty:
+        pkg.difficulty || "",
+
+      group_size:
+        pkg.group_size || "",
+
+      best_season:
+        pkg.best_season || "",
+
+      altitude:
+        pkg.altitude || "",
+
+      included:
+        pkg.included || "",
+
+      excluded:
+        pkg.excluded || "",
+
+      itinerary:
+        pkg.itinerary || "",
+
+      hotel_details:
+        pkg.hotel_details || "",
+
+      transport_details:
+        pkg.transport_details || "",
+
+      gallery:
+        pkg.gallery || "",
+
+      rating:
+        pkg.rating || "",
+
+      featured:
+        pkg.featured || false,
+
     });
 
     setShowModal(true);
 
   };
 
-  // =====================================================
-  // UPDATE PACKAGE
-  // =====================================================
+  /* ===================================================== */
+  /* UPDATE PACKAGE */
+  /* ===================================================== */
 
   const updatePackage = async () => {
 
     try {
 
       await fetchWithAuth(
+
         `/packages/${editingPackage}`,
+
         {
           method: "PUT",
 
@@ -190,6 +338,7 @@ export default function AdminPackages() {
             formData
           ),
         }
+
       );
 
       fetchPackages();
@@ -202,15 +351,17 @@ export default function AdminPackages() {
 
       console.error(err);
 
-      alert("Failed to update package");
+      alert(
+        "Failed to update package"
+      );
 
     }
 
   };
 
-  // =====================================================
-  // DELETE PACKAGE
-  // =====================================================
+  /* ===================================================== */
+  /* DELETE */
+  /* ===================================================== */
 
   const deletePackage = async (id) => {
 
@@ -219,7 +370,8 @@ export default function AdminPackages() {
         "Delete this package?"
       );
 
-    if (!confirmDelete) return;
+    if (!confirmDelete)
+      return;
 
     try {
 
@@ -244,26 +396,28 @@ export default function AdminPackages() {
 
   };
 
-  // =====================================================
-  // FILTER PACKAGES
-  // =====================================================
+  /* ===================================================== */
+  /* FILTER */
+  /* ===================================================== */
 
   const filteredPackages =
     packages.filter((pkg) =>
+
       `${pkg.title} ${pkg.destination}`
+
         .toLowerCase()
+
         .includes(
           search.toLowerCase()
         )
+
     );
 
   return (
 
     <div className="min-h-screen bg-gradient-to-br from-[#f4f7ff] to-[#eef5ff] p-8">
 
-      {/* ================================================= */}
-      {/* ================= HEADER ======================== */}
-      {/* ================================================= */}
+      {/* HEADER */}
 
       <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
 
@@ -277,15 +431,13 @@ export default function AdminPackages() {
 
           <p className="text-gray-500 mt-2">
 
-            Manage travel packages and agency offerings
+            Manage expedition and travel packages
 
           </p>
 
         </div>
 
         <div className="flex items-center gap-4">
-
-          {/* SEARCH */}
 
           <div className="relative">
 
@@ -300,12 +452,10 @@ export default function AdminPackages() {
                   e.target.value
                 )
               }
-              className="pl-11 pr-4 py-3 rounded-2xl border border-gray-200 bg-white outline-none w-[300px] focus:ring-2 focus:ring-blue-500"
+              className="pl-11 pr-4 py-3 rounded-2xl border border-gray-200 bg-white outline-none w-[300px]"
             />
 
           </div>
-
-          {/* ADD BUTTON */}
 
           <button
             onClick={() => {
@@ -315,7 +465,7 @@ export default function AdminPackages() {
               setShowModal(true);
 
             }}
-            className="bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-6 py-3 rounded-2xl flex items-center gap-3 shadow-lg hover:opacity-90 transition"
+            className="bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-6 py-3 rounded-2xl flex items-center gap-3 shadow-lg"
           >
 
             <FaPlus />
@@ -328,384 +478,281 @@ export default function AdminPackages() {
 
       </div>
 
-      {/* ================================================= */}
-      {/* ================= LOADING ======================= */}
-      {/* ================================================= */}
+      {/* GRID */}
 
-      {loading ? (
+      <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-6">
 
-        <div className="text-center py-20 text-gray-500 text-lg">
+        {filteredPackages.map((pkg) => (
 
-          Loading packages...
+          <div
+            key={pkg.id}
+            className="bg-white rounded-[30px] overflow-hidden shadow-lg border border-gray-100"
+          >
 
-        </div>
+            <img
+              src={
+                pkg.image ||
 
-      ) : (
+                "https://images.unsplash.com/photo-1507525428034-b723cf961d3e"
+              }
+              alt={pkg.title}
+              className="w-full h-56 object-cover"
+            />
 
-        <>
+            <div className="p-6">
 
-          {/* ================================================= */}
-          {/* ================= PACKAGE GRID ================= */}
-          {/* ================================================= */}
+              <div className="flex justify-between items-start gap-4 mb-4">
 
-          <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                <div>
 
-            {filteredPackages.map((pkg) => (
+                  <h2 className="text-2xl font-bold text-gray-900">
 
-              <div
-                key={pkg.id}
-                className="bg-white rounded-[30px] overflow-hidden shadow-lg border border-gray-100 hover:shadow-2xl transition"
-              >
+                    {pkg.title}
 
-                {/* IMAGE */}
+                  </h2>
 
-                <img
-                  src={
-                    pkg.image ||
-                    "https://images.unsplash.com/photo-1507525428034-b723cf961d3e"
-                  }
-                  alt={pkg.title}
-                  className="w-full h-56 object-cover"
-                />
+                  <p className="text-gray-500 mt-1">
 
-                {/* CONTENT */}
-
-                <div className="p-6">
-
-                  {/* TITLE */}
-
-                  <div className="flex justify-between items-start gap-4 mb-4">
-
-                    <div>
-
-                      <h2 className="text-2xl font-bold text-gray-900">
-
-                        {pkg.title}
-
-                      </h2>
-
-                      <p className="text-gray-500 mt-1">
-
-                        {pkg.destination}
-
-                      </p>
-
-                    </div>
-
-                    <div className="bg-blue-50 text-blue-600 px-4 py-2 rounded-2xl font-semibold">
-
-                      ₹ {pkg.price}
-
-                    </div>
-
-                  </div>
-
-                  {/* INFO */}
-
-                  <div className="space-y-3 mb-5">
-
-                    <div className="flex items-center gap-3 text-gray-700">
-
-                      <FaMapMarkedAlt className="text-blue-500" />
-
-                      <span>
-
-                        {pkg.destination}
-
-                      </span>
-
-                    </div>
-
-                    <div className="flex items-center gap-3 text-gray-700">
-
-                      <FaClock className="text-yellow-500" />
-
-                      <span>
-
-                        {pkg.duration}
-
-                      </span>
-
-                    </div>
-
-                    <div className="flex items-center gap-3 text-gray-700">
-
-                      <FaMoneyBillWave className="text-green-500" />
-
-                      <span>
-
-                        ₹ {pkg.price}
-
-                      </span>
-
-                    </div>
-
-                  </div>
-
-                  {/* DESCRIPTION */}
-
-                  <p className="text-gray-600 leading-relaxed mb-5">
-
-                    {pkg.description}
+                    {pkg.destination}
 
                   </p>
 
-                  {/* SERVICES */}
+                </div>
 
-                  <div className="mb-6">
+                <div className="bg-blue-50 text-blue-600 px-4 py-2 rounded-2xl font-semibold">
 
-                    <h3 className="font-semibold text-gray-900 mb-3">
-
-                      Included Services
-
-                    </h3>
-
-                    <div className="flex flex-wrap gap-2">
-
-                      {(pkg.services || "")
-                        .split(",")
-                        .map(
-                          (
-                            service,
-                            index
-                          ) => (
-
-                            <span
-                              key={index}
-                              className="bg-[#f4f7ff] text-blue-700 px-3 py-2 rounded-xl text-sm"
-                            >
-
-                              {service.trim()}
-
-                            </span>
-
-                          )
-                        )}
-
-                    </div>
-
-                  </div>
-
-                  {/* ACTION BUTTONS */}
-
-                  <div className="flex gap-3">
-
-                    <button
-                      onClick={() =>
-                        editPackage(pkg)
-                      }
-                      className="flex-1 bg-gradient-to-r from-yellow-400 to-orange-400 text-white py-3 rounded-2xl flex items-center justify-center gap-2 shadow-md hover:opacity-90 transition"
-                    >
-
-                      <FaEdit />
-
-                      Edit
-
-                    </button>
-
-                    <button
-                      onClick={() =>
-                        deletePackage(
-                          pkg.id
-                        )
-                      }
-                      className="flex-1 bg-gradient-to-r from-red-500 to-rose-500 text-white py-3 rounded-2xl flex items-center justify-center gap-2 shadow-md hover:opacity-90 transition"
-                    >
-
-                      <FaTrash />
-
-                      Delete
-
-                    </button>
-
-                  </div>
+                  ₹ {pkg.price}
 
                 </div>
 
               </div>
 
-            ))}
+              <div className="space-y-3 mb-5">
 
-          </div>
+                <div className="flex items-center gap-3 text-gray-700">
 
-          {/* EMPTY STATE */}
+                  <FaMapMarkedAlt className="text-blue-500" />
 
-          {filteredPackages.length === 0 && (
+                  <span>
 
-            <div className="text-center py-24">
+                    {pkg.destination}
 
-              <div className="w-24 h-24 rounded-full bg-blue-50 flex items-center justify-center mx-auto mb-6">
+                  </span>
 
-                <FaBoxOpen className="text-blue-600 text-4xl" />
+                </div>
+
+                <div className="flex items-center gap-3 text-gray-700">
+
+                  <FaClock className="text-yellow-500" />
+
+                  <span>
+
+                    {pkg.duration}
+
+                  </span>
+
+                </div>
+
+                <div className="flex items-center gap-3 text-gray-700">
+
+                  <FaMoneyBillWave className="text-green-500" />
+
+                  <span>
+
+                    ₹ {pkg.price}
+
+                  </span>
+
+                </div>
 
               </div>
 
-              <h2 className="text-2xl font-bold text-gray-900">
+              <p className="text-gray-600 leading-relaxed mb-5">
 
-                No Packages Found
-
-              </h2>
-
-              <p className="text-gray-500 mt-3">
-
-                Add travel packages to start managing tours
+                {pkg.description}
 
               </p>
 
-            </div>
+              <div className="flex gap-3">
 
-          )}
+                <button
+                  onClick={() =>
+                    editPackage(pkg)
+                  }
+                  className="flex-1 bg-gradient-to-r from-yellow-400 to-orange-400 text-white py-3 rounded-2xl"
+                >
 
-        </>
+                  Edit
 
-      )}
+                </button>
 
-      {/* ================================================= */}
-      {/* ================= MODAL ========================= */}
-      {/* ================================================= */}
+                <button
+                  onClick={() =>
+                    deletePackage(
+                      pkg.id
+                    )
+                  }
+                  className="flex-1 bg-gradient-to-r from-red-500 to-rose-500 text-white py-3 rounded-2xl"
+                >
 
-      {showModal && (
+                  Delete
 
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50 p-6">
-
-          <div className="bg-white w-full max-w-3xl rounded-[32px] p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
-
-            {/* HEADER */}
-
-            <div className="flex justify-between items-center mb-8">
-
-              <div>
-
-                <h2 className="text-3xl font-bold text-gray-900">
-
-                  {editingPackage
-                    ? "Edit Package"
-                    : "Add New Package"}
-
-                </h2>
-
-                <p className="text-gray-500 mt-2">
-
-                  Create and manage travel offerings
-
-                </p>
+                </button>
 
               </div>
 
-              <button
-                onClick={() => {
-
-                  setShowModal(false);
-
-                  resetForm();
-
-                }}
-                className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-2xl"
-              >
-
-                Close
-
-              </button>
-
             </div>
 
-            {/* FORM */}
+          </div>
 
-            <div className="grid md:grid-cols-2 gap-6">
+        ))}
+
+      </div>
+
+      {/* MODAL */}
+
+     {showModal && (
+
+  <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex justify-center items-center z-50 p-6">
+
+    <div className="bg-white w-full max-w-6xl rounded-[32px] shadow-2xl max-h-[92vh] overflow-hidden flex flex-col">
+
+      {/* ===================================================== */}
+      {/* HEADER */}
+      {/* ===================================================== */}
+
+      <div className="flex justify-between items-center p-8 border-b border-slate-200 bg-white sticky top-0 z-10">
+
+        <div>
+
+          <h2 className="text-3xl font-black text-slate-900">
+
+            {editingPackage
+
+              ? "Edit Expedition Package"
+
+              : "Create New Expedition Package"}
+
+          </h2>
+
+          <p className="text-slate-500 mt-2">
+
+            Manage premium trekking and adventure experiences
+
+          </p>
+
+        </div>
+
+        <button
+          onClick={() => {
+
+            setShowModal(false);
+
+            resetForm();
+
+          }}
+          className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-2xl font-semibold transition"
+        >
+
+          Close
+
+        </button>
+
+      </div>
+
+      {/* ===================================================== */}
+      {/* SCROLLABLE BODY */}
+      {/* ===================================================== */}
+
+      <div className="overflow-y-auto px-8 py-8 space-y-8">
+
+        {/* ===================================================== */}
+        {/* BASIC DETAILS */}
+        {/* ===================================================== */}
+
+        <div>
+
+          <h3 className="text-2xl font-bold text-slate-900 mb-6">
+
+            Basic Information
+
+          </h3>
+
+          <div className="grid md:grid-cols-2 gap-6">
+
+            <div>
+
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
+
+                Package Title
+
+              </label>
 
               <input
                 type="text"
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
-                placeholder="Package Title"
-                className="border border-gray-200 rounded-2xl px-4 py-3"
+                placeholder="Kedarkantha Winter Trek"
+                className="w-full border border-slate-200 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-emerald-500"
               />
+
+            </div>
+
+            <div>
+
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
+
+                Destination
+
+              </label>
 
               <input
                 type="text"
                 name="destination"
                 value={formData.destination}
                 onChange={handleChange}
-                placeholder="Destination"
-                className="border border-gray-200 rounded-2xl px-4 py-3"
+                placeholder="Uttarakhand"
+                className="w-full border border-slate-200 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-emerald-500"
               />
+
+            </div>
+
+            <div>
+
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
+
+                Duration
+
+              </label>
 
               <input
                 type="text"
                 name="duration"
                 value={formData.duration}
                 onChange={handleChange}
-                placeholder="Duration"
-                className="border border-gray-200 rounded-2xl px-4 py-3"
+                placeholder="6 Days / 5 Nights"
+                className="w-full border border-slate-200 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-emerald-500"
               />
+
+            </div>
+
+            <div>
+
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
+
+                Price
+
+              </label>
 
               <input
                 type="number"
                 name="price"
                 value={formData.price}
                 onChange={handleChange}
-                placeholder="Price"
-                className="border border-gray-200 rounded-2xl px-4 py-3"
+                placeholder="12999"
+                className="w-full border border-slate-200 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-emerald-500"
               />
-
-            </div>
-
-            <div className="mt-6">
-
-              <input
-                type="text"
-                name="image"
-                value={formData.image}
-                onChange={handleChange}
-                placeholder="Image URL"
-                className="w-full border border-gray-200 rounded-2xl px-4 py-3"
-              />
-
-            </div>
-
-            <div className="mt-6">
-
-              <input
-                type="text"
-                name="services"
-                value={formData.services}
-                onChange={handleChange}
-                placeholder="Hotel, Flights, Breakfast"
-                className="w-full border border-gray-200 rounded-2xl px-4 py-3"
-              />
-
-            </div>
-
-            <div className="mt-6">
-
-              <textarea
-                rows="5"
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                placeholder="Package Description"
-                className="w-full border border-gray-200 rounded-2xl px-4 py-3"
-              />
-
-            </div>
-
-            <div className="flex justify-end mt-8">
-
-              <button
-                onClick={
-                  editingPackage
-                    ? updatePackage
-                    : addPackage
-                }
-                className="bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-8 py-4 rounded-2xl font-semibold shadow-lg hover:opacity-90 transition"
-              >
-
-                {editingPackage
-                  ? "Update Package"
-                  : "Add Package"}
-
-              </button>
 
             </div>
 
@@ -713,9 +760,400 @@ export default function AdminPackages() {
 
         </div>
 
-      )}
+        {/* ===================================================== */}
+        {/* TREK DETAILS */}
+        {/* ===================================================== */}
+
+        <div>
+
+          <h3 className="text-2xl font-bold text-slate-900 mb-6">
+
+            Trek Details
+
+          </h3>
+
+          <div className="grid md:grid-cols-2 gap-6">
+
+            <div>
+
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
+
+                Services
+
+              </label>
+
+              <input
+                type="text"
+                name="services"
+                value={formData.services}
+                onChange={handleChange}
+                placeholder="Meals, Camping, Guide"
+                className="w-full border border-slate-200 rounded-2xl px-5 py-4"
+              />
+
+            </div>
+
+            <div>
+
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
+
+                Category
+
+              </label>
+
+              <input
+                type="text"
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                placeholder="Winter Trek"
+                className="w-full border border-slate-200 rounded-2xl px-5 py-4"
+              />
+
+            </div>
+
+            <div>
+
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
+
+                Difficulty
+
+              </label>
+
+              <input
+                type="text"
+                name="difficulty"
+                value={formData.difficulty}
+                onChange={handleChange}
+                placeholder="Easy to Moderate"
+                className="w-full border border-slate-200 rounded-2xl px-5 py-4"
+              />
+
+            </div>
+
+            <div>
+
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
+
+                Group Size
+
+              </label>
+
+              <input
+                type="text"
+                name="group_size"
+                value={formData.group_size}
+                onChange={handleChange}
+                placeholder="15 People"
+                className="w-full border border-slate-200 rounded-2xl px-5 py-4"
+              />
+
+            </div>
+
+            <div>
+
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
+
+                Best Season
+
+              </label>
+
+              <input
+                type="text"
+                name="best_season"
+                value={formData.best_season}
+                onChange={handleChange}
+                placeholder="December to February"
+                className="w-full border border-slate-200 rounded-2xl px-5 py-4"
+              />
+
+            </div>
+
+            <div>
+
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
+
+                Altitude
+
+              </label>
+
+              <input
+                type="text"
+                name="altitude"
+                value={formData.altitude}
+                onChange={handleChange}
+                placeholder="12,500 ft"
+                className="w-full border border-slate-200 rounded-2xl px-5 py-4"
+              />
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* ===================================================== */}
+        {/* IMAGE */}
+        {/* ===================================================== */}
+
+        <div>
+
+          <label className="block text-sm font-semibold text-slate-700 mb-2">
+
+            Cover Image URL
+
+          </label>
+
+          <input
+            type="text"
+            name="image"
+            value={formData.image}
+            onChange={handleChange}
+            placeholder="https://..."
+            className="w-full border border-slate-200 rounded-2xl px-5 py-4"
+          />
+
+        </div>
+
+        {/* ===================================================== */}
+        {/* DESCRIPTION */}
+        {/* ===================================================== */}
+
+        <div>
+
+          <label className="block text-sm font-semibold text-slate-700 mb-2">
+
+            Description
+
+          </label>
+
+          <textarea
+            rows="5"
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            placeholder="Describe the trekking experience..."
+            className="w-full border border-slate-200 rounded-2xl px-5 py-4"
+          />
+
+        </div>
+
+        {/* ===================================================== */}
+        {/* INCLUDED / EXCLUDED */}
+        {/* ===================================================== */}
+
+        <div className="grid md:grid-cols-2 gap-6">
+
+          <div>
+
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
+
+              Included
+
+            </label>
+
+            <textarea
+              rows="6"
+              name="included"
+              value={formData.included}
+              onChange={handleChange}
+              placeholder="Meals, Stay, Guide..."
+              className="w-full border border-slate-200 rounded-2xl px-5 py-4"
+            />
+
+          </div>
+
+          <div>
+
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
+
+              Excluded
+
+            </label>
+
+            <textarea
+              rows="6"
+              name="excluded"
+              value={formData.excluded}
+              onChange={handleChange}
+              placeholder="Insurance, Personal expenses..."
+              className="w-full border border-slate-200 rounded-2xl px-5 py-4"
+            />
+
+          </div>
+
+        </div>
+
+        {/* ===================================================== */}
+        {/* ITINERARY */}
+        {/* ===================================================== */}
+
+        <div>
+
+          <label className="block text-sm font-semibold text-slate-700 mb-2">
+
+            Day-wise Itinerary
+
+          </label>
+
+          <textarea
+            rows="8"
+            name="itinerary"
+            value={formData.itinerary}
+            onChange={handleChange}
+            placeholder="Day 1 - Arrival..."
+            className="w-full border border-slate-200 rounded-2xl px-5 py-4"
+          />
+
+        </div>
+
+        {/* ===================================================== */}
+        {/* HOTEL & TRANSPORT */}
+        {/* ===================================================== */}
+
+        <div className="grid md:grid-cols-2 gap-6">
+
+          <div>
+
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
+
+              Hotel Details
+
+            </label>
+
+            <textarea
+              rows="6"
+              name="hotel_details"
+              value={formData.hotel_details}
+              onChange={handleChange}
+              placeholder="Swiss camps, hotel stay..."
+              className="w-full border border-slate-200 rounded-2xl px-5 py-4"
+            />
+
+          </div>
+
+          <div>
+
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
+
+              Transport Details
+
+            </label>
+
+            <textarea
+              rows="6"
+              name="transport_details"
+              value={formData.transport_details}
+              onChange={handleChange}
+              placeholder="Tempo Traveller..."
+              className="w-full border border-slate-200 rounded-2xl px-5 py-4"
+            />
+
+          </div>
+
+        </div>
+
+        {/* ===================================================== */}
+        {/* GALLERY */}
+        {/* ===================================================== */}
+
+        <div>
+
+          <label className="block text-sm font-semibold text-slate-700 mb-2">
+
+            Gallery URLs
+
+          </label>
+
+          <textarea
+            rows="5"
+            name="gallery"
+            value={formData.gallery}
+            onChange={handleChange}
+            placeholder="https://image1.jpg, https://image2.jpg"
+            className="w-full border border-slate-200 rounded-2xl px-5 py-4"
+          />
+
+        </div>
+
+        {/* ===================================================== */}
+        {/* RATING + FEATURED */}
+        {/* ===================================================== */}
+
+        <div className="grid md:grid-cols-2 gap-6">
+
+          <div>
+
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
+
+              Rating
+
+            </label>
+
+            <input
+              type="number"
+              step="0.1"
+              name="rating"
+              value={formData.rating}
+              onChange={handleChange}
+              placeholder="4.8"
+              className="w-full border border-slate-200 rounded-2xl px-5 py-4"
+            />
+
+          </div>
+
+          <div className="flex items-center gap-4 pt-10">
+
+            <input
+              type="checkbox"
+              name="featured"
+              checked={formData.featured}
+              onChange={handleChange}
+              className="w-5 h-5"
+            />
+
+            <label className="font-semibold text-slate-700">
+
+              Featured Package
+
+            </label>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* ===================================================== */}
+      {/* FOOTER */}
+      {/* ===================================================== */}
+
+      <div className="border-t border-slate-200 p-8 flex justify-end bg-white">
+
+        <button
+          onClick={
+            editingPackage
+              ? updatePackage
+              : addPackage
+          }
+          className="bg-gradient-to-r from-emerald-600 to-teal-500 text-white px-10 py-4 rounded-2xl font-bold shadow-lg hover:shadow-2xl transition"
+        >
+
+          {editingPackage
+
+            ? "Update Package"
+
+            : "Create Package"}
+
+        </button>
+
+      </div>
 
     </div>
+
+  </div>
+
+)}   </div>
 
   );
 

@@ -1,9 +1,7 @@
 import { env } from "../config/env";
+import { buildAuthHeaders, getAuthToken } from "../utils/authToken";
 
 const API_BASE = env.API_BASE_URL;
-
-const getToken = () =>
-  localStorage.getItem("token");
 
 const redirectUnauthorized = () => {
   localStorage.removeItem("token");
@@ -12,45 +10,52 @@ const redirectUnauthorized = () => {
     window.location.pathname.startsWith("/admin") ||
     window.location.pathname.startsWith("/agent");
 
-  window.location.href = isAdminArea
-    ? "/admin/login"
-    : "/login";
+  window.location.href = isAdminArea ? "/admin/login" : "/login";
 };
 
-export async function apiRequest(
-  path,
-  options = {}
-) {
-  const res = await fetch(
-    `${API_BASE}${path}`,
-    {
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${getToken()}`,
-        ...(options.headers || {}),
-      },
-    }
-  );
+/**
+ * @param {string} path
+ * @param {RequestInit & { auth?: boolean; skipAuthRedirect?: boolean }} options
+ *   auth: default true — requires token before request; omits Authorization when false
+ */
+export async function apiRequest(path, options = {}) {
+  const {
+    auth = true,
+    skipAuthRedirect = false,
+    headers: optionHeaders,
+    ...fetchOptions
+  } = options;
 
-  if (res.status === 401) {
+  const token = getAuthToken();
+
+  if (auth && !token) {
+    throw new Error("Not authenticated");
+  }
+
+  const headers = buildAuthHeaders(optionHeaders || {});
+
+  if (!token && headers.Authorization) {
+    delete headers.Authorization;
+  }
+
+  const res = await fetch(`${API_BASE}${path}`, {
+    ...fetchOptions,
+    headers,
+  });
+
+  if (res.status === 401 && !skipAuthRedirect) {
     redirectUnauthorized();
     throw new Error("Unauthorized");
   }
 
-  const contentType =
-    res.headers.get("content-type") || "";
+  const contentType = res.headers.get("content-type") || "";
 
   const data = contentType.includes("application/json")
     ? await res.json()
     : null;
 
   if (!res.ok) {
-    throw new Error(
-      data?.detail ||
-      data?.error ||
-      "Request failed"
-    );
+    throw new Error(data?.detail || data?.error || "Request failed");
   }
 
   return data;

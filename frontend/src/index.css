@@ -1,57 +1,172 @@
+@import "./styles/theme.css";
 
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* ================= ROOT VARIABLES ================= */
-:root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #ffffff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
+/* =======================================================
+   GLOBAL RESET
+======================================================= */
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font-family: var(--sans);
-  color: var(--text);
-  background: var(--bg);
-}
-
-/* ================= DARK MODE ================= */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-  }
-}
-
-/* ================= GLOBAL RESET ================= */
-body {
+* {
   margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-/* ================= ROOT CONTAINER ================= */
+/* =======================================================
+   BODY
+======================================================= */
+
+body {
+  font-family: "Roboto", sans-serif;
+
+  background: #f8faf8;
+
+  color: #0f172a;
+
+  overflow-x: hidden;
+}
+
+/* =======================================================
+   ROOT
+======================================================= */
+
 #root {
   width: 100%;
   min-height: 100vh;
 }
 
-/* ================= TYPOGRAPHY ================= */
-h1, h2 {
-  font-family: var(--heading);
+/* =======================================================
+   LINKS
+======================================================= */
+
+a {
+  text-decoration: none;
+  color: inherit;
 }
 
-/* ================= CODE STYLE ================= */
-code {
-  font-family: var(--mono);
-  font-size: 14px;
-  padding: 4px 8px;
-  border-radius: 4px;
-  background: var(--code-bg);
+/* =======================================================
+   BUTTONS
+======================================================= */
+
+button {
+  border: none;
+  outline: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* =======================================================
+   IMAGES
+======================================================= */
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* =======================================================
+   SCROLLBAR
+======================================================= */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #edf2f7;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1f4d3e;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #163328;
+}
+
+/* =======================================================
+   LANDING / HERO UTILITIES
+======================================================= */
+
+@layer components {
+  .hero-section {
+    @apply relative min-h-screen overflow-hidden;
+  }
+
+  .hero-overlay {
+    @apply absolute inset-0 z-[1];
+    background: linear-gradient(
+      to right,
+      rgba(15, 23, 42, 0.82),
+      rgba(15, 23, 42, 0.35)
+    );
+  }
+
+  .hero-dark-layer {
+    @apply absolute inset-0 z-[1];
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.55),
+      transparent 55%
+    );
+  }
+
+  .glass-navbar {
+    @apply border border-white/10 shadow-2xl;
+    background: rgba(0, 0, 0, 0.28);
+    backdrop-filter: blur(16px);
+  }
+
+  .glass-card {
+    @apply border border-white/10 shadow-card;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(18px);
+  }
+
+  .hero-button {
+    @apply transition-all duration-300;
+  }
+
+  .hero-button:hover {
+    @apply -translate-y-0.5;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+  }
+
+  .hero-glow-left {
+    @apply absolute -left-28 -top-28 z-0 h-[500px] w-[500px] blur-[90px];
+    background: radial-gradient(
+      circle,
+      rgba(31, 77, 62, 0.28),
+      transparent 70%
+    );
+  }
+
+  .hero-glow-right {
+    @apply absolute -bottom-28 -right-28 z-0 h-[500px] w-[500px] blur-[90px];
+    background: radial-gradient(
+      circle,
+      rgba(230, 126, 34, 0.2),
+      transparent 70%
+    );
+  }
+}
+
+@media (max-width: 1024px) {
+  .hero-glow-left,
+  .hero-glow-right {
+    display: none;
+  }
+}
+
+/* Fixed landing navbar offset (NavbarLanding is fixed) */
+.landing-main-offset {
+  padding-top: 6.5rem;
+}
+
+/* Dashboard workspace — sticky app navbar */
+.app-main-offset {
+  min-height: calc(100vh - 76px);
 }

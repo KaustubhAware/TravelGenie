@@ -8,202 +8,91 @@ import {
   FaMapMarkedAlt,
   FaUsers,
   FaUserTie,
+  FaMountain,
 } from "react-icons/fa";
+
+const links = [
+  { to: "/admin", label: "Command Center", icon: FaChartBar },
+  { to: "/admin/clients", label: "Customers", icon: FaUsers },
+  { to: "/admin/bookings", label: "Bookings", icon: FaSuitcaseRolling },
+  { to: "/admin/packages", label: "Packages", icon: FaMapMarkedAlt },
+  { to: "/agent", label: "Guides", icon: FaUserTie },
+  { to: "/admin/analytics", label: "Analytics", icon: FaMoneyBillWave },
+];
 
 export default function Sidebar({
   sidebarOpen,
   setSidebarOpen,
   logout,
 }) {
-
   const location = useLocation();
 
   const menuClass = (path) =>
-    `w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition font-medium ${
+    `w-full flex items-center gap-4 px-4 py-3 rounded-2xl transition font-semibold ${
       location.pathname === path
-        ? "bg-blue-50 text-blue-700 shadow-sm"
-        : "text-gray-600 hover:bg-gray-50 hover:text-blue-600"
+        ? "bg-white text-primary shadow-soft"
+        : "text-white/68 hover:bg-white/10 hover:text-white"
     }`;
 
   return (
-
-    <div
+    <aside
       className={`${
-        sidebarOpen ? "w-72" : "w-24"
-      } bg-white border-r border-gray-100 shadow-xl min-h-screen sticky top-0 transition-all duration-300 flex flex-col z-30`}
+        sidebarOpen ? "lg:w-72" : "lg:w-24"
+      } hidden min-h-screen flex-col border-r border-white/10 bg-primary-dark/96 text-white shadow-card backdrop-blur-xl transition-all duration-300 lg:sticky lg:top-0 lg:flex`}
     >
-
-      {/* LOGO */}
-
-      <div className="p-6 border-b border-gray-100">
-
+      <div className="border-b border-white/10 p-5">
         <button
-          onClick={() =>
-            setSidebarOpen(!sidebarOpen)
-          }
-          className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 text-white py-4 rounded-2xl font-bold text-lg shadow-lg transition"
+          type="button"
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="flex w-full items-center gap-3 rounded-3xl border border-white/10 bg-white/8 p-4 text-left transition hover:bg-white/12"
         >
-
-          {sidebarOpen
-            ? "Travel Agency CRM"
-            : "TA"}
-
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent text-white">
+            <FaMountain />
+          </span>
+          {sidebarOpen && (
+            <span>
+              <span className="font-heading block text-xl font-bold">TravelGenie</span>
+              <span className="text-xs uppercase tracking-[0.18em] text-white/50">
+                Ops command
+              </span>
+            </span>
+          )}
         </button>
-
       </div>
 
-      {/* MENU */}
-
-      <div className="flex-1 px-4 py-6 overflow-y-auto">
-
+      <div className="flex-1 overflow-y-auto px-4 py-6">
         <div className="space-y-2">
-
-          {/* DASHBOARD */}
-
-          <Link
-            to="/admin"
-            className={menuClass(
-              "/admin"
-            )}
-          >
-
-            <FaChartBar className="text-lg min-w-[20px]" />
-
-            {sidebarOpen && (
-              <span>Dashboard</span>
-            )}
-
-          </Link>
-
-          {/* CLIENTS */}
-
-          <Link
-            to="/admin/clients"
-            className={menuClass(
-              "/admin/clients"
-            )}
-          >
-
-            <FaUsers className="text-lg min-w-[20px]" />
-
-            {sidebarOpen && (
-              <span>Clients</span>
-            )}
-
-          </Link>
-
-          {/* BOOKINGS */}
-
-          <Link
-            to="/admin/bookings"
-            className={menuClass(
-              "/admin/bookings"
-            )}
-          >
-
-            <FaSuitcaseRolling className="text-lg min-w-[20px]" />
-
-            {sidebarOpen && (
-              <span>Bookings</span>
-            )}
-
-          </Link>
-
-          {/* PACKAGES */}
-
-          <Link
-            to="/admin/packages"
-            className={menuClass(
-              "/admin/packages"
-            )}
-          >
-
-            <FaMapMarkedAlt className="text-lg min-w-[20px]" />
-
-            {sidebarOpen && (
-              <span>Packages</span>
-            )}
-
-          </Link>
-
-          <Link
-            to="/agent"
-            className={menuClass(
-              "/agent"
-            )}
-          >
-
-            <FaUserTie className="text-lg min-w-[20px]" />
-
-            {sidebarOpen && (
-              <span>Agent Panel</span>
-            )}
-
-          </Link>
-
-          {/* ANALYTICS */}
-
-          <Link
-            to="/admin/analytics"
-            className={menuClass(
-              "/admin/analytics"
-            )}
-          >
-
-            <FaMoneyBillWave className="text-lg min-w-[20px]" />
-
-            {sidebarOpen && (
-              <span>Analytics</span>
-            )}
-
-          </Link>
-
+          {links.map((item) => (
+            <Link key={item.to} to={item.to} className={menuClass(item.to)}>
+              <item.icon className="min-w-[20px] text-lg" />
+              {sidebarOpen && <span>{item.label}</span>}
+            </Link>
+          ))}
         </div>
-
       </div>
-
-      {/* USER CARD */}
 
       {sidebarOpen && (
-
-        <div className="mx-4 mb-4 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-3xl p-5 text-white shadow-lg">
-
-          <p className="text-sm opacity-90">
-            Admin Panel
-          </p>
-
-          <h2 className="text-xl font-bold mt-1">
-            TravelGenie
+        <div className="mx-4 mb-4 rounded-3xl border border-white/10 bg-white/8 p-5">
+          <p className="text-sm text-white/62">Active workflow</p>
+          <h2 className="font-heading mt-1 text-xl font-bold">
+            Expedition Operations
           </h2>
-
-          <p className="text-sm mt-2 opacity-80">
-            AI Powered Travel Agency SaaS
+          <p className="mt-2 text-sm text-white/60">
+            Packages, departures, guides, bookings, and revenue.
           </p>
-
         </div>
-
       )}
 
-      {/* LOGOUT */}
-
-      <div className="p-4 border-t border-gray-100">
-
+      <div className="border-t border-white/10 p-4">
         <button
+          type="button"
           onClick={logout}
-          className="w-full bg-gradient-to-r from-red-500 to-rose-500 hover:opacity-90 text-white py-3 rounded-2xl flex items-center justify-center gap-3 transition shadow-lg"
+          className="flex w-full items-center justify-center gap-3 rounded-2xl bg-accent py-3 font-semibold text-white shadow-lg transition hover:bg-accent-dark"
         >
-
           <FaSignOutAlt />
-
-          {sidebarOpen && (
-            <span>Logout</span>
-          )}
-
+          {sidebarOpen && <span>Logout</span>}
         </button>
-
       </div>
-
-    </div>
-
+    </aside>
   );
 }
