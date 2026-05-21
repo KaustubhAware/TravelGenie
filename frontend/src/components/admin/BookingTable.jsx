@@ -10,6 +10,7 @@ import {
   FaTimes,
   FaCreditCard,
   FaClipboardList,
+  FaFlagCheckered,
 } from "react-icons/fa";
 
 const statusStyles = {
@@ -132,51 +133,39 @@ function BookingTable({
         >
 
           <option value="all">
-
             All Status
-
           </option>
 
           <option value="paid">
-
             Paid
-
           </option>
 
           <option value="approved">
-
             Approved
-
           </option>
 
           <option value="payment_pending">
-
             Payment Pending
-
           </option>
 
           <option value="under_review">
-
             Under Review
-
           </option>
 
           <option value="pending">
-
             Pending
-
           </option>
 
           <option value="rejected">
-
             Rejected
-
           </option>
 
           <option value="cancelled">
-
             Cancelled
+          </option>
 
+          <option value="completed">
+            Completed
           </option>
 
         </select>
@@ -200,27 +189,19 @@ function BookingTable({
             <tr className="text-left">
 
               <th className="py-4 text-gray-500 font-semibold">
-
                 Destination
-
               </th>
 
               <th className="py-4 text-gray-500 font-semibold">
-
                 Customer
-
               </th>
 
               <th className="py-4 text-gray-500 font-semibold">
-
                 Status
-
               </th>
 
               <th className="py-4 text-gray-500 font-semibold">
-
                 Actions
-
               </th>
 
             </tr>
@@ -232,8 +213,6 @@ function BookingTable({
           ===================================================== */}
 
           <tbody>
-
-            {/* EMPTY STATE */}
 
             {paginatedBookings.length === 0 && (
 
@@ -251,8 +230,6 @@ function BookingTable({
               </tr>
 
             )}
-
-            {/* BOOKINGS */}
 
             {paginatedBookings?.map((b, index) => (
 
@@ -274,17 +251,21 @@ function BookingTable({
 
                     </div>
 
-                    <span className="font-semibold text-gray-800">
+                    <div>
 
-                      {b.destination || "N/A"}
+                      <div className="font-semibold text-gray-800">
 
-                    </span>
+                        {b.package_title || b.destination || "N/A"}
 
-                    <span className="text-xs text-gray-400">
+                      </div>
 
-                      {b.booking_id}
+                      <div className="text-xs text-gray-400 mt-1">
 
-                    </span>
+                        {b.booking_id}
+
+                      </div>
+
+                    </div>
 
                   </div>
 
@@ -318,7 +299,9 @@ function BookingTable({
 
                 <td className="py-5 px-4 rounded-r-2xl">
 
-                  <div className="flex gap-3">
+                  <div className="flex flex-wrap gap-2">
+
+                    {/* REVIEW */}
 
                     <button
                       onClick={() =>
@@ -334,22 +317,45 @@ function BookingTable({
 
                     </button>
 
+                    {/* APPROVE */}
+
                     <button
                       onClick={() =>
                         updateStatus(
                           b.booking_id,
-                          "rejected"
+                          "approved"
                         )
                       }
-                      disabled={["rejected", "paid", "cancelled"].includes(b.status)}
-                      className="bg-red-500 hover:bg-red-600 disabled:opacity-40 shadow-md text-white px-4 py-2 rounded-xl transition flex items-center gap-2"
+                      disabled={["approved", "paid", "completed"].includes(b.status)}
+                      className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 shadow-md text-white px-4 py-2 rounded-xl transition flex items-center gap-2"
                     >
 
-                      <FaTimes />
+                      <FaCheck />
 
-                      Reject
+                      Approve
 
                     </button>
+
+                    {/* REQUEST PAYMENT */}
+
+                    <button
+                      onClick={() =>
+                        updateStatus(
+                          b.booking_id,
+                          "payment_pending"
+                        )
+                      }
+                      disabled={!["approved"].includes(b.status)}
+                      className="bg-sky-600 hover:bg-sky-700 disabled:opacity-40 shadow-md text-white px-4 py-2 rounded-xl transition flex items-center gap-2"
+                    >
+
+                      <FaCreditCard />
+
+                      Request Payment
+
+                    </button>
+
+                    {/* MARK PAID */}
 
                     <button
                       onClick={() =>
@@ -358,7 +364,7 @@ function BookingTable({
                           "paid"
                         )
                       }
-                      disabled={!["approved", "payment_pending"].includes(b.status)}
+                      disabled={!["payment_pending", "approved"].includes(b.status)}
                       className="bg-green-600 hover:bg-green-700 disabled:opacity-40 shadow-md text-white px-4 py-2 rounded-xl transition flex items-center gap-2"
                     >
 
@@ -368,13 +374,53 @@ function BookingTable({
 
                     </button>
 
+                    {/* COMPLETE */}
+
+                    <button
+                      onClick={() =>
+                        updateStatus(
+                          b.booking_id,
+                          "completed"
+                        )
+                      }
+                      disabled={!["paid"].includes(b.status)}
+                      className="bg-purple-600 hover:bg-purple-700 disabled:opacity-40 shadow-md text-white px-4 py-2 rounded-xl transition flex items-center gap-2"
+                    >
+
+                      <FaFlagCheckered />
+
+                      Complete
+
+                    </button>
+
+                    {/* REJECT */}
+
+                    <button
+                      onClick={() =>
+                        updateStatus(
+                          b.booking_id,
+                          "rejected"
+                        )
+                      }
+                      disabled={["rejected", "paid", "completed"].includes(b.status)}
+                      className="bg-red-500 hover:bg-red-600 disabled:opacity-40 shadow-md text-white px-4 py-2 rounded-xl transition flex items-center gap-2"
+                    >
+
+                      <FaTimes />
+
+                      Reject
+
+                    </button>
+
+                    {/* CANCEL */}
+
                     <button
                       onClick={() =>
                         cancelBooking(
                           b.booking_id
                         )
                       }
-                      disabled={["cancelled", "paid"].includes(b.status)}
+                      disabled={["cancelled", "paid", "completed"].includes(b.status)}
                       className="bg-gray-700 hover:bg-gray-800 disabled:opacity-40 shadow-md text-white px-4 py-2 rounded-xl transition"
                     >
 
@@ -387,6 +433,8 @@ function BookingTable({
                 </td>
 
               </tr>
+
+              {/* REVIEW PANEL */}
 
               {reviewOpen === b.booking_id && (
 

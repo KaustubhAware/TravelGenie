@@ -1,172 +1,101 @@
 # =====================================================
 # app/routes/packages.py
+# MAHARASHTRA TRAVEL PACKAGES API
+# FULL UPDATED CLEAN VERSION
+# SLUG SUPPORT + DETAIL PAGE FIX
 # =====================================================
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
+from typing import Optional, List
+from psycopg2.extras import RealDictCursor
+from slugify import slugify
 
 from app.db import get_connection
 from app.routes.auth import get_current_user
 
-router = APIRouter()
+router = APIRouter(
+    tags=["Packages"]
+)
 
 # =====================================================
-# PACKAGE REQUEST MODEL
+# PACKAGE MODEL
 # =====================================================
 
 class PackageRequest(BaseModel):
 
-    title: str = Field(..., min_length=3, max_length=140)
-
-    destination: str = Field(..., min_length=2, max_length=120)
-
-    duration: str = Field(..., min_length=2, max_length=60)
-
-    price: float = Field(..., ge=0)
-
-    description: str = Field(
+    title: str = Field(
         ...,
-        min_length=10,
-        max_length=1500
+        min_length=3,
+        max_length=140
     )
 
-    image: str | None = Field(
-        default="",
-        max_length=500
+    location: str = Field(
+        ...,
+        min_length=2,
+        max_length=120
     )
 
-    services: str = Field(
-        default="",
-        max_length=800
+    region: Optional[str] = ""
+
+    category: Optional[str] = ""
+
+    difficulty: Optional[str] = ""
+
+    duration: Optional[str] = ""
+
+    altitude: Optional[str] = ""
+
+    trek_distance: Optional[str] = ""
+
+    group_size: Optional[int] = 0
+
+    best_season: Optional[str] = ""
+
+    fitness_required: Optional[str] = ""
+
+    travel_type: Optional[str] = ""
+
+    price: float = Field(
+        ...,
+        ge=0
     )
 
-    category: str | None = Field(
-        default="",
-        max_length=80
-    )
-
-    seasonal_price: float | None = Field(
+    seasonal_price: Optional[float] = Field(
         default=None,
         ge=0
     )
 
-    featured: bool | None = False
+    featured_image: Optional[str] = ""
 
-    rating: float | None = Field(
+    gallery: Optional[List[str]] = []
+
+    short_description: str = Field(
+        ...,
+        min_length=10,
+        max_length=300
+    )
+
+    full_description: Optional[str] = ""
+
+    included: Optional[List[str]] = []
+
+    excluded: Optional[List[str]] = []
+
+    pickup_points: Optional[List[str]] = []
+
+    itinerary: Optional[List[dict]] = []
+
+    featured: Optional[bool] = False
+
+    status: Optional[str] = "active"
+
+    rating: Optional[float] = Field(
         default=0,
         ge=0,
         le=5
     )
 
-    # =====================================================
-    # NEW PREMIUM FIELDS
-    # =====================================================
-
-    difficulty: str | None = ""
-
-    group_size: str | None = ""
-
-    best_season: str | None = ""
-
-    altitude: str | None = ""
-
-    included: str | None = ""
-
-    excluded: str | None = ""
-
-    itinerary: str | None = ""
-
-    hotel_details: str | None = ""
-
-    transport_details: str | None = ""
-
-    gallery: str | None = ""
-
-# =====================================================
-# ENSURE EXTRA COLUMNS
-# =====================================================
-
-def ensure_package_operations_columns(cur):
-
-    cur.execute("""
-        ALTER TABLE packages
-        ADD COLUMN IF NOT EXISTS category VARCHAR(80)
-    """)
-
-    cur.execute("""
-        ALTER TABLE packages
-        ADD COLUMN IF NOT EXISTS seasonal_price NUMERIC(12, 2)
-    """)
-
-    cur.execute("""
-        ALTER TABLE packages
-        ADD COLUMN IF NOT EXISTS featured BOOLEAN DEFAULT FALSE
-    """)
-
-    cur.execute("""
-        ALTER TABLE packages
-        ADD COLUMN IF NOT EXISTS availability_calendar JSONB DEFAULT '{}'::jsonb
-    """)
-
-    cur.execute("""
-        ALTER TABLE packages
-        ADD COLUMN IF NOT EXISTS gallery TEXT
-    """)
-
-    cur.execute("""
-        ALTER TABLE packages
-        ADD COLUMN IF NOT EXISTS rating NUMERIC(3, 2) DEFAULT 0
-    """)
-
-    cur.execute("""
-        ALTER TABLE packages
-        ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    """)
-
-    cur.execute("""
-        ALTER TABLE packages
-        ADD COLUMN IF NOT EXISTS difficulty VARCHAR(50)
-    """)
-
-    cur.execute("""
-        ALTER TABLE packages
-        ADD COLUMN IF NOT EXISTS group_size VARCHAR(50)
-    """)
-
-    cur.execute("""
-        ALTER TABLE packages
-        ADD COLUMN IF NOT EXISTS best_season VARCHAR(120)
-    """)
-
-    cur.execute("""
-        ALTER TABLE packages
-        ADD COLUMN IF NOT EXISTS altitude VARCHAR(120)
-    """)
-
-    cur.execute("""
-        ALTER TABLE packages
-        ADD COLUMN IF NOT EXISTS included TEXT
-    """)
-
-    cur.execute("""
-        ALTER TABLE packages
-        ADD COLUMN IF NOT EXISTS excluded TEXT
-    """)
-
-    cur.execute("""
-        ALTER TABLE packages
-        ADD COLUMN IF NOT EXISTS itinerary TEXT
-    """)
-
-    cur.execute("""
-        ALTER TABLE packages
-        ADD COLUMN IF NOT EXISTS hotel_details TEXT
-    """)
-
-    cur.execute("""
-        ALTER TABLE packages
-        ADD COLUMN IF NOT EXISTS transport_details TEXT
-    """)
 # =====================================================
 # GET ALL PACKAGES
 # =====================================================
@@ -176,136 +105,120 @@ def get_packages():
 
     conn = get_connection()
 
-    cur = conn.cursor()
+    cur = conn.cursor(
+        cursor_factory=RealDictCursor
+    )
 
     try:
-
-        ensure_package_operations_columns(cur)
 
         cur.execute("""
             SELECT
                 id,
                 title,
-                destination,
-                duration,
-                price,
-                description,
-                image,
-                services,
+                slug,
+                location,
+                region,
                 category,
-                seasonal_price,
-                featured,
-                rating,
                 difficulty,
+                duration,
+                altitude,
+                trek_distance,
                 group_size,
                 best_season,
-                altitude
+                fitness_required,
+                travel_type,
+                price,
+                seasonal_price,
+                featured_image,
+                short_description,
+                featured,
+                rating,
+                total_reviews
             FROM packages
-            ORDER BY id DESC
+            WHERE status = 'active'
+            ORDER BY featured DESC, rating DESC
         """)
 
-        rows = cur.fetchall()
-
-        packages = []
-
-        for row in rows:
-
-            packages.append({
-
-                "id": row[0],
-
-                "title": row[1],
-
-                "destination": row[2],
-
-                "duration": row[3],
-
-                "price": float(row[4]),
-
-                "description": row[5],
-
-                "image": row[6],
-
-                "services": row[7],
-
-                "category": row[8],
-
-                "seasonal_price": (
-                    float(row[9])
-                    if row[9] is not None
-                    else None
-                ),
-
-                "featured": row[10],
-
-                "rating": float(row[11] or 0),
-
-                "difficulty": row[12],
-
-                "group_size": row[13],
-
-                "best_season": row[14],
-
-                "altitude": row[15]
-
-            })
+        packages = cur.fetchall()
 
         return {
+
+            "success": True,
+
+            "count": len(packages),
+
             "packages": packages
+
         }
+
+    except Exception as e:
+
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
 
     finally:
 
         cur.close()
-
         conn.close()
 
 # =====================================================
-# GET SINGLE PACKAGE
+# GET SINGLE PACKAGE BY SLUG
+# IMPORTANT FIX
 # =====================================================
 
-@router.get("/packages/{id}")
-def get_single_package(id: int):
+@router.get("/packages/{slug}")
+def get_single_package(slug: str):
 
     conn = get_connection()
 
-    cur = conn.cursor()
+    cur = conn.cursor(
+        cursor_factory=RealDictCursor
+    )
 
     try:
-
-        ensure_package_operations_columns(cur)
 
         cur.execute("""
             SELECT
                 id,
                 title,
-                destination,
-                duration,
-                price,
-                description,
-                image,
-                services,
+                slug,
+                location,
+                region,
                 category,
-                seasonal_price,
-                featured,
-                rating,
-                itinerary,
-                hotel_details,
-                transport_details,
                 difficulty,
+                duration,
+                altitude,
+                trek_distance,
                 group_size,
                 best_season,
-                altitude,
+                fitness_required,
+                travel_type,
+                price,
+                seasonal_price,
+                featured_image,
+                gallery,
+                short_description,
+                full_description,
                 included,
                 excluded,
-                gallery
+                pickup_points,
+                itinerary,
+                featured,
+                status,
+                rating,
+                total_reviews,
+                created_at,
+                updated_at
             FROM packages
-            WHERE id = %s
-        """, (id,))
+            WHERE slug = %s
+            AND status = 'active'
+        """, (slug,))
 
-        row = cur.fetchone()
+        package = cur.fetchone()
 
-        if not row:
+        if not package:
 
             raise HTTPException(
                 status_code=404,
@@ -314,160 +227,158 @@ def get_single_package(id: int):
 
         return {
 
-            "id": row[0],
+            "success": True,
 
-            "title": row[1],
-
-            "destination": row[2],
-
-            "duration": row[3],
-
-            "price": float(row[4]),
-
-            "description": row[5],
-
-            "image": row[6],
-
-            "services": row[7],
-
-            "category": row[8],
-
-            "seasonal_price": (
-                float(row[9])
-                if row[9] is not None
-                else None
-            ),
-
-            "featured": row[10],
-
-            "rating": float(row[11] or 0),
-
-            "itinerary": row[12],
-
-            "hotel_details": row[13],
-
-            "transport_details": row[14],
-
-            "difficulty": row[15],
-
-            "group_size": row[16],
-
-            "best_season": row[17],
-
-            "altitude": row[18],
-
-            "included": row[19],
-
-            "excluded": row[20],
-
-            "gallery": row[21]
+            "package": package
 
         }
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
 
     finally:
 
         cur.close()
-
         conn.close()
 
 # =====================================================
-# ADD PACKAGE
+# CREATE PACKAGE
 # =====================================================
 
 @router.post("/packages")
-def add_package(
+def create_package(
     data: PackageRequest,
     admin=Depends(get_current_user)
 ):
 
     conn = get_connection()
 
-    cur = conn.cursor()
+    cur = conn.cursor(
+        cursor_factory=RealDictCursor
+    )
 
     try:
 
-        ensure_package_operations_columns(cur)
+        package_slug = slugify(
+            data.title
+        )
+
+        # =====================================================
+        # CHECK EXISTING SLUG
+        # =====================================================
 
         cur.execute("""
-            INSERT INTO packages
-            (
+            SELECT id
+            FROM packages
+            WHERE slug = %s
+        """, (package_slug,))
+
+        existing = cur.fetchone()
+
+        if existing:
+
+            package_slug = (
+                f"{package_slug}-{existing['id']}"
+            )
+
+        # =====================================================
+        # INSERT PACKAGE
+        # =====================================================
+
+        cur.execute("""
+            INSERT INTO packages (
+
                 title,
-                destination,
-                duration,
-                price,
-                description,
-                image,
-                services,
+                slug,
+                location,
+                region,
                 category,
-                seasonal_price,
-                featured,
-                rating,
                 difficulty,
+                duration,
+                altitude,
+                trek_distance,
                 group_size,
                 best_season,
-                altitude,
+                fitness_required,
+                travel_type,
+                price,
+                seasonal_price,
+                featured_image,
+                gallery,
+                short_description,
+                full_description,
                 included,
                 excluded,
+                pickup_points,
                 itinerary,
-                hotel_details,
-                transport_details,
-                gallery
+                featured,
+                status,
+                rating
+
             )
-            VALUES
-            (
+
+            VALUES (
+
                 %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,
-                %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s
+                %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,
+                %s,%s,%s,%s,%s,%s
+
             )
+
+            RETURNING id, slug
+
         """, (
 
             data.title,
-
-            data.destination,
-
+            package_slug,
+            data.location,
+            data.region,
+            data.category,
+            data.difficulty,
             data.duration,
-
+            data.altitude,
+            data.trek_distance,
+            data.group_size,
+            data.best_season,
+            data.fitness_required,
+            data.travel_type,
             data.price,
-
-            data.description,
-
-            data.image or "",
-
-            data.services,
-
-            data.category or "",
-
             data.seasonal_price,
-
+            data.featured_image,
+            data.gallery,
+            data.short_description,
+            data.full_description,
+            data.included,
+            data.excluded,
+            data.pickup_points,
+            data.itinerary,
             data.featured,
-
-            data.rating or 0,
-
-            data.difficulty or "",
-
-            data.group_size or "",
-
-            data.best_season or "",
-
-            data.altitude or "",
-
-            data.included or "",
-
-            data.excluded or "",
-
-            data.itinerary or "",
-
-            data.hotel_details or "",
-
-            data.transport_details or "",
-
-            data.gallery or ""
+            data.status,
+            data.rating
 
         ))
+
+        created_package = cur.fetchone()
 
         conn.commit()
 
         return {
-            "message": "Package added successfully"
+
+            "success": True,
+
+            "message": "Package created successfully",
+
+            "package_id": created_package["id"],
+
+            "slug": created_package["slug"]
+
         }
 
     except Exception as e:
@@ -482,7 +393,6 @@ def add_package(
     finally:
 
         cur.close()
-
         conn.close()
 
 # =====================================================
@@ -498,82 +408,79 @@ def update_package(
 
     conn = get_connection()
 
-    cur = conn.cursor()
+    cur = conn.cursor(
+        cursor_factory=RealDictCursor
+    )
 
     try:
 
-        ensure_package_operations_columns(cur)
+        package_slug = slugify(
+            data.title
+        )
 
         cur.execute("""
             UPDATE packages
+
             SET
+
                 title = %s,
-                destination = %s,
-                duration = %s,
-                price = %s,
-                description = %s,
-                image = %s,
-                services = %s,
+                slug = %s,
+                location = %s,
+                region = %s,
                 category = %s,
-                seasonal_price = %s,
-                featured = %s,
-                rating = %s,
                 difficulty = %s,
+                duration = %s,
+                altitude = %s,
+                trek_distance = %s,
                 group_size = %s,
                 best_season = %s,
-                altitude = %s,
+                fitness_required = %s,
+                travel_type = %s,
+                price = %s,
+                seasonal_price = %s,
+                featured_image = %s,
+                gallery = %s,
+                short_description = %s,
+                full_description = %s,
                 included = %s,
                 excluded = %s,
+                pickup_points = %s,
                 itinerary = %s,
-                hotel_details = %s,
-                transport_details = %s,
-                gallery = %s,
+                featured = %s,
+                status = %s,
+                rating = %s,
                 updated_at = CURRENT_TIMESTAMP
+
             WHERE id = %s
+
         """, (
 
             data.title,
-
-            data.destination,
-
+            package_slug,
+            data.location,
+            data.region,
+            data.category,
+            data.difficulty,
             data.duration,
-
+            data.altitude,
+            data.trek_distance,
+            data.group_size,
+            data.best_season,
+            data.fitness_required,
+            data.travel_type,
             data.price,
-
-            data.description,
-
-            data.image or "",
-
-            data.services,
-
-            data.category or "",
-
             data.seasonal_price,
-
+            data.featured_image,
+            data.gallery,
+            data.short_description,
+            data.full_description,
+            data.included,
+            data.excluded,
+            data.pickup_points,
+            data.itinerary,
             data.featured,
-
-            data.rating or 0,
-
-            data.difficulty or "",
-
-            data.group_size or "",
-
-            data.best_season or "",
-
-            data.altitude or "",
-
-            data.included or "",
-
-            data.excluded or "",
-
-            data.itinerary or "",
-
-            data.hotel_details or "",
-
-            data.transport_details or "",
-
-            data.gallery or "",
-
+            data.status,
+            data.rating,
             id
 
         ))
@@ -588,13 +495,28 @@ def update_package(
         conn.commit()
 
         return {
+
+            "success": True,
+
             "message": "Package updated successfully"
+
         }
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+
+        conn.rollback()
+
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
 
     finally:
 
         cur.close()
-
         conn.close()
 
 # =====================================================
@@ -609,7 +531,9 @@ def delete_package(
 
     conn = get_connection()
 
-    cur = conn.cursor()
+    cur = conn.cursor(
+        cursor_factory=RealDictCursor
+    )
 
     try:
 
@@ -628,11 +552,26 @@ def delete_package(
         conn.commit()
 
         return {
+
+            "success": True,
+
             "message": "Package deleted successfully"
+
         }
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+
+        conn.rollback()
+
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
 
     finally:
 
         cur.close()
-
         conn.close()

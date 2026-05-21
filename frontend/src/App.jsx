@@ -1,252 +1,470 @@
 import { lazy, Suspense } from "react";
-import { Routes, Route, Navigate, useParams } from "react-router-dom";
+
+import {
+  Routes,
+  Route,
+  Navigate,
+  useParams,
+} from "react-router-dom";
 
 import LandingLayout from "./layouts/LandingLayout";
 import DashboardLayout from "./layouts/DashboardLayout";
+
 import AdminProtectedRoute from "./components/AdminProtectedRoute";
+
 import RouteLoader from "./components/RouteLoader";
+
 import ErrorBoundary from "./components/ErrorBoundary";
+
 import DashboardPackages from "./pages/DashboardPackages";
+
 import DashboardPackageDetail from "./pages/DashboardPackageDetail";
 
+/* ===================================================== */
+/* PUBLIC PAGES */
+/* ===================================================== */
+
 const Home = lazy(() => import("./pages/Home"));
-const TrekListingPage = lazy(() => import("./pages/TrekListingPage"));
-const TrekDetailPage = lazy(() => import("./pages/TrekDetailPage"));
-const DestinationsPage = lazy(() => import("./pages/DestinationsPage"));
-const BlogPage = lazy(() => import("./pages/BlogPage"));
-const ItineraryPage = lazy(() => import("./pages/ItineraryPage"));
-const Login = lazy(() => import("./pages/auth/Login"));
-const Register = lazy(() => import("./pages/auth/Register"));
 
-const CustomerDashboard = lazy(() => import("./pages/CustomerDashboard"));
-const NextPage = lazy(() => import("./pages/NextPage"));
-const MyBookings = lazy(() => import("./pages/MyBookings"));
-const SavedTrips = lazy(() => import("./pages/SavedTrips"));
-const ProfileComplete = lazy(() => import("./pages/ProfileComplete"));
-const Booking = lazy(() => import("./pages/Booking"));
-const Payment = lazy(() => import("./pages/Payment"));
-const BookingSuccess = lazy(() => import("./pages/BookingSuccess"));
-const BookingDetails = lazy(() => import("./pages/BookingDetails"));
+const Login = lazy(() =>
+  import("./pages/auth/Login")
+);
 
-const AdminLogin = lazy(() => import("./pages/AdminLogin"));
-const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
-const AdminClients = lazy(() => import("./pages/AdminClients"));
-const AdminPackages = lazy(() => import("./pages/AdminPackages"));
-const AgentDashboard = lazy(() => import("./pages/AgentDashboard"));
+const Register = lazy(() =>
+  import("./pages/auth/Register")
+);
 
-const withSuspense = (element, label) => (
+/* ===================================================== */
+/* USER DASHBOARD */
+/* ===================================================== */
+
+const CustomerDashboard = lazy(() =>
+  import("./pages/CustomerDashboard")
+);
+
+const MyBookings = lazy(() =>
+  import("./pages/MyBookings")
+);
+
+const SavedTrips = lazy(() =>
+  import("./pages/SavedTrips")
+);
+
+const ProfileComplete = lazy(() =>
+  import("./pages/ProfileComplete")
+);
+
+const Booking = lazy(() =>
+  import("./pages/Booking")
+);
+
+const Payment = lazy(() =>
+  import("./pages/Payment")
+);
+
+const BookingSuccess = lazy(() =>
+  import("./pages/BookingSuccess")
+);
+
+const BookingDetails = lazy(() =>
+  import("./pages/BookingDetails")
+);
+
+const NextPage = lazy(() =>
+  import("./pages/NextPage")
+);
+
+/* ===================================================== */
+/* ADMIN */
+/* ===================================================== */
+
+const AdminLogin = lazy(() =>
+  import("./pages/AdminLogin")
+);
+
+const AdminDashboard = lazy(() =>
+  import("./pages/AdminDashboard")
+);
+
+const AdminClients = lazy(() =>
+  import("./pages/AdminClients")
+);
+
+const AdminPackages = lazy(() =>
+  import("./pages/AdminPackages")
+);
+
+const AgentDashboard = lazy(() =>
+  import("./pages/AgentDashboard")
+);
+
+/* ===================================================== */
+/* HELPERS */
+/* ===================================================== */
+
+const withSuspense = (
+  element,
+  label
+) => (
   <ErrorBoundary>
-    <Suspense fallback={<RouteLoader label={label} />}>
+    <Suspense
+      fallback={
+        <RouteLoader label={label} />
+      }
+    >
       {element}
     </Suspense>
   </ErrorBoundary>
 );
 
-const LegacyRedirect = ({ to }) => <Navigate to={to} replace />;
+const LegacyRedirect = ({
+  to,
+}) => (
+  <Navigate
+    to={to}
+    replace
+  />
+);
 
-const LegacyBookingDetailRedirect = () => {
-  const { bookingId } = useParams();
-  return (
-    <Navigate to={`/dashboard/bookings/${bookingId}`} replace />
-  );
-};
+const LegacyBookingDetailRedirect =
+  () => {
+    const { bookingId } =
+      useParams();
+
+    return (
+      <Navigate
+        to={`/dashboard/bookings/${bookingId}`}
+        replace
+      />
+    );
+  };
+
+/* ===================================================== */
+/* APP */
+/* ===================================================== */
 
 function App() {
   return (
     <Routes>
-      {/* ============================================================ */}
-      {/* PUBLIC WEBSITE — LandingLayout (navbar + footer)              */}
-      {/* ============================================================ */}
-      <Route element={<LandingLayout />}>
+
+      {/* ===================================================== */}
+      {/* LANDING WEBSITE */}
+      {/* ===================================================== */}
+
+      <Route
+        element={<LandingLayout />}
+      >
+
         <Route
           path="/"
-          element={withSuspense(<Home />, "Loading TravelGenie...")}
+          element={withSuspense(
+            <Home />,
+            "Loading TravelGenie..."
+          )}
         />
-        <Route
-          path="/treks"
-          element={withSuspense(<TrekListingPage />, "Loading treks...")}
-        />
-        <Route
-          path="/treks/:slug"
-          element={withSuspense(<TrekDetailPage />, "Loading trek details...")}
-        />
-        <Route
-          path="/destinations"
-          element={withSuspense(<DestinationsPage />, "Loading destinations...")}
-        />
-        <Route
-          path="/blog"
-          element={withSuspense(<BlogPage />, "Loading trekking guides...")}
-        />
-        <Route
-          path="/itinerary/:id"
-          element={withSuspense(<ItineraryPage />, "Loading itinerary...")}
-        />
+
         <Route
           path="/login"
-          element={withSuspense(<Login />, "Loading login...")}
+          element={withSuspense(
+            <Login />,
+            "Loading login..."
+          )}
         />
+
         <Route
           path="/register"
-          element={withSuspense(<Register />, "Loading registration...")}
+          element={withSuspense(
+            <Register />,
+            "Loading registration..."
+          )}
         />
+
       </Route>
 
-      {/* ============================================================ */}
-      {/* USER DASHBOARD — AppLayout (workspace navbar only)            */}
-      {/* ============================================================ */}
-     
-     <Route element={<DashboardLayout />}>
+      {/* ===================================================== */}
+      {/* USER DASHBOARD */}
+      {/* ===================================================== */}
+
+      <Route
+        element={<DashboardLayout />}
+      >
+
         <Route
           path="/dashboard"
-          element={withSuspense(<CustomerDashboard />, "Loading dashboard...")}
+          element={withSuspense(
+            <CustomerDashboard />,
+            "Loading dashboard..."
+          )}
         />
+
         <Route
-  path="/dashboard/packages"
-  element={<DashboardPackages />}
-/>
-<Route
-  path="/dashboard/packages/:id"
-  element={<DashboardPackageDetail />}
-/>
+          path="/dashboard/packages"
+          element={
+            <DashboardPackages />
+          }
+        />
+
+        <Route
+          path="/dashboard/packages/:slug"
+          element={
+            <DashboardPackageDetail />
+          }
+        />
+
         <Route
           path="/dashboard/bookings"
-          element={withSuspense(<MyBookings />, "Loading bookings...")}
+          element={withSuspense(
+            <MyBookings />,
+            "Loading bookings..."
+          )}
         />
+
         <Route
           path="/dashboard/bookings/:bookingId"
-          element={withSuspense(<BookingDetails />, "Loading booking details...")}
+          element={withSuspense(
+            <BookingDetails />,
+            "Loading booking details..."
+          )}
         />
+
         <Route
           path="/dashboard/saved"
-          element={withSuspense(<SavedTrips />, "Loading saved trips...")}
+          element={withSuspense(
+            <SavedTrips />,
+            "Loading saved trips..."
+          )}
         />
+
         <Route
           path="/dashboard/ai-planner"
-          element={withSuspense(<NextPage />, "Loading AI planner...")}
+          element={withSuspense(
+            <NextPage />,
+            "Loading AI planner..."
+          )}
         />
+
         <Route
           path="/dashboard/payments"
-          element={withSuspense(<Payment />, "Loading payment...")}
+          element={withSuspense(
+            <Payment />,
+            "Loading payments..."
+          )}
         />
+
         <Route
           path="/dashboard/profile"
-          element={withSuspense(<ProfileComplete />, "Loading profile...")}
+          element={withSuspense(
+            <ProfileComplete />,
+            "Loading profile..."
+          )}
         />
+
         <Route
           path="/dashboard/booking"
-          element={withSuspense(<Booking />, "Loading booking request...")}
+          element={withSuspense(
+            <Booking />,
+            "Loading booking..."
+          )}
         />
+
         <Route
           path="/dashboard/booking-success"
-          element={withSuspense(<BookingSuccess />, "Loading confirmation...")}
+          element={withSuspense(
+            <BookingSuccess />,
+            "Loading confirmation..."
+          )}
         />
+
       </Route>
 
-      {/* ============================================================ */}
-      {/* LEGACY USER ROUTES → dashboard paths                          */}
-      {/* ============================================================ */}
-      <Route path="/plan" element={<LegacyRedirect to="/dashboard/ai-planner" />} />
-      <Route path="/ai-planner" element={<LegacyRedirect to="/dashboard/ai-planner" />} />
-      <Route path="/my-bookings" element={<LegacyRedirect to="/dashboard/bookings" />} />
-      <Route path="/saved" element={<LegacyRedirect to="/dashboard/saved" />} />
-      <Route path="/profile" element={<LegacyRedirect to="/dashboard/profile" />} />
-      <Route path="/payment" element={<LegacyRedirect to="/dashboard/payments" />} />
-      <Route path="/booking" element={<LegacyRedirect to="/dashboard/booking" />} />
-      <Route path="/booking-success" element={<LegacyRedirect to="/dashboard/booking-success" />} />
+      {/* ===================================================== */}
+      {/* LEGACY REDIRECTS */}
+      {/* ===================================================== */}
+
+      <Route
+        path="/plan"
+        element={
+          <LegacyRedirect
+            to="/dashboard/ai-planner"
+          />
+        }
+      />
+
+      <Route
+        path="/ai-planner"
+        element={
+          <LegacyRedirect
+            to="/dashboard/ai-planner"
+          />
+        }
+      />
+
+      <Route
+        path="/my-bookings"
+        element={
+          <LegacyRedirect
+            to="/dashboard/bookings"
+          />
+        }
+      />
+
+      <Route
+        path="/saved"
+        element={
+          <LegacyRedirect
+            to="/dashboard/saved"
+          />
+        }
+      />
+
+      <Route
+        path="/profile"
+        element={
+          <LegacyRedirect
+            to="/dashboard/profile"
+          />
+        }
+      />
+
+      <Route
+        path="/payment"
+        element={
+          <LegacyRedirect
+            to="/dashboard/payments"
+          />
+        }
+      />
+
+      <Route
+        path="/booking"
+        element={
+          <LegacyRedirect
+            to="/dashboard/booking"
+          />
+        }
+      />
+
+      <Route
+        path="/booking-success"
+        element={
+          <LegacyRedirect
+            to="/dashboard/booking-success"
+          />
+        }
+      />
+
       <Route
         path="/booking/:bookingId"
-        element={<LegacyBookingDetailRedirect />}
+        element={
+          <LegacyBookingDetailRedirect />
+        }
       />
-      <Route path="/complete-profile" element={<LegacyRedirect to="/dashboard/profile" />} />
 
-      {/* ============================================================ */}
-      {/* ADMIN PANEL — AdminLayout inside each page                    */}
-      {/* ============================================================ */}
+      <Route
+        path="/complete-profile"
+        element={
+          <LegacyRedirect
+            to="/dashboard/profile"
+          />
+        }
+      />
+
+      {/* ===================================================== */}
+      {/* ADMIN */}
+      {/* ===================================================== */}
+
       <Route
         path="/admin/login"
-        element={withSuspense(<AdminLogin />, "Loading admin login...")}
+        element={withSuspense(
+          <AdminLogin />,
+          "Loading admin login..."
+        )}
       />
 
       <Route
         path="/admin"
-        element={
-          withSuspense(
-            <AdminProtectedRoute>
-              <AdminDashboard />
-            </AdminProtectedRoute>,
-            "Loading admin dashboard..."
-          )
-        }
+        element={withSuspense(
+          <AdminProtectedRoute>
+            <AdminDashboard />
+          </AdminProtectedRoute>,
+          "Loading admin..."
+        )}
       />
+
       <Route
         path="/admin/dashboard"
-        element={
-          withSuspense(
-            <AdminProtectedRoute>
-              <AdminDashboard />
-            </AdminProtectedRoute>,
-            "Loading admin dashboard..."
-          )
-        }
+        element={withSuspense(
+          <AdminProtectedRoute>
+            <AdminDashboard />
+          </AdminProtectedRoute>,
+          "Loading dashboard..."
+        )}
       />
+
       <Route
         path="/admin/bookings"
-        element={
-          withSuspense(
-            <AdminProtectedRoute>
-              <AdminDashboard />
-            </AdminProtectedRoute>,
-            "Loading booking operations..."
-          )
-        }
+        element={withSuspense(
+          <AdminProtectedRoute>
+            <AdminDashboard />
+          </AdminProtectedRoute>,
+          "Loading bookings..."
+        )}
       />
+
       <Route
         path="/admin/analytics"
-        element={
-          withSuspense(
-            <AdminProtectedRoute>
-              <AdminDashboard />
-            </AdminProtectedRoute>,
-            "Loading analytics..."
-          )
-        }
+        element={withSuspense(
+          <AdminProtectedRoute>
+            <AdminDashboard />
+          </AdminProtectedRoute>,
+          "Loading analytics..."
+        )}
       />
+
       <Route
         path="/admin/clients"
-        element={
-          withSuspense(
-            <AdminProtectedRoute>
-              <AdminClients />
-            </AdminProtectedRoute>,
-            "Loading clients..."
-          )
-        }
+        element={withSuspense(
+          <AdminProtectedRoute>
+            <AdminClients />
+          </AdminProtectedRoute>,
+          "Loading clients..."
+        )}
       />
+
       <Route
         path="/admin/packages"
-        element={
-          withSuspense(
-            <AdminProtectedRoute>
-              <AdminPackages />
-            </AdminProtectedRoute>,
-            "Loading packages..."
-          )
-        }
+        element={withSuspense(
+          <AdminProtectedRoute>
+            <AdminPackages />
+          </AdminProtectedRoute>,
+          "Loading packages..."
+        )}
       />
+
       <Route
         path="/agent"
+        element={withSuspense(
+          <AdminProtectedRoute>
+            <AgentDashboard />
+          </AdminProtectedRoute>,
+          "Loading agent dashboard..."
+        )}
+      />
+
+      {/* ===================================================== */}
+      {/* FALLBACK */}
+      {/* ===================================================== */}
+
+      <Route
+        path="*"
         element={
-          withSuspense(
-            <AdminProtectedRoute>
-              <AgentDashboard />
-            </AdminProtectedRoute>,
-            "Loading agent workspace..."
-          )
+          <Navigate
+            to="/"
+            replace
+          />
         }
       />
 
-      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

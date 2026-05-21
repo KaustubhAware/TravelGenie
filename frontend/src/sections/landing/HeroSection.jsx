@@ -1,260 +1,595 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
+
+import {
+  useNavigate,
+} from "react-router-dom";
+
 import {
   FaArrowRight,
-  FaAward,
-  FaCalendarCheck,
-  FaCompass,
-  FaMapMarkedAlt,
-  FaMountain,
-  FaSearch,
-  FaShieldAlt,
   FaStar,
+  FaMapMarkerAlt,
+  FaMountain,
+  FaRobot,
+  FaUsers,
+  FaShieldAlt,
+  FaClock,
+  FaSearch,
 } from "react-icons/fa";
 
-import { featuredTreks, heroSlides } from "../../data/featuredTreks";
-import Badge from "../../components/ui/Badge";
+export default function HeroSection() {
 
-const stats = [
-  { value: "100+", label: "curated expeditions" },
-  { value: "50+", label: "Himalayan routes" },
-  { value: "10K+", label: "trekkers served" },
-  { value: "4.8", label: "operator rating" },
-];
+  const navigate =
+    useNavigate();
 
-const trustBadges = [
-  "Guide-led departures",
-  "Request before payment",
-  "Altitude-aware planning",
-];
+  /* ===================================================== */
+  /* TREKS */
+  /* ===================================================== */
 
-const HeroSection = () => {
-  const navigate = useNavigate();
-  const [currentPlace, setCurrentPlace] = useState(0);
-  const slide = heroSlides[currentPlace];
-  const activeTrek = useMemo(
-    () => featuredTreks.find((trek) => trek.slug === slide.slug) || featuredTreks[0],
-    [slide.slug]
-  );
+  const treks = [
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentPlace((prev) => (prev === heroSlides.length - 1 ? 0 : prev + 1));
-    }, 5600);
+    {
+      id: 1,
+      title: "Kalsubai Trek",
+      location: "Nashik",
+      price: "₹1499",
+      difficulty: "Easy",
+      image:
+        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1200&auto=format&fit=crop",
+    },
 
-    return () => clearInterval(interval);
-  }, []);
+    {
+      id: 2,
+      title: "Rajmachi Trek",
+      location: "Lonavala",
+      price: "₹2499",
+      difficulty: "Moderate",
+      image:
+        "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=1200&auto=format&fit=crop",
+    },
+
+    {
+      id: 3,
+      title: "Harishchandragad",
+      location: "Ahmednagar",
+      price: "₹2999",
+      difficulty: "Moderate",
+      image:
+        "https://images.unsplash.com/photo-1454496522488-7a8e488e8606?q=80&w=1200&auto=format&fit=crop",
+    },
+
+  ];
+
+  /* ===================================================== */
+  /* FEATURES */
+  /* ===================================================== */
+
+  const features = [
+
+    {
+      icon: FaMountain,
+      title: "Curated Treks",
+      text:
+        "Handpicked trekking and camping experiences.",
+    },
+
+    {
+      icon: FaRobot,
+      title: "AI Travel Planner",
+      text:
+        "Smart recommendations based on your budget and style.",
+    },
+
+    {
+      icon: FaShieldAlt,
+      title: "Safe & Trusted",
+      text:
+        "Verified guides and trusted operators.",
+    },
+
+    {
+      icon: FaUsers,
+      title: "Group Adventures",
+      text:
+        "Perfect for solo travelers and friend groups.",
+    },
+
+  ];
+
+  /* ===================================================== */
+  /* UI */
+  /* ===================================================== */
 
   return (
-    <section className="hero-section bg-ink">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={slide.image}
-          initial={{ opacity: 0, scale: 1.08 }}
-          animate={{ opacity: 1, scale: 1.03 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1.2 }}
-          className="absolute inset-0"
-        >
+
+    <div className="bg-[#f7f8fc] overflow-hidden">
+
+      {/* ===================================================== */}
+      {/* HERO SECTION */}
+      {/* ===================================================== */}
+
+      <section className="relative min-h-screen">
+
+        {/* BACKGROUND */}
+
+        <div className="absolute inset-0">
+
           <img
-            src={slide.image}
-            alt={slide.name}
-            className="h-full w-full object-cover animate-ken-burns"
+            src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2000&auto=format&fit=crop"
+            alt="mountains"
+            className="w-full h-full object-cover"
           />
-        </motion.div>
-      </AnimatePresence>
 
-      <div className="absolute inset-0 bg-gradient-to-r from-primary-dark via-primary-dark/76 to-primary-dark/20" />
-      <div className="absolute inset-0 bg-gradient-to-t from-primary-dark via-transparent to-black/35" />
-      <div className="absolute inset-0 bg-[linear-gradient(110deg,rgba(22,51,40,0.25),transparent_42%),radial-gradient(circle_at_72%_28%,rgba(230,126,34,0.18),transparent_30%)]" />
-      <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-surface to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-black/20" />
 
-      <div className="relative z-10 mx-auto flex min-h-screen max-w-7xl items-center px-6 pb-20 pt-32 lg:px-8">
-        <div className="grid w-full items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
-          <motion.div
-            initial={{ opacity: 0, y: 32 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="max-w-3xl"
-          >
-            <Badge variant="dark" className="mb-6 backdrop-blur-md">
-              <FaMountain className="text-accent" />
-              Himalayan expedition operations
-            </Badge>
+        </div>
 
-            <h1 className="font-heading max-w-4xl text-5xl font-bold leading-[1.03] text-white md:text-6xl xl:text-7xl">
-              Discover mountains beyond maps.
-            </h1>
+        {/* CONTENT */}
 
-            <p className="mt-7 max-w-2xl text-lg leading-relaxed text-white/78">
-              Curated small-group Himalayan expeditions with guide-led departures,
-              booking review, weather-aware preparation, and AI assistance that stays behind the trek.
-            </p>
+        <div className="relative z-10 max-w-7xl mx-auto px-5 md:px-8">
 
-            <div className="mt-6 flex flex-wrap gap-3">
-              {trustBadges.map((badge) => (
-                <span
-                  key={badge}
-                  className="inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/10 px-4 py-2 text-sm font-semibold text-white/82 backdrop-blur-md"
-                >
-                  <FaAward className="text-accent" />
-                  {badge}
-                </span>
-              ))}
-            </div>
+         
 
-            <div className="mt-9 flex flex-wrap gap-4">
-              <motion.button
-                type="button"
-                onClick={() => navigate("/treks")}
-                whileHover={{ y: -2 }}
-                whileTap={{ scale: 0.98 }}
-                className="hero-button flex items-center gap-3 rounded-2xl bg-accent px-7 py-4 text-base font-semibold text-white hover:bg-accent-dark"
-              >
-                Explore departures
-                <FaArrowRight />
-              </motion.button>
+          {/* ===================================================== */}
+          {/* HERO CONTENT */}
+          {/* ===================================================== */}
 
-              <motion.button
-                type="button"
-                onClick={() => navigate(`/treks/${slide.slug}`)}
-                whileHover={{ y: -2 }}
-                whileTap={{ scale: 0.98 }}
-                className="hero-button rounded-2xl border border-white/20 bg-white/10 px-7 py-4 text-base font-semibold text-white backdrop-blur-md transition-colors hover:bg-white hover:text-ink"
-              >
-                View featured trek
-              </motion.button>
-            </div>
+          <div className="grid lg:grid-cols-2 gap-20 items-center pt-24 pb-28">
 
-            <motion.form
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25 }}
-              onSubmit={(event) => {
-                event.preventDefault();
-                navigate("/treks");
+            {/* LEFT */}
+
+            <motion.div
+              initial={{
+                opacity: 0,
+                y: 40,
               }}
-              className="mt-9 max-w-2xl rounded-[1.75rem] border border-white/12 bg-white/12 p-3 shadow-card backdrop-blur-xl"
+              animate={{
+                opacity: 1,
+                y: 0,
+              }}
+              transition={{
+                duration: 0.8,
+              }}
             >
-              <div className="grid gap-3 md:grid-cols-[1fr_150px_150px_auto]">
-                <label className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3">
-                  <FaSearch className="text-primary" />
-                  <input
-                    aria-label="Search treks"
-                    placeholder="Search Kedarkantha, Hampta, Kashmir..."
-                    className="w-full bg-transparent text-sm font-medium text-ink outline-none placeholder:text-ink-muted"
-                  />
-                </label>
-                <select
-                  aria-label="Season"
-                  className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-ink outline-none"
-                  defaultValue=""
-                >
-                  <option value="">Season</option>
-                  <option>Winter</option>
-                  <option>Summer</option>
-                  <option>Monsoon</option>
-                  <option>Autumn</option>
-                </select>
-                <select
-                  aria-label="Difficulty"
-                  className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-ink outline-none"
-                  defaultValue=""
-                >
-                  <option value="">Difficulty</option>
-                  <option>Easy</option>
-                  <option>Moderate</option>
-                  <option>Hard</option>
-                </select>
+
+              <p className="uppercase tracking-[0.3em] text-orange-400 font-bold text-sm mb-6">
+
+                Maharashtra Trekking Platform
+
+              </p>
+
+              <h1 className="text-5xl md:text-7xl font-black text-white leading-[1.05]">
+
+                Discover
+                Mountains.
+                Create
+                Memories.
+
+              </h1>
+
+              <p className="mt-8 text-xl text-white/80 leading-relaxed max-w-2xl">
+
+                Explore Maharashtra's best trekking,
+                camping, forts, waterfalls,
+                and adventure experiences with AI-powered planning.
+
+              </p>
+
+              {/* BUTTONS */}
+
+              <div className="flex flex-wrap gap-5 mt-10">
+
                 <button
-                  type="submit"
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-white transition hover:bg-primary-dark"
+                  onClick={() =>
+                    navigate(
+                      "/dashboard/packages"
+                    )
+                  }
+                  className="h-14 px-8 rounded-2xl bg-orange-500 hover:bg-orange-600 transition-all duration-300 text-white font-bold flex items-center gap-3 shadow-2xl"
                 >
-                  <FaCompass />
-                  Find
+
+                  Explore Treks
+
+                  <FaArrowRight />
+
                 </button>
-              </div>
-            </motion.form>
 
-            <motion.div className="mt-12 grid grid-cols-2 gap-5 sm:grid-cols-4">
-              {stats.map((item, i) => (
-                <motion.div
-                  key={item.label}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 + i * 0.08 }}
-                  className="border-l border-white/18 pl-4"
+                <button
+                  onClick={() =>
+                    navigate(
+                      "/dashboard/ai-planner"
+                    )
+                  }
+                  className="h-14 px-8 rounded-2xl border border-white/30 bg-white/10 backdrop-blur-lg text-white font-bold"
                 >
-                  <p className="text-3xl font-bold text-white md:text-4xl">
-                    {item.value}
-                  </p>
-                  <p className="mt-2 text-xs uppercase tracking-wider text-white/60">
-                    {item.label}
-                  </p>
-                </motion.div>
-              ))}
-            </motion.div>
-          </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, x: 36 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.9, delay: 0.15 }}
-            className="hidden lg:block"
-          >
-            <div className="overflow-hidden rounded-[2rem] border border-white/12 bg-white/10 shadow-card backdrop-blur-xl">
-              <div className="relative h-[360px]">
-                <img
-                  src={activeTrek.gallery?.[0] || slide.image}
-                  alt={activeTrek.title}
-                  className="h-full w-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-primary-dark via-primary-dark/15 to-transparent" />
-                <div className="absolute bottom-6 left-6 right-6">
-                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-accent">
-                    Featured expedition
-                  </p>
-                  <h2 className="font-heading mt-2 text-3xl font-bold text-white">
-                    {activeTrek.title}
-                  </h2>
-                  <p className="mt-3 max-w-sm text-sm leading-relaxed text-white/75">
-                    {activeTrek.mood}
-                  </p>
-                </div>
+                  Plan With AI
+
+                </button>
+
               </div>
 
-              <div className="grid grid-cols-2 gap-px bg-white/10">
-                {[
-                  [FaCalendarCheck, "Next batch", activeTrek.nextDeparture],
-                  [FaMapMarkedAlt, "Route", activeTrek.region],
-                  [FaShieldAlt, "Group size", activeTrek.groupSize],
-                  [FaStar, "Rated", `${activeTrek.rating} by trekkers`],
-                ].map(([Icon, label, value]) => (
-                  <div key={label} className="bg-primary-dark/70 p-5">
-                    <Icon className="text-accent" />
-                    <p className="mt-3 text-xs uppercase tracking-widest text-white/48">
-                      {label}
-                    </p>
-                    <p className="mt-1 font-semibold text-white">{value}</p>
+              {/* SEARCH */}
+
+              <div className="mt-14 rounded-[32px] bg-white p-5 shadow-2xl">
+
+                <div className="grid md:grid-cols-4 gap-4">
+
+                  {/* SEARCH */}
+
+                  <div className="h-16 rounded-2xl border border-slate-200 px-5 flex items-center gap-3">
+
+                    <FaSearch className="text-slate-400" />
+
+                    <input
+                      type="text"
+                      placeholder="Search Treks"
+                      className="w-full outline-none"
+                    />
+
                   </div>
+
+                  {/* LOCATION */}
+
+                  <select className="h-16 rounded-2xl border border-slate-200 px-5 outline-none">
+
+                    <option>
+
+                      Location
+
+                    </option>
+
+                    <option>
+
+                      Pune
+
+                    </option>
+
+                    <option>
+
+                      Nashik
+
+                    </option>
+
+                    <option>
+
+                      Lonavala
+
+                    </option>
+
+                  </select>
+
+                  {/* DIFFICULTY */}
+
+                  <select className="h-16 rounded-2xl border border-slate-200 px-5 outline-none">
+
+                    <option>
+
+                      Difficulty
+
+                    </option>
+
+                    <option>
+
+                      Easy
+
+                    </option>
+
+                    <option>
+
+                      Moderate
+
+                    </option>
+
+                    <option>
+
+                      Hard
+
+                    </option>
+
+                  </select>
+
+                  {/* BUTTON */}
+
+                  <button className="h-16 rounded-2xl bg-orange-500 hover:bg-orange-600 transition text-white font-bold">
+
+                    Search
+
+                  </button>
+
+                </div>
+
+              </div>
+
+            </motion.div>
+
+            {/* RIGHT */}
+
+            <motion.div
+              initial={{
+                opacity: 0,
+                scale: 0.9,
+              }}
+              animate={{
+                opacity: 1,
+                scale: 1,
+              }}
+              transition={{
+                duration: 0.8,
+              }}
+              className="hidden lg:block"
+            >
+
+              <div className="grid gap-6">
+
+                {treks.map((trek) => (
+
+                  <motion.div
+                    key={trek.id}
+                    whileHover={{
+                      y: -6,
+                    }}
+                    className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-[32px] overflow-hidden shadow-2xl"
+                  >
+
+                    <div className="grid grid-cols-[170px_1fr]">
+
+                      {/* IMAGE */}
+
+                      <div className="h-full">
+
+                        <img
+                          src={trek.image}
+                          alt={trek.title}
+                          className="w-full h-full object-cover"
+                        />
+
+                      </div>
+
+                      {/* CONTENT */}
+
+                      <div className="p-6">
+
+                        <div className="flex items-start justify-between gap-4">
+
+                          <div>
+
+                            <h3 className="text-2xl font-black text-white">
+
+                              {trek.title}
+
+                            </h3>
+
+                            <div className="flex items-center gap-2 mt-2 text-white/70">
+
+                              <FaMapMarkerAlt />
+
+                              {trek.location}
+
+                            </div>
+
+                          </div>
+
+                          <div className="flex items-center gap-2 text-orange-400 font-bold">
+
+                            <FaStar />
+
+                            4.8
+
+                          </div>
+
+                        </div>
+
+                        <div className="flex items-center gap-5 mt-6 text-white/70 text-sm">
+
+                          <div className="flex items-center gap-2">
+
+                            <FaMountain />
+
+                            {trek.difficulty}
+
+                          </div>
+
+                          <div className="flex items-center gap-2">
+
+                            <FaClock />
+
+                            Weekend Trek
+
+                          </div>
+
+                        </div>
+
+                        <div className="flex items-center justify-between mt-8">
+
+                          <div>
+
+                            <p className="text-white/60 text-sm">
+
+                              Starting From
+
+                            </p>
+
+                            <h4 className="text-3xl font-black text-white">
+
+                              {trek.price}
+
+                            </h4>
+
+                          </div>
+
+                          <button
+                            onClick={() =>
+                              navigate(
+                                "/dashboard/packages"
+                              )
+                            }
+                            className="h-12 px-5 rounded-2xl bg-orange-500 hover:bg-orange-600 transition text-white font-bold"
+                          >
+
+                            Explore
+
+                          </button>
+
+                        </div>
+
+                      </div>
+
+                    </div>
+
+                  </motion.div>
+
                 ))}
+
+              </div>
+
+            </motion.div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      {/* ===================================================== */}
+      {/* FEATURES */}
+      {/* ===================================================== */}
+
+      <section className="max-w-7xl mx-auto px-5 md:px-8 py-24">
+
+        <div className="text-center">
+
+          <p className="uppercase tracking-[0.3em] text-orange-500 font-bold text-sm mb-5">
+
+            Why Choose Us
+
+          </p>
+
+          <h2 className="text-5xl font-black text-slate-900">
+
+            Adventure Made Easy
+
+          </h2>
+
+          <p className="mt-6 text-slate-500 max-w-3xl mx-auto text-lg leading-relaxed">
+
+            TravelGenie combines AI technology
+            with real trekking experiences to
+            help travelers discover amazing adventures.
+
+          </p>
+
+        </div>
+
+        {/* GRID */}
+
+        <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-8 mt-16">
+
+          {features.map((item) => (
+
+            <motion.div
+              key={item.title}
+              whileHover={{
+                y: -8,
+              }}
+              className="bg-white rounded-[32px] border border-slate-200 p-8 shadow-lg hover:shadow-2xl transition-all duration-500"
+            >
+
+              <div className="w-16 h-16 rounded-2xl bg-orange-100 flex items-center justify-center text-orange-500 text-2xl">
+
+                <item.icon />
+
+              </div>
+
+              <h3 className="text-2xl font-black text-slate-900 mt-6">
+
+                {item.title}
+
+              </h3>
+
+              <p className="mt-4 text-slate-500 leading-relaxed">
+
+                {item.text}
+
+              </p>
+
+            </motion.div>
+
+          ))}
+
+        </div>
+
+      </section>
+
+      {/* ===================================================== */}
+      {/* AI BANNER */}
+      {/* ===================================================== */}
+
+      <section className="max-w-7xl mx-auto px-5 md:px-8 pb-24">
+
+        <div className="relative overflow-hidden rounded-[40px]">
+
+          <img
+            src="https://images.unsplash.com/photo-1454496522488-7a8e488e8606?q=80&w=1800&auto=format&fit=crop"
+            alt="ai"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+
+          <div className="absolute inset-0 bg-gradient-to-r from-green-900/95 to-emerald-800/80" />
+
+          <div className="relative z-10 p-10 md:p-16">
+
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-10">
+
+              <div>
+
+                <p className="uppercase tracking-[0.3em] text-orange-300 font-bold text-sm mb-5">
+
+                  AI Assistant
+
+                </p>
+
+                <h2 className="text-5xl font-black text-white leading-tight">
+
+                  Plan Your Perfect
+                  Trek With AI
+
+                </h2>
+
+                <p className="mt-6 text-lg text-white/80 max-w-2xl leading-relaxed">
+
+                  Our AI assistant helps travelers
+                  discover treks, optimize budget,
+                  and customize trips based on experience.
+
+                </p>
+
               </div>
 
               <button
-                type="button"
-                onClick={() => navigate(`/treks/${activeTrek.slug}`)}
-                className="flex w-full items-center justify-between bg-white px-6 py-5 text-left font-semibold text-primary transition-colors hover:bg-surface"
+                onClick={() =>
+                  navigate(
+                    "/dashboard/ai-planner"
+                  )
+                }
+                className="h-16 px-10 rounded-2xl bg-white text-green-800 font-black hover:scale-105 transition-all duration-300 flex items-center gap-3 shadow-2xl"
               >
-                Read the expedition story
-                <FaArrowRight />
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      </div>
-    </section>
-  );
-};
 
-export default HeroSection;
+                <FaRobot />
+
+                Start AI Planning
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+    </div>
+
+  );
+
+}

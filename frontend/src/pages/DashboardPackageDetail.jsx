@@ -17,9 +17,10 @@ import {
   FaUsers,
   FaCheckCircle,
   FaStar,
-  FaHotel,
-  FaBus,
   FaCalendarAlt,
+  FaRoute,
+  FaFire,
+  FaArrowRight,
 } from "react-icons/fa";
 
 import {
@@ -31,7 +32,7 @@ export default function DashboardPackageDetail() {
   const navigate =
     useNavigate();
 
-  const { id } =
+  const { slug } =
     useParams();
 
   const [searchParams] =
@@ -39,6 +40,10 @@ export default function DashboardPackageDetail() {
 
   const aiMode =
     searchParams.get("ai");
+
+  // =====================================================
+  // STATES
+  // =====================================================
 
   const [pkg, setPkg] =
     useState(null);
@@ -49,21 +54,21 @@ export default function DashboardPackageDetail() {
   const [error, setError] =
     useState("");
 
-  /* ===================================================== */
-  /* FETCH PACKAGE */
-  /* ===================================================== */
+  // =====================================================
+  // FETCH PACKAGE
+  // =====================================================
 
   useEffect(() => {
 
-    if (!id || id === "undefined") {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
 
-      console.error(
-        "INVALID PACKAGE ID:",
-        id
-      );
+    if (!slug) {
 
       setError(
-        "Invalid package ID"
+        "Invalid package"
       );
 
       setLoading(false);
@@ -75,145 +80,132 @@ export default function DashboardPackageDetail() {
     const fetchPackage =
       async () => {
 
-        try {
+      try {
 
-          setLoading(true);
+        setLoading(true);
 
-          const res = await fetch(
-            `${API_BASE}/packages/${id}`
+        const res =
+          await fetch(
+            `${API_BASE}/packages/${slug}`
           );
 
-          if (!res.ok) {
+        if (!res.ok) {
 
-            throw new Error(
-              `Failed to fetch package (${res.status})`
-            );
-
-          }
-
-          const data =
-            await res.json();
-
-          console.log(
-            "PACKAGE DETAIL:",
-            data
+          throw new Error(
+            "Failed to fetch package"
           );
-
-          setPkg(data);
-
-        } catch (error) {
-
-          console.error(
-            "PACKAGE DETAIL ERROR:",
-            error
-          );
-
-          setError(
-            error.message ||
-            "Failed to load package"
-          );
-
-        } finally {
-
-          setLoading(false);
 
         }
 
-      };
+        const data =
+          await res.json();
 
-    fetchPackage();
+        setPkg(
+          data.package
+        );
 
-  }, [id]);
+      } catch (err) {
 
-  /* ===================================================== */
-  /* ITINERARY */
-  /* ===================================================== */
+        console.error(
+          "PACKAGE DETAIL ERROR:",
+          err
+        );
 
-  const itineraryList =
-    useMemo(() => {
+        setError(
+          err.message ||
+          "Failed to load package"
+        );
 
-      if (!pkg?.itinerary) {
+      } finally {
 
-        return [];
+        setLoading(false);
 
       }
 
-      return String(
-        pkg.itinerary
-      )
-        .split(/\r?\n/)
-        .map((item) =>
-          item.trim()
-        )
-        .filter((item) =>
-          item.length > 0
-        );
+    };
 
-    }, [pkg]);
+    fetchPackage();
 
-  /* ===================================================== */
-  /* INCLUDED */
-  /* ===================================================== */
+  }, [slug]);
+
+  // =====================================================
+  // INCLUDED
+  // =====================================================
 
   const includedList =
     useMemo(() => {
 
-      if (!pkg?.included) {
+      if (
+        Array.isArray(pkg?.included)
+      ) {
 
-        return [];
+        return pkg.included;
 
       }
 
-      return String(
-        pkg.included
-      )
-        .split(",")
-        .map((item) =>
-          item.trim()
-        )
-        .filter((item) =>
-          item.length > 0
-        );
+      return [];
 
     }, [pkg]);
 
-  /* ===================================================== */
-  /* EXCLUDED */
-  /* ===================================================== */
+  // =====================================================
+  // EXCLUDED
+  // =====================================================
 
   const excludedList =
     useMemo(() => {
 
-      if (!pkg?.excluded) {
+      if (
+        Array.isArray(pkg?.excluded)
+      ) {
 
-        return [];
+        return pkg.excluded;
 
       }
 
-      return String(
-        pkg.excluded
-      )
-        .split(",")
-        .map((item) =>
-          item.trim()
-        )
-        .filter((item) =>
-          item.length > 0
-        );
+      return [];
 
     }, [pkg]);
 
-  /* ===================================================== */
-  /* LOADING */
-  /* ===================================================== */
+  // =====================================================
+  // ITINERARY
+  // =====================================================
+
+  const itineraryList =
+    useMemo(() => {
+
+      if (
+        Array.isArray(pkg?.itinerary)
+      ) {
+
+        return pkg.itinerary;
+
+      }
+
+      return [];
+
+    }, [pkg]);
+
+  // =====================================================
+  // LOADING
+  // =====================================================
 
   if (loading) {
 
     return (
 
-      <div className="flex items-center justify-center min-h-[500px]">
+      <div className="min-h-screen bg-[#f5f7fb] flex items-center justify-center">
 
-        <div className="w-14 h-14 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+        <div className="text-center">
+
+          <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto" />
+
+          <p className="mt-5 text-slate-500">
+
+            Loading expedition...
+
+          </p>
+
+        </div>
 
       </div>
 
@@ -221,9 +213,9 @@ export default function DashboardPackageDetail() {
 
   }
 
-  /* ===================================================== */
-  /* ERROR */
-  /* ===================================================== */
+  // =====================================================
+  // ERROR
+  // =====================================================
 
   if (error) {
 
@@ -249,9 +241,9 @@ export default function DashboardPackageDetail() {
 
   }
 
-  /* ===================================================== */
-  /* EMPTY */
-  /* ===================================================== */
+  // =====================================================
+  // EMPTY
+  // =====================================================
 
   if (!pkg) {
 
@@ -271,99 +263,100 @@ export default function DashboardPackageDetail() {
 
   }
 
+  // =====================================================
+  // PAGE
+  // =====================================================
+
   return (
 
-    <div className="space-y-8">
+    <div className="min-h-screen bg-[#f5f7fb]">
 
-      {/* HERO */}
+      {/* =====================================================
+          HERO
+      ===================================================== */}
 
-      <div className="relative overflow-hidden rounded-[36px] min-h-[520px] shadow-xl">
+      <div className="relative h-[720px] overflow-hidden">
 
         <img
           src={
-            pkg.image ||
+            pkg.featured_image ||
 
-            "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1400&q=80"
+            "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80"
           }
-          alt={pkg.title || "Package"}
+          alt={pkg.title}
           className="absolute inset-0 w-full h-full object-cover"
         />
 
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/10" />
 
-        <div className="relative z-10 flex flex-col justify-end min-h-[520px] p-8 md:p-14">
+        <div className="relative z-10 h-full max-w-7xl mx-auto px-6 flex flex-col justify-end pb-16">
 
-          <div className="flex flex-wrap gap-3 mb-6">
+          {/* BADGES */}
 
-            <span className="bg-emerald-500 text-white px-4 py-2 rounded-full text-sm font-semibold">
+          <div className="flex flex-wrap gap-4 mb-8">
+
+            <div className="bg-indigo-600 text-white px-5 py-2 rounded-full text-sm font-bold">
 
               {pkg.category || "Adventure"}
 
-            </span>
+            </div>
 
-            <span className="bg-white/10 backdrop-blur-md text-white px-4 py-2 rounded-full text-sm">
+            <div className="bg-white/10 backdrop-blur-md text-white px-5 py-2 rounded-full text-sm">
 
-              Guided Expedition
+              Maharashtra Expedition
 
-            </span>
+            </div>
 
-            <span className="bg-white/10 backdrop-blur-md text-white px-4 py-2 rounded-full text-sm flex items-center gap-2">
+            <div className="bg-orange-500 text-white px-5 py-2 rounded-full text-sm flex items-center gap-2 font-bold">
 
-              <FaStar className="text-yellow-400" />
+              <FaFire />
 
-              {pkg.rating || 4.8}
+              Featured Trek
 
-            </span>
+            </div>
 
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-black text-white max-w-5xl leading-tight">
+          {/* TITLE */}
+
+          <h1 className="text-5xl md:text-7xl font-black text-white leading-tight max-w-5xl">
 
             {pkg.title}
 
           </h1>
 
-          <div className="flex flex-wrap gap-6 mt-8 text-white/90 text-sm md:text-base">
+          {/* INFO */}
 
-            <div className="flex items-center gap-2">
+          <div className="flex flex-wrap gap-7 mt-10 text-white/90">
 
-              <FaClock />
+            <InfoItem
+              icon={<FaClock />}
+              text={
+                pkg.duration ||
+                "2 Days"
+              }
+            />
 
-              <span>
-                {pkg.duration || "5 Days"}
-              </span>
+            <InfoItem
+              icon={<FaMountain />}
+              text={
+                pkg.difficulty ||
+                "Moderate"
+              }
+            />
 
-            </div>
+            <InfoItem
+              icon={<FaMapMarkerAlt />}
+              text={
+                pkg.location ||
+                "Maharashtra"
+              }
+            />
 
-            <div className="flex items-center gap-2">
-
-              <FaMountain />
-
-              <span>
-                {pkg.difficulty || "Moderate"}
-              </span>
-
-            </div>
-
-            <div className="flex items-center gap-2">
-
-              <FaMapMarkerAlt />
-
-              <span>
-                {pkg.destination || "India"}
-              </span>
-
-            </div>
-
-            <div className="flex items-center gap-2">
-
-              <FaUsers />
-
-              <span>
-                {pkg.group_size || "15 People"}
-              </span>
-
-            </div>
+            <InfoItem
+              icon={<FaUsers />}
+              text={`${pkg.group_size || 15} People`}
+            />
 
           </div>
 
@@ -371,378 +364,410 @@ export default function DashboardPackageDetail() {
 
       </div>
 
-      {/* CONTENT */}
+      {/* =====================================================
+          CONTENT
+      ===================================================== */}
 
-      <div className="grid xl:grid-cols-[1fr_380px] gap-8">
+      <div className="max-w-7xl mx-auto px-6 py-10">
 
-        {/* LEFT */}
+        <div className="grid xl:grid-cols-[1fr_400px] gap-8 items-start">
 
-        <div className="space-y-8">
+          {/* =====================================================
+              LEFT
+          ===================================================== */}
 
-          {/* ABOUT */}
+          <div className="space-y-8">
 
-          <div className="bg-white rounded-[32px] border border-slate-200 p-8 shadow-sm">
+            {/* ABOUT */}
 
-            <h2 className="text-3xl font-black text-slate-900 mb-6">
+            <SectionCard title="About This Adventure">
 
-              About This Trek
+              <p className="text-slate-600 leading-relaxed text-lg">
 
-            </h2>
+                {pkg.full_description ||
 
-            <p className="text-slate-600 leading-relaxed text-lg">
+                  pkg.short_description ||
 
-              {pkg.description}
+                  "Experience premium trekking and adventure travel across Maharashtra."}
 
-            </p>
+              </p>
 
-          </div>
+            </SectionCard>
 
-          {/* INCLUDED */}
+            {/* INCLUDED */}
 
-          <div className="bg-white rounded-[32px] border border-slate-200 p-8 shadow-sm">
+            <SectionCard title="Included Services">
 
-            <h2 className="text-3xl font-black text-slate-900 mb-8">
+              <div className="grid md:grid-cols-2 gap-5">
 
-              Included Services
+                {(includedList.length
+                  ? includedList
+                  : [
+                      "Accommodation",
+                      "Meals",
+                      "Professional Guide",
+                      "Camping Equipment",
+                    ]).map((item, index) => (
 
-            </h2>
+                  <FeatureCard
+                    key={index}
+                    item={item}
+                    color="emerald"
+                  />
 
-            <div className="grid md:grid-cols-2 gap-5">
+                ))}
 
-              {(includedList.length
-                ? includedList
-                : [
-                    "Accommodation",
-                    "Meals",
-                    "Professional Trek Guide",
-                    "Camping Equipment",
-                  ]).map((item, index) => (
+              </div>
 
-                <div
-                  key={index}
-                  className="flex items-start gap-4 border border-slate-100 rounded-2xl p-5"
-                >
+            </SectionCard>
 
-                  <FaCheckCircle className="text-emerald-600 mt-1" />
+            {/* EXCLUDED */}
 
-                  <p className="text-slate-700">
+            <SectionCard title="Excluded Services">
 
-                    {item}
+              <div className="grid md:grid-cols-2 gap-5">
 
-                  </p>
+                {(excludedList.length
+                  ? excludedList
+                  : [
+                      "Personal Expenses",
+                      "Insurance",
+                      "Private Transport",
+                      "Extra Activities",
+                    ]).map((item, index) => (
 
-                </div>
+                  <FeatureCard
+                    key={index}
+                    item={item}
+                    color="red"
+                  />
 
-              ))}
+                ))}
 
-            </div>
+              </div>
 
-          </div>
+            </SectionCard>
 
-          {/* EXCLUDED */}
+            {/* ITINERARY */}
 
-          <div className="bg-white rounded-[32px] border border-slate-200 p-8 shadow-sm">
+            <SectionCard title="Trip Itinerary">
 
-            <h2 className="text-3xl font-black text-slate-900 mb-8">
+              <div className="space-y-5">
 
-              Excluded Services
+                {(itineraryList.length
+                  ? itineraryList
+                  : [
+                      {
+                        title: "Arrival",
+                        description: "Reach base camp",
+                      },
+                      {
+                        title: "Adventure",
+                        description: "Trek & exploration",
+                      },
+                    ]).map((day, index) => (
 
-            </h2>
+                  <div
+                    key={index}
+                    className="border border-slate-200 rounded-3xl p-6"
+                  >
 
-            <div className="grid md:grid-cols-2 gap-5">
+                    <div className="flex gap-5">
 
-              {(excludedList.length
-                ? excludedList
-                : [
-                    "Personal Expenses",
-                    "Insurance",
-                    "Extra Activities",
-                    "Private Transport",
-                  ]).map((item, index) => (
+                      <div className="w-14 h-14 rounded-2xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-black text-lg shrink-0">
 
-                <div
-                  key={index}
-                  className="flex items-start gap-4 border border-slate-100 rounded-2xl p-5"
-                >
+                        {index + 1}
 
-                  <FaCheckCircle className="text-red-500 mt-1" />
+                      </div>
 
-                  <p className="text-slate-700">
+                      <div>
 
-                    {item}
+                        <h3 className="text-2xl font-bold text-slate-900">
 
-                  </p>
+                          {day.title ||
+                            `Day ${index + 1}`}
 
-                </div>
+                        </h3>
 
-              ))}
+                        <p className="text-slate-600 mt-3 leading-relaxed">
 
-            </div>
+                          {day.description ||
+                            day}
 
-          </div>
+                        </p>
 
-          {/* ITINERARY */}
-
-          <div className="bg-white rounded-[32px] border border-slate-200 p-8 shadow-sm">
-
-            <h2 className="text-3xl font-black text-slate-900 mb-8">
-
-              Trek Itinerary
-
-            </h2>
-
-            <div className="space-y-5">
-
-              {(itineraryList.length
-                ? itineraryList
-                : [
-                    "Arrival and check-in",
-                    "Trek begins",
-                    "Camping and summit experience",
-                    "Return journey",
-                  ]).map((day, index) => (
-
-                <div
-                  key={index}
-                  className="border border-slate-200 rounded-2xl p-6"
-                >
-
-                  <div className="flex items-center gap-4">
-
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-black">
-
-                      {index + 1}
-
-                    </div>
-
-                    <div>
-
-                      <h3 className="text-xl font-bold text-slate-900">
-
-                        Day {index + 1}
-
-                      </h3>
-
-                      <p className="text-slate-600 mt-2 leading-relaxed">
-
-                        {day}
-
-                      </p>
+                      </div>
 
                     </div>
 
                   </div>
 
-                </div>
+                ))}
 
-              ))}
+              </div>
 
-            </div>
+            </SectionCard>
 
           </div>
 
-          {/* HOTEL DETAILS */}
+          {/* =====================================================
+              SIDEBAR
+          ===================================================== */}
 
-          {pkg.hotel_details && (
+          <div>
 
-            <div className="bg-white rounded-[32px] border border-slate-200 p-8 shadow-sm">
+            <div className="bg-white rounded-[32px] border border-slate-200 p-8 shadow-sm sticky top-24">
 
-              <div className="flex items-center gap-3 mb-6">
+              <p className="uppercase tracking-[0.25em] text-slate-500 text-sm font-bold">
 
-                <FaHotel className="text-emerald-600 text-2xl" />
-
-                <h2 className="text-3xl font-black text-slate-900">
-
-                  Hotel Details
-
-                </h2>
-
-              </div>
-
-              <p className="text-slate-600 leading-relaxed text-lg">
-
-                {pkg.hotel_details}
+                Starting From
 
               </p>
 
-            </div>
+              <h2 className="text-6xl font-black text-indigo-600 mt-4">
 
-          )}
+                ₹{pkg.price || 0}
 
-          {/* TRANSPORT DETAILS */}
+              </h2>
 
-          {pkg.transport_details && (
+              {/* DETAILS */}
 
-            <div className="bg-white rounded-[32px] border border-slate-200 p-8 shadow-sm">
+              <div className="space-y-5 mt-10">
 
-              <div className="flex items-center gap-3 mb-6">
+                <SidebarRow
+                  label="Best Season"
+                  value={
+                    pkg.best_season ||
+                    "All Season"
+                  }
+                />
 
-                <FaBus className="text-emerald-600 text-2xl" />
+                <SidebarRow
+                  label="Altitude"
+                  value={
+                    pkg.altitude ||
+                    "N/A"
+                  }
+                />
 
-                <h2 className="text-3xl font-black text-slate-900">
+                <SidebarRow
+                  label="Trek Distance"
+                  value={
+                    pkg.trek_distance ||
+                    "N/A"
+                  }
+                />
 
-                  Transport Details
+                <SidebarRow
+                  label="Duration"
+                  value={
+                    pkg.duration ||
+                    "2 Days"
+                  }
+                />
 
-                </h2>
-
-              </div>
-
-              <p className="text-slate-600 leading-relaxed text-lg">
-
-                {pkg.transport_details}
-
-              </p>
-
-            </div>
-
-          )}
-
-        </div>
-
-        {/* SIDEBAR */}
-
-        <div className="space-y-6">
-
-          <div className="bg-white rounded-[32px] border border-slate-200 p-8 shadow-sm sticky top-24">
-
-            <p className="text-sm text-slate-500 uppercase tracking-[0.2em]">
-
-              Starting From
-
-            </p>
-
-            <h2 className="text-5xl font-black text-emerald-600 mt-3">
-
-              ₹{pkg.price || 0}
-
-            </h2>
-
-            <div className="space-y-4 mt-8">
-
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-
-                <span className="text-slate-500">
-                  Best Season
-                </span>
-
-                <span className="font-bold text-slate-900">
-                  {pkg.best_season || "All Season"}
-                </span>
+                <SidebarRow
+                  label="Group Size"
+                  value={`${pkg.group_size || 15} People`}
+                />
 
               </div>
 
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              {/* BUTTONS */}
 
-                <span className="text-slate-500">
-                  Altitude
-                </span>
+              <div className="space-y-4 mt-10">
 
-                <span className="font-bold text-slate-900">
-                  {pkg.altitude || "N/A"}
-                </span>
+                <button
+                  onClick={() =>
+
+                    navigate(
+                      "/dashboard/booking",
+                      {
+                        state: {
+                          package_id: pkg.id,
+                          package: pkg,
+                        },
+                      }
+                    )
+
+                  }
+                  className="w-full h-14 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold shadow-lg hover:shadow-2xl transition flex items-center justify-center gap-3"
+                >
+
+                  Book This Adventure
+
+                  <FaArrowRight />
+
+                </button>
+
+                <button
+                  onClick={() =>
+
+                    navigate(
+                      "/dashboard/ai-planner",
+                      {
+                        state: {
+                          package: pkg,
+                        },
+                      }
+                    )
+
+                  }
+                  className="w-full h-14 rounded-2xl border border-slate-300 text-slate-700 font-bold hover:bg-slate-50 transition"
+                >
+
+                  Customize With AI
+
+                </button>
 
               </div>
 
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              {/* AI BOX */}
 
-                <span className="text-slate-500">
-                  Group Size
-                </span>
+              {aiMode && (
 
-                <span className="font-bold text-slate-900">
-                  {pkg.group_size || "15 People"}
-                </span>
+                <div className="mt-6 bg-indigo-50 border border-indigo-100 rounded-3xl p-6">
 
-              </div>
+                  <h3 className="font-bold text-indigo-700 text-lg">
 
-              <div className="flex items-center justify-between pb-2">
+                    AI Customization Enabled
 
-                <span className="text-slate-500">
-                  Duration
-                </span>
+                  </h3>
 
-                <span className="font-bold text-slate-900 flex items-center gap-2">
+                  <p className="text-sm text-indigo-600 mt-3 leading-relaxed">
 
-                  <FaCalendarAlt />
+                    Customize itinerary,
+                    travel style,
+                    budget,
+                    and experiences using AI.
 
-                  {pkg.duration || "5 Days"}
-                </span>
+                  </p>
 
-              </div>
+                </div>
 
-            </div>
-
-            <div className="space-y-4 mt-10">
-
-              <button
-                onClick={() =>
-
-                  navigate(
-                    "/dashboard/booking",
-                    {
-                      state: {
-                        package_id: pkg.id,
-                        package: pkg,
-                      },
-                    }
-                  )
-
-                }
-                className="w-full h-14 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-bold shadow-lg hover:shadow-2xl transition"
-              >
-
-                Book This Trek
-
-              </button>
-
-              <button
-                onClick={() =>
-
-                  navigate(
-                    "/dashboard/ai-planner",
-                    {
-                      state: {
-                        package: pkg,
-                      },
-                    }
-                  )
-
-                }
-                className="w-full h-14 rounded-2xl border border-slate-300 text-slate-700 font-bold hover:bg-slate-50 transition"
-              >
-
-                Customize With AI
-
-              </button>
+              )}
 
             </div>
-
-            {aiMode && (
-
-              <div className="mt-6 bg-emerald-50 border border-emerald-100 rounded-2xl p-5">
-
-                <h3 className="font-bold text-emerald-700">
-
-                  AI Customization Enabled
-
-                </h3>
-
-                <p className="text-sm text-emerald-600 mt-2">
-
-                  Customize budget, duration,
-                  travel style, and itinerary using AI.
-
-                </p>
-
-              </div>
-
-            )}
 
           </div>
 
         </div>
 
       </div>
+
+    </div>
+
+  );
+
+}
+
+// =====================================================
+// SECTION CARD
+// =====================================================
+
+function SectionCard({
+  title,
+  children,
+}) {
+
+  return (
+
+    <div className="bg-white rounded-[32px] border border-slate-200 p-8 shadow-sm">
+
+      <h2 className="text-3xl font-black text-slate-900 mb-8">
+
+        {title}
+
+      </h2>
+
+      {children}
+
+    </div>
+
+  );
+
+}
+
+// =====================================================
+// INFO ITEM
+// =====================================================
+
+function InfoItem({
+  icon,
+  text,
+}) {
+
+  return (
+
+    <div className="flex items-center gap-3 text-sm md:text-base">
+
+      {icon}
+
+      <span>{text}</span>
+
+    </div>
+
+  );
+
+}
+
+// =====================================================
+// FEATURE CARD
+// =====================================================
+
+function FeatureCard({
+  item,
+  color,
+}) {
+
+  return (
+
+    <div className="flex items-start gap-4 border border-slate-100 rounded-2xl p-5">
+
+      <FaCheckCircle
+        className={`mt-1 ${
+          color === "red"
+            ? "text-red-500"
+            : "text-emerald-600"
+        }`}
+      />
+
+      <p className="text-slate-700">
+
+        {item}
+
+      </p>
+
+    </div>
+
+  );
+
+}
+
+// =====================================================
+// SIDEBAR ROW
+// =====================================================
+
+function SidebarRow({
+  label,
+  value,
+}) {
+
+  return (
+
+    <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+
+      <span className="text-slate-500">
+
+        {label}
+
+      </span>
+
+      <span className="font-bold text-slate-900">
+
+        {value}
+
+      </span>
 
     </div>
 

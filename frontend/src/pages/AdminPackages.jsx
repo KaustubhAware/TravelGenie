@@ -3,17 +3,18 @@ import { useEffect, useState } from "react";
 import { fetchWithAuth } from "../utils/api";
 
 import {
-  FaBoxOpen,
   FaSearch,
   FaMapMarkedAlt,
   FaMoneyBillWave,
   FaClock,
-  FaTrash,
-  FaEdit,
   FaPlus,
 } from "react-icons/fa";
 
 export default function AdminPackages() {
+
+  /* ===================================================== */
+  /* STATES */
+  /* ===================================================== */
 
   const [packages, setPackages] =
     useState([]);
@@ -39,37 +40,45 @@ export default function AdminPackages() {
 
       title: "",
 
-      destination: "",
+      location: "",
 
-      duration: "",
-
-      price: "",
-
-      description: "",
-
-      image: "",
-
-      services: "",
+      region: "",
 
       category: "",
 
+      duration: "",
+
       difficulty: "",
 
-      group_size: "",
+      trek_distance: "",
+
+      altitude: "",
 
       best_season: "",
 
-      altitude: "",
+      group_size: "",
+
+      fitness_required: "",
+
+      travel_type: "",
+
+      price: "",
+
+      seasonal_price: "",
+
+      featured_image: "",
+
+      short_description: "",
+
+      full_description: "",
 
       included: "",
 
       excluded: "",
 
+      pickup_points: "",
+
       itinerary: "",
-
-      hotel_details: "",
-
-      transport_details: "",
 
       gallery: "",
 
@@ -162,37 +171,45 @@ export default function AdminPackages() {
 
       title: "",
 
-      destination: "",
+      location: "",
 
-      duration: "",
-
-      price: "",
-
-      description: "",
-
-      image: "",
-
-      services: "",
+      region: "",
 
       category: "",
 
+      duration: "",
+
       difficulty: "",
 
-      group_size: "",
+      trek_distance: "",
+
+      altitude: "",
 
       best_season: "",
 
-      altitude: "",
+      group_size: "",
+
+      fitness_required: "",
+
+      travel_type: "",
+
+      price: "",
+
+      seasonal_price: "",
+
+      featured_image: "",
+
+      short_description: "",
+
+      full_description: "",
 
       included: "",
 
       excluded: "",
 
+      pickup_points: "",
+
       itinerary: "",
-
-      hotel_details: "",
-
-      transport_details: "",
 
       gallery: "",
 
@@ -219,9 +236,27 @@ export default function AdminPackages() {
         {
           method: "POST",
 
-          body: JSON.stringify(
-            formData
-          ),
+          body: JSON.stringify({
+
+            ...formData,
+
+            included:
+              formData.included
+                .split(","),
+
+            excluded:
+              formData.excluded
+                .split(","),
+
+            pickup_points:
+              formData.pickup_points
+                .split(","),
+
+            gallery:
+              formData.gallery
+                .split(","),
+
+          }),
         }
       );
 
@@ -256,56 +291,92 @@ export default function AdminPackages() {
       title:
         pkg.title || "",
 
-      destination:
-        pkg.destination || "",
+      location:
+        pkg.location || "",
 
-      duration:
-        pkg.duration || "",
-
-      price:
-        pkg.price || "",
-
-      description:
-        pkg.description || "",
-
-      image:
-        pkg.image || "",
-
-      services:
-        pkg.services || "",
+      region:
+        pkg.region || "",
 
       category:
         pkg.category || "",
 
+      duration:
+        pkg.duration || "",
+
       difficulty:
         pkg.difficulty || "",
 
-      group_size:
-        pkg.group_size || "",
-
-      best_season:
-        pkg.best_season || "",
+      trek_distance:
+        pkg.trek_distance || "",
 
       altitude:
         pkg.altitude || "",
 
+      best_season:
+        pkg.best_season || "",
+
+      group_size:
+        pkg.group_size || "",
+
+      fitness_required:
+        pkg.fitness_required || "",
+
+      travel_type:
+        pkg.travel_type || "",
+
+      price:
+        pkg.price || "",
+
+      seasonal_price:
+        pkg.seasonal_price || "",
+
+      featured_image:
+        pkg.featured_image || "",
+
+      short_description:
+        pkg.short_description || "",
+
+      full_description:
+        pkg.full_description || "",
+
       included:
-        pkg.included || "",
+        Array.isArray(
+          pkg.included
+        )
+          ? pkg.included.join(", ")
+          : "",
 
       excluded:
-        pkg.excluded || "",
+        Array.isArray(
+          pkg.excluded
+        )
+          ? pkg.excluded.join(", ")
+          : "",
+
+      pickup_points:
+        Array.isArray(
+          pkg.pickup_points
+        )
+          ? pkg.pickup_points.join(", ")
+          : "",
 
       itinerary:
-        pkg.itinerary || "",
-
-      hotel_details:
-        pkg.hotel_details || "",
-
-      transport_details:
-        pkg.transport_details || "",
+        Array.isArray(
+          pkg.itinerary
+        )
+          ? JSON.stringify(
+              pkg.itinerary,
+              null,
+              2
+            )
+          : "",
 
       gallery:
-        pkg.gallery || "",
+        Array.isArray(
+          pkg.gallery
+        )
+          ? pkg.gallery.join(", ")
+          : "",
 
       rating:
         pkg.rating || "",
@@ -334,9 +405,27 @@ export default function AdminPackages() {
         {
           method: "PUT",
 
-          body: JSON.stringify(
-            formData
-          ),
+          body: JSON.stringify({
+
+            ...formData,
+
+            included:
+              formData.included
+                .split(","),
+
+            excluded:
+              formData.excluded
+                .split(","),
+
+            pickup_points:
+              formData.pickup_points
+                .split(","),
+
+            gallery:
+              formData.gallery
+                .split(","),
+
+          }),
         }
 
       );
@@ -403,7 +492,7 @@ export default function AdminPackages() {
   const filteredPackages =
     packages.filter((pkg) =>
 
-      `${pkg.title} ${pkg.destination}`
+      `${pkg.title} ${pkg.location}`
 
         .toLowerCase()
 
@@ -413,35 +502,57 @@ export default function AdminPackages() {
 
     );
 
+  /* ===================================================== */
+  /* LOADING */
+  /* ===================================================== */
+
+  if (loading) {
+
+    return (
+
+      <div className="flex min-h-[70vh] items-center justify-center">
+
+        <div className="text-lg font-medium text-slate-500">
+          Loading packages...
+        </div>
+
+      </div>
+
+    );
+
+  }
+
+  /* ===================================================== */
+  /* PAGE */
+  /* ===================================================== */
+
   return (
 
-    <div className="min-h-screen bg-gradient-to-br from-[#f4f7ff] to-[#eef5ff] p-8">
+    <div className="min-h-screen bg-[#F5F7FA] p-8">
 
       {/* HEADER */}
 
-      <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
 
         <div>
 
-          <h1 className="text-4xl font-bold text-gray-900">
-
-            Package Management
-
+          <h1 className="text-4xl font-bold text-slate-900">
+            Maharashtra Packages
           </h1>
 
-          <p className="text-gray-500 mt-2">
-
-            Manage expedition and travel packages
-
+          <p className="mt-2 text-slate-500">
+            Manage trekking and adventure travel packages
           </p>
 
         </div>
 
         <div className="flex items-center gap-4">
 
+          {/* SEARCH */}
+
           <div className="relative">
 
-            <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+            <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
 
             <input
               type="text"
@@ -452,10 +563,12 @@ export default function AdminPackages() {
                   e.target.value
                 )
               }
-              className="pl-11 pr-4 py-3 rounded-2xl border border-gray-200 bg-white outline-none w-[300px]"
+              className="w-[320px] rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-4 outline-none focus:ring-2 focus:ring-indigo-500"
             />
 
           </div>
+
+          {/* BUTTON */}
 
           <button
             onClick={() => {
@@ -465,7 +578,7 @@ export default function AdminPackages() {
               setShowModal(true);
 
             }}
-            className="bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-6 py-3 rounded-2xl flex items-center gap-3 shadow-lg"
+            className="flex items-center gap-3 rounded-2xl bg-indigo-600 px-6 py-3 font-semibold text-white shadow-lg transition hover:bg-indigo-700"
           >
 
             <FaPlus />
@@ -480,46 +593,50 @@ export default function AdminPackages() {
 
       {/* GRID */}
 
-      <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
 
         {filteredPackages.map((pkg) => (
 
           <div
             key={pkg.id}
-            className="bg-white rounded-[30px] overflow-hidden shadow-lg border border-gray-100"
+            className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
           >
+
+            {/* IMAGE */}
 
             <img
               src={
-                pkg.image ||
+                pkg.featured_image ||
 
-                "https://images.unsplash.com/photo-1507525428034-b723cf961d3e"
+                "https://images.unsplash.com/photo-1501785888041-af3ef285b470"
               }
               alt={pkg.title}
-              className="w-full h-56 object-cover"
+              className="h-60 w-full object-cover"
             />
+
+            {/* CONTENT */}
 
             <div className="p-6">
 
-              <div className="flex justify-between items-start gap-4 mb-4">
+              <div className="mb-4 flex items-start justify-between gap-4">
 
                 <div>
 
-                  <h2 className="text-2xl font-bold text-gray-900">
+                  <h2 className="text-2xl font-bold text-slate-900">
 
                     {pkg.title}
 
                   </h2>
 
-                  <p className="text-gray-500 mt-1">
+                  <p className="mt-1 text-slate-500">
 
-                    {pkg.destination}
+                    {pkg.location}
 
                   </p>
 
                 </div>
 
-                <div className="bg-blue-50 text-blue-600 px-4 py-2 rounded-2xl font-semibold">
+                <div className="rounded-2xl bg-indigo-50 px-4 py-2 font-semibold text-indigo-600">
 
                   ₹ {pkg.price}
 
@@ -527,23 +644,25 @@ export default function AdminPackages() {
 
               </div>
 
-              <div className="space-y-3 mb-5">
+              {/* INFO */}
 
-                <div className="flex items-center gap-3 text-gray-700">
+              <div className="mb-5 space-y-3">
 
-                  <FaMapMarkedAlt className="text-blue-500" />
+                <div className="flex items-center gap-3 text-slate-700">
+
+                  <FaMapMarkedAlt className="text-indigo-500" />
 
                   <span>
 
-                    {pkg.destination}
+                    {pkg.region}
 
                   </span>
 
                 </div>
 
-                <div className="flex items-center gap-3 text-gray-700">
+                <div className="flex items-center gap-3 text-slate-700">
 
-                  <FaClock className="text-yellow-500" />
+                  <FaClock className="text-amber-500" />
 
                   <span>
 
@@ -553,9 +672,9 @@ export default function AdminPackages() {
 
                 </div>
 
-                <div className="flex items-center gap-3 text-gray-700">
+                <div className="flex items-center gap-3 text-slate-700">
 
-                  <FaMoneyBillWave className="text-green-500" />
+                  <FaMoneyBillWave className="text-emerald-500" />
 
                   <span>
 
@@ -567,11 +686,33 @@ export default function AdminPackages() {
 
               </div>
 
-              <p className="text-gray-600 leading-relaxed mb-5">
+              {/* DESCRIPTION */}
 
-                {pkg.description}
+              <p className="mb-5 leading-relaxed text-slate-600">
+
+                {pkg.short_description}
 
               </p>
+
+              {/* TAGS */}
+
+              <div className="mb-6 flex flex-wrap gap-2">
+
+                <div className="rounded-xl bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">
+
+                  {pkg.category}
+
+                </div>
+
+                <div className="rounded-xl bg-indigo-50 px-3 py-1 text-sm font-medium text-indigo-600">
+
+                  {pkg.difficulty}
+
+                </div>
+
+              </div>
+
+              {/* ACTIONS */}
 
               <div className="flex gap-3">
 
@@ -579,7 +720,7 @@ export default function AdminPackages() {
                   onClick={() =>
                     editPackage(pkg)
                   }
-                  className="flex-1 bg-gradient-to-r from-yellow-400 to-orange-400 text-white py-3 rounded-2xl"
+                  className="flex-1 rounded-2xl bg-amber-500 py-3 font-semibold text-white transition hover:bg-amber-600"
                 >
 
                   Edit
@@ -592,7 +733,7 @@ export default function AdminPackages() {
                       pkg.id
                     )
                   }
-                  className="flex-1 bg-gradient-to-r from-red-500 to-rose-500 text-white py-3 rounded-2xl"
+                  className="flex-1 rounded-2xl bg-rose-500 py-3 font-semibold text-white transition hover:bg-rose-600"
                 >
 
                   Delete
@@ -608,36 +749,33 @@ export default function AdminPackages() {
         ))}
 
       </div>
+        {/* ===================================================== */}
+{/* MODAL */}
+{/* ===================================================== */}
 
-      {/* MODAL */}
+{showModal && (
 
-     {showModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
 
-  <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex justify-center items-center z-50 p-6">
+    <div className="max-h-[95vh] w-full max-w-5xl overflow-y-auto rounded-[32px] bg-white p-8 shadow-2xl">
 
-    <div className="bg-white w-full max-w-6xl rounded-[32px] shadow-2xl max-h-[92vh] overflow-hidden flex flex-col">
-
-      {/* ===================================================== */}
       {/* HEADER */}
-      {/* ===================================================== */}
 
-      <div className="flex justify-between items-center p-8 border-b border-slate-200 bg-white sticky top-0 z-10">
+      <div className="mb-8 flex items-center justify-between">
 
         <div>
 
-          <h2 className="text-3xl font-black text-slate-900">
+          <h2 className="text-3xl font-bold text-slate-900">
 
             {editingPackage
-
-              ? "Edit Expedition Package"
-
-              : "Create New Expedition Package"}
+              ? "Edit Package"
+              : "Add Package"}
 
           </h2>
 
-          <p className="text-slate-500 mt-2">
+          <p className="mt-2 text-slate-500">
 
-            Manage premium trekking and adventure experiences
+            Manage Maharashtra trekking and travel packages
 
           </p>
 
@@ -651,7 +789,7 @@ export default function AdminPackages() {
             resetForm();
 
           }}
-          className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-2xl font-semibold transition"
+          className="rounded-2xl bg-slate-100 px-5 py-3 font-semibold text-slate-700 hover:bg-slate-200"
         >
 
           Close
@@ -660,490 +798,241 @@ export default function AdminPackages() {
 
       </div>
 
-      {/* ===================================================== */}
-      {/* SCROLLABLE BODY */}
-      {/* ===================================================== */}
+      {/* FORM */}
 
-      <div className="overflow-y-auto px-8 py-8 space-y-8">
+      <div className="grid gap-6 md:grid-cols-2">
 
-        {/* ===================================================== */}
-        {/* BASIC DETAILS */}
-        {/* ===================================================== */}
+        {/* TITLE */}
 
         <div>
 
-          <h3 className="text-2xl font-bold text-slate-900 mb-6">
-
-            Basic Information
-
-          </h3>
-
-          <div className="grid md:grid-cols-2 gap-6">
-
-            <div>
-
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
-
-                Package Title
-
-              </label>
-
-              <input
-                type="text"
-                name="title"
-                value={formData.title}
-                onChange={handleChange}
-                placeholder="Kedarkantha Winter Trek"
-                className="w-full border border-slate-200 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-
-            </div>
-
-            <div>
-
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
-
-                Destination
-
-              </label>
-
-              <input
-                type="text"
-                name="destination"
-                value={formData.destination}
-                onChange={handleChange}
-                placeholder="Uttarakhand"
-                className="w-full border border-slate-200 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-
-            </div>
-
-            <div>
-
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
-
-                Duration
-
-              </label>
-
-              <input
-                type="text"
-                name="duration"
-                value={formData.duration}
-                onChange={handleChange}
-                placeholder="6 Days / 5 Nights"
-                className="w-full border border-slate-200 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-
-            </div>
-
-            <div>
-
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
-
-                Price
-
-              </label>
-
-              <input
-                type="number"
-                name="price"
-                value={formData.price}
-                onChange={handleChange}
-                placeholder="12999"
-                className="w-full border border-slate-200 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* ===================================================== */}
-        {/* TREK DETAILS */}
-        {/* ===================================================== */}
-
-        <div>
-
-          <h3 className="text-2xl font-bold text-slate-900 mb-6">
-
-            Trek Details
-
-          </h3>
-
-          <div className="grid md:grid-cols-2 gap-6">
-
-            <div>
-
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
-
-                Services
-
-              </label>
-
-              <input
-                type="text"
-                name="services"
-                value={formData.services}
-                onChange={handleChange}
-                placeholder="Meals, Camping, Guide"
-                className="w-full border border-slate-200 rounded-2xl px-5 py-4"
-              />
-
-            </div>
-
-            <div>
-
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
-
-                Category
-
-              </label>
-
-              <input
-                type="text"
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                placeholder="Winter Trek"
-                className="w-full border border-slate-200 rounded-2xl px-5 py-4"
-              />
-
-            </div>
-
-            <div>
-
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
-
-                Difficulty
-
-              </label>
-
-              <input
-                type="text"
-                name="difficulty"
-                value={formData.difficulty}
-                onChange={handleChange}
-                placeholder="Easy to Moderate"
-                className="w-full border border-slate-200 rounded-2xl px-5 py-4"
-              />
-
-            </div>
-
-            <div>
-
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
-
-                Group Size
-
-              </label>
-
-              <input
-                type="text"
-                name="group_size"
-                value={formData.group_size}
-                onChange={handleChange}
-                placeholder="15 People"
-                className="w-full border border-slate-200 rounded-2xl px-5 py-4"
-              />
-
-            </div>
-
-            <div>
-
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
-
-                Best Season
-
-              </label>
-
-              <input
-                type="text"
-                name="best_season"
-                value={formData.best_season}
-                onChange={handleChange}
-                placeholder="December to February"
-                className="w-full border border-slate-200 rounded-2xl px-5 py-4"
-              />
-
-            </div>
-
-            <div>
-
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
-
-                Altitude
-
-              </label>
-
-              <input
-                type="text"
-                name="altitude"
-                value={formData.altitude}
-                onChange={handleChange}
-                placeholder="12,500 ft"
-                className="w-full border border-slate-200 rounded-2xl px-5 py-4"
-              />
-
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* ===================================================== */}
-        {/* IMAGE */}
-        {/* ===================================================== */}
-
-        <div>
-
-          <label className="block text-sm font-semibold text-slate-700 mb-2">
-
-            Cover Image URL
-
+          <label className="mb-2 block text-sm font-semibold text-slate-700">
+            Package Title
           </label>
 
           <input
             type="text"
-            name="image"
-            value={formData.image}
+            name="title"
+            value={formData.title}
             onChange={handleChange}
+            className="w-full rounded-2xl border border-slate-200 px-5 py-4 outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="Rajmachi Trek"
+          />
+
+        </div>
+
+        {/* LOCATION */}
+
+        <div>
+
+          <label className="mb-2 block text-sm font-semibold text-slate-700">
+            Location
+          </label>
+
+          <input
+            type="text"
+            name="location"
+            value={formData.location}
+            onChange={handleChange}
+            className="w-full rounded-2xl border border-slate-200 px-5 py-4 outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="Lonavala"
+          />
+
+        </div>
+
+        {/* REGION */}
+
+        <div>
+
+          <label className="mb-2 block text-sm font-semibold text-slate-700">
+            Region
+          </label>
+
+          <input
+            type="text"
+            name="region"
+            value={formData.region}
+            onChange={handleChange}
+            className="w-full rounded-2xl border border-slate-200 px-5 py-4 outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="Western Ghats"
+          />
+
+        </div>
+
+        {/* CATEGORY */}
+
+        <div>
+
+          <label className="mb-2 block text-sm font-semibold text-slate-700">
+            Category
+          </label>
+
+          <input
+            type="text"
+            name="category"
+            value={formData.category}
+            onChange={handleChange}
+            className="w-full rounded-2xl border border-slate-200 px-5 py-4 outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="Trekking"
+          />
+
+        </div>
+
+        {/* PRICE */}
+
+        <div>
+
+          <label className="mb-2 block text-sm font-semibold text-slate-700">
+            Price
+          </label>
+
+          <input
+            type="number"
+            name="price"
+            value={formData.price}
+            onChange={handleChange}
+            className="w-full rounded-2xl border border-slate-200 px-5 py-4 outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="2999"
+          />
+
+        </div>
+
+        {/* DURATION */}
+
+        <div>
+
+          <label className="mb-2 block text-sm font-semibold text-slate-700">
+            Duration
+          </label>
+
+          <input
+            type="text"
+            name="duration"
+            value={formData.duration}
+            onChange={handleChange}
+            className="w-full rounded-2xl border border-slate-200 px-5 py-4 outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="2 Days / 1 Night"
+          />
+
+        </div>
+
+        {/* DIFFICULTY */}
+
+        <div>
+
+          <label className="mb-2 block text-sm font-semibold text-slate-700">
+            Difficulty
+          </label>
+
+          <input
+            type="text"
+            name="difficulty"
+            value={formData.difficulty}
+            onChange={handleChange}
+            className="w-full rounded-2xl border border-slate-200 px-5 py-4 outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="Moderate"
+          />
+
+        </div>
+
+        {/* TREK DISTANCE */}
+
+        <div>
+
+          <label className="mb-2 block text-sm font-semibold text-slate-700">
+            Trek Distance
+          </label>
+
+          <input
+            type="text"
+            name="trek_distance"
+            value={formData.trek_distance}
+            onChange={handleChange}
+            className="w-full rounded-2xl border border-slate-200 px-5 py-4 outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="12 KM"
+          />
+
+        </div>
+
+        {/* IMAGE */}
+
+        <div className="md:col-span-2">
+
+          <label className="mb-2 block text-sm font-semibold text-slate-700">
+            Featured Image URL
+          </label>
+
+          <input
+            type="text"
+            name="featured_image"
+            value={formData.featured_image}
+            onChange={handleChange}
+            className="w-full rounded-2xl border border-slate-200 px-5 py-4 outline-none focus:ring-2 focus:ring-indigo-500"
             placeholder="https://..."
-            className="w-full border border-slate-200 rounded-2xl px-5 py-4"
           />
 
         </div>
 
-        {/* ===================================================== */}
-        {/* DESCRIPTION */}
-        {/* ===================================================== */}
+        {/* SHORT DESCRIPTION */}
 
-        <div>
+        <div className="md:col-span-2">
 
-          <label className="block text-sm font-semibold text-slate-700 mb-2">
-
-            Description
-
+          <label className="mb-2 block text-sm font-semibold text-slate-700">
+            Short Description
           </label>
 
           <textarea
-            rows="5"
-            name="description"
-            value={formData.description}
+            rows={4}
+            name="short_description"
+            value={formData.short_description}
             onChange={handleChange}
-            placeholder="Describe the trekking experience..."
-            className="w-full border border-slate-200 rounded-2xl px-5 py-4"
+            className="w-full rounded-2xl border border-slate-200 px-5 py-4 outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="Short adventure description..."
           />
-
-        </div>
-
-        {/* ===================================================== */}
-        {/* INCLUDED / EXCLUDED */}
-        {/* ===================================================== */}
-
-        <div className="grid md:grid-cols-2 gap-6">
-
-          <div>
-
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-
-              Included
-
-            </label>
-
-            <textarea
-              rows="6"
-              name="included"
-              value={formData.included}
-              onChange={handleChange}
-              placeholder="Meals, Stay, Guide..."
-              className="w-full border border-slate-200 rounded-2xl px-5 py-4"
-            />
-
-          </div>
-
-          <div>
-
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-
-              Excluded
-
-            </label>
-
-            <textarea
-              rows="6"
-              name="excluded"
-              value={formData.excluded}
-              onChange={handleChange}
-              placeholder="Insurance, Personal expenses..."
-              className="w-full border border-slate-200 rounded-2xl px-5 py-4"
-            />
-
-          </div>
-
-        </div>
-
-        {/* ===================================================== */}
-        {/* ITINERARY */}
-        {/* ===================================================== */}
-
-        <div>
-
-          <label className="block text-sm font-semibold text-slate-700 mb-2">
-
-            Day-wise Itinerary
-
-          </label>
-
-          <textarea
-            rows="8"
-            name="itinerary"
-            value={formData.itinerary}
-            onChange={handleChange}
-            placeholder="Day 1 - Arrival..."
-            className="w-full border border-slate-200 rounded-2xl px-5 py-4"
-          />
-
-        </div>
-
-        {/* ===================================================== */}
-        {/* HOTEL & TRANSPORT */}
-        {/* ===================================================== */}
-
-        <div className="grid md:grid-cols-2 gap-6">
-
-          <div>
-
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-
-              Hotel Details
-
-            </label>
-
-            <textarea
-              rows="6"
-              name="hotel_details"
-              value={formData.hotel_details}
-              onChange={handleChange}
-              placeholder="Swiss camps, hotel stay..."
-              className="w-full border border-slate-200 rounded-2xl px-5 py-4"
-            />
-
-          </div>
-
-          <div>
-
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-
-              Transport Details
-
-            </label>
-
-            <textarea
-              rows="6"
-              name="transport_details"
-              value={formData.transport_details}
-              onChange={handleChange}
-              placeholder="Tempo Traveller..."
-              className="w-full border border-slate-200 rounded-2xl px-5 py-4"
-            />
-
-          </div>
-
-        </div>
-
-        {/* ===================================================== */}
-        {/* GALLERY */}
-        {/* ===================================================== */}
-
-        <div>
-
-          <label className="block text-sm font-semibold text-slate-700 mb-2">
-
-            Gallery URLs
-
-          </label>
-
-          <textarea
-            rows="5"
-            name="gallery"
-            value={formData.gallery}
-            onChange={handleChange}
-            placeholder="https://image1.jpg, https://image2.jpg"
-            className="w-full border border-slate-200 rounded-2xl px-5 py-4"
-          />
-
-        </div>
-
-        {/* ===================================================== */}
-        {/* RATING + FEATURED */}
-        {/* ===================================================== */}
-
-        <div className="grid md:grid-cols-2 gap-6">
-
-          <div>
-
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-
-              Rating
-
-            </label>
-
-            <input
-              type="number"
-              step="0.1"
-              name="rating"
-              value={formData.rating}
-              onChange={handleChange}
-              placeholder="4.8"
-              className="w-full border border-slate-200 rounded-2xl px-5 py-4"
-            />
-
-          </div>
-
-          <div className="flex items-center gap-4 pt-10">
-
-            <input
-              type="checkbox"
-              name="featured"
-              checked={formData.featured}
-              onChange={handleChange}
-              className="w-5 h-5"
-            />
-
-            <label className="font-semibold text-slate-700">
-
-              Featured Package
-
-            </label>
-
-          </div>
 
         </div>
 
       </div>
 
-      {/* ===================================================== */}
-      {/* FOOTER */}
-      {/* ===================================================== */}
+      {/* BUTTONS */}
 
-      <div className="border-t border-slate-200 p-8 flex justify-end bg-white">
+      <div className="mt-8 flex justify-end gap-4">
 
         <button
-          onClick={
-            editingPackage
-              ? updatePackage
-              : addPackage
-          }
-          className="bg-gradient-to-r from-emerald-600 to-teal-500 text-white px-10 py-4 rounded-2xl font-bold shadow-lg hover:shadow-2xl transition"
+          onClick={() => {
+
+            setShowModal(false);
+
+            resetForm();
+
+          }}
+          className="rounded-2xl border border-slate-300 px-6 py-3 font-semibold text-slate-700"
+        >
+
+          Cancel
+
+        </button>
+
+        <button
+          onClick={() => {
+
+            if (editingPackage) {
+
+              updatePackage();
+
+            } else {
+
+              addPackage();
+
+            }
+
+          }}
+          className="rounded-2xl bg-indigo-600 px-8 py-3 font-semibold text-white shadow-lg hover:bg-indigo-700"
         >
 
           {editingPackage
-
             ? "Update Package"
-
-            : "Create Package"}
+            : "Add Package"}
 
         </button>
 
@@ -1153,7 +1042,8 @@ export default function AdminPackages() {
 
   </div>
 
-)}   </div>
+)}
+    </div>
 
   );
 

@@ -1,58 +1,154 @@
-import { motion } from "framer-motion";
-import { FaStar } from "react-icons/fa";
+import {
+  motion,
+} from "framer-motion";
 
-import { testimonials } from "../../data/destinations";
-import SectionHeader from "../../components/ui/SectionHeader";
+import {
+  FaStar,
+} from "react-icons/fa";
+
+const testimonials = [
+
+  {
+    id: 1,
+    name: "Rahul Patil",
+    role: "Weekend Trekker",
+    rating: 5,
+    quote:
+      "TravelGenie made our Rajmachi trek experience seamless. Booking, planning, and coordination felt extremely professional.",
+  },
+
+  {
+    id: 2,
+    name: "Sneha Joshi",
+    role: "Adventure Explorer",
+    rating: 5,
+    quote:
+      "The AI planner and curated packages helped us discover hidden places in Maharashtra we never knew existed.",
+  },
+
+  {
+    id: 3,
+    name: "Amit Kulkarni",
+    role: "Group Organizer",
+    rating: 5,
+    quote:
+      "Clean booking workflow, excellent trek planning, and very organized communication from the operators.",
+  },
+
+];
 
 const TestimonialsSection = () => {
+
   return (
-    <section id="testimonials" className="bg-white py-20 md:py-28">
-      <motion.div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <SectionHeader
-          eyebrow="Trekker stories"
-          title="Trusted by adventurers & operators"
-          description="Real feedback from Himalayan expeditions — premium operations, transparent bookings, AI that assists instead of replacing curated treks."
-        />
 
-        <motion.div className="mt-14 grid gap-8 md:grid-cols-3">
+    <section className="bg-[#f8fafc] py-24">
+
+      <div className="max-w-7xl mx-auto px-6">
+
+        {/* HEADER */}
+
+        <div className="text-center max-w-3xl mx-auto">
+
+          <p className="uppercase tracking-[0.3em] text-orange-500 font-bold text-sm mb-5">
+
+            Trekker Stories
+
+          </p>
+
+          <h2 className="text-4xl md:text-5xl font-black text-slate-900 leading-tight">
+
+            Trusted By Adventure
+            Travelers Across Maharashtra
+
+          </h2>
+
+          <p className="mt-6 text-lg text-slate-500 leading-relaxed">
+
+            Real feedback from trekkers,
+            campers, and travel groups
+            using TravelGenie for curated adventures.
+
+          </p>
+
+        </div>
+
+        {/* CARDS */}
+
+        <div className="grid md:grid-cols-3 gap-8 mt-16">
+
           {testimonials.map((item, index) => (
-            <motion.blockquote
-              key={item.id}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ y: -4 }}
-              className="flex h-full flex-col rounded-3xl bg-surface p-8 shadow-soft ring-1 ring-slate-100"
-            >
-              <motion.div className="flex gap-1 text-accent">
-                {Array.from({ length: item.rating }).map((_, i) => (
-                  <FaStar key={i} />
-                ))}
-              </motion.div>
 
-              <p className="mt-6 flex-1 text-base leading-relaxed text-ink-muted">
-                &ldquo;{item.quote}&rdquo;
+            <motion.div
+              key={item.id}
+              initial={{
+                opacity: 0,
+                y: 20,
+              }}
+              whileInView={{
+                opacity: 1,
+                y: 0,
+              }}
+              transition={{
+                delay: index * 0.1,
+              }}
+              viewport={{
+                once: true,
+              }}
+              className="bg-white rounded-[32px] border border-slate-200 p-8 shadow-sm hover:shadow-xl transition"
+            >
+
+              {/* STARS */}
+
+              <div className="flex gap-1 text-orange-400">
+
+                {Array.from({
+                  length: item.rating,
+                }).map((_, i) => (
+
+                  <FaStar key={i} />
+
+                ))}
+
+              </div>
+
+              {/* QUOTE */}
+
+              <p className="mt-6 text-slate-600 leading-relaxed">
+
+                "{item.quote}"
+
               </p>
 
-              <footer className="mt-8 flex items-center gap-4 border-t border-slate-200 pt-6">
-                <motion.div
-                  className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-sm font-bold text-white"
-                  whileHover={{ scale: 1.05 }}
-                >
-                  {item.avatar}
-                </motion.div>
-                <motion.div>
-                  <p className="font-semibold text-ink">{item.name}</p>
-                  <p className="text-sm text-ink-muted">{item.role}</p>
-                </motion.div>
-              </footer>
-            </motion.blockquote>
+              {/* USER */}
+
+              <div className="mt-8 pt-6 border-t border-slate-200">
+
+                <h4 className="font-black text-slate-900">
+
+                  {item.name}
+
+                </h4>
+
+                <p className="text-slate-500 mt-1">
+
+                  {item.role}
+
+                </p>
+
+              </div>
+
+            </motion.div>
+
           ))}
-        </motion.div>
-      </motion.div>
+
+        </div>
+
+      </div>
+
     </section>
+
   );
+
 };
 
 export default TestimonialsSection;

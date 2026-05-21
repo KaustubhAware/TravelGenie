@@ -1,42 +1,107 @@
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, Field
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+)
+
+from pydantic import (
+    BaseModel,
+    Field,
+)
 
 from app.db import get_connection
-from app.routes.auth import get_current_user
+
+from app.routes.auth import (
+    get_current_user,
+)
 
 router = APIRouter(prefix="/admin")
 
+
+# =====================================================
+# VALID STATUSES
+# =====================================================
+
 VALID_STATUSES = {
+
     "pending",
+
     "under_review",
+
     "approved",
+
     "rejected",
+
     "payment_pending",
+
     "cancelled",
+
     "paid",
+
     "completed",
+
 }
 
 
+# =====================================================
+# MODELS
+# =====================================================
+
 class BookingStatusRequest(BaseModel):
 
-    booking_id: str = Field(..., min_length=5, max_length=40)
-    status: str = Field(..., min_length=3, max_length=20)
+    booking_id: str = Field(
+        ...,
+        min_length=5,
+        max_length=40
+    )
+
+    status: str = Field(
+        ...,
+        min_length=3,
+        max_length=20
+    )
 
 
 class BookingActionRequest(BaseModel):
 
-    booking_id: str = Field(..., min_length=5, max_length=40)
+    booking_id: str = Field(
+        ...,
+        min_length=5,
+        max_length=40
+    )
 
 
 class BookingReviewRequest(BaseModel):
 
-    booking_id: str = Field(..., min_length=5, max_length=40)
-    decision: str = Field(..., min_length=3, max_length=30)
-    internal_notes: str | None = Field(default="", max_length=1200)
-    adjusted_price: float | None = Field(default=None, ge=0)
-    assigned_agent: str | None = Field(default="", max_length=120)
+    booking_id: str = Field(
+        ...,
+        min_length=5,
+        max_length=40
+    )
 
+    decision: str = Field(
+        ...,
+        min_length=3,
+        max_length=30
+    )
+
+    internal_notes: str | None = Field(
+        default=""
+    )
+
+    adjusted_price: float | None = Field(
+        default=None,
+        ge=0
+    )
+
+    assigned_agent: str | None = Field(
+        default=""
+    )
+
+
+# =====================================================
+# ENSURE BOOKING COLUMNS
+# =====================================================
 
 def ensure_booking_workflow_columns(cursor):
 
@@ -46,37 +111,61 @@ def ensure_booking_workflow_columns(cursor):
         ADD COLUMN IF NOT EXISTS payment_status VARCHAR(30) DEFAULT 'unpaid',
         ADD COLUMN IF NOT EXISTS internal_notes TEXT,
         ADD COLUMN IF NOT EXISTS assigned_agent VARCHAR(120),
-        ADD COLUMN IF NOT EXISTS adjusted_price NUMERIC(12, 2),
+        ADD COLUMN IF NOT EXISTS adjusted_price NUMERIC(12,2),
         ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         """
     )
 
+
+# =====================================================
+# ACTIVITY LOG TABLE
+# =====================================================
 
 def ensure_audit_tables(cursor):
 
     cursor.execute(
         """
         CREATE TABLE IF NOT EXISTS activity_logs (
+
             id SERIAL PRIMARY KEY,
+
             actor VARCHAR(120),
+
             actor_role VARCHAR(40),
-            action VARCHAR(120) NOT NULL,
+
+            action VARCHAR(120),
+
             entity_type VARCHAR(80),
+
             entity_id VARCHAR(80),
+
             metadata JSONB DEFAULT '{}'::jsonb,
+
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
         )
         """
     )
 
 
+# =====================================================
+# WRITE ACTIVITY
+# =====================================================
+
 def write_activity(
+
     cursor,
+
     actor,
+
     action,
+
     entity_type,
+
     entity_id,
+
     metadata="{}",
+
 ):
 
     ensure_audit_tables(cursor)
@@ -92,7 +181,16 @@ def write_activity(
             entity_id,
             metadata
         )
-        VALUES (%s, %s, %s, %s, %s, %s::jsonb)
+
+        VALUES
+        (
+            %s,
+            %s,
+            %s,
+            %s,
+            %s,
+            %s::jsonb
+        )
         """,
         (
             actor.get("sub", "admin"),
@@ -105,12 +203,14 @@ def write_activity(
     )
 
 
-# ============================================
-# ================= STATS ====================
-# ============================================
+# =====================================================
+# ADMIN STATS
+# =====================================================
 
 @router.get("/stats")
-def get_stats(admin=Depends(get_current_user)):
+def get_stats(
+    admin=Depends(get_current_user)
+):
 
     conn = get_connection()
 
@@ -118,9 +218,9 @@ def get_stats(admin=Depends(get_current_user)):
 
     try:
 
-        # TOTAL BOOKINGS
-
         ensure_booking_workflow_columns(cursor)
+
+        # TOTAL BOOKINGS
 
         cursor.execute(
             """
@@ -130,18 +230,6 @@ def get_stats(admin=Depends(get_current_user)):
         )
 
         total = cursor.fetchone()[0]
-
-        # APPROVED BOOKINGS
-
-        cursor.execute(
-            """
-            SELECT COUNT(*)
-            FROM bookings
-            WHERE status='approved'
-            """
-        )
-
-        approved = cursor.fetchone()[0]
 
         # PAID BOOKINGS
 
@@ -167,7 +255,7 @@ def get_stats(admin=Depends(get_current_user)):
 
         pending = cursor.fetchone()[0]
 
-        # UNDER REVIEW BOOKINGS
+        # UNDER REVIEW
 
         cursor.execute(
             """
@@ -179,31 +267,7 @@ def get_stats(admin=Depends(get_current_user)):
 
         under_review = cursor.fetchone()[0]
 
-        # PAYMENT PENDING BOOKINGS
-
-        cursor.execute(
-            """
-            SELECT COUNT(*)
-            FROM bookings
-            WHERE status='payment_pending'
-            """
-        )
-
-        payment_pending = cursor.fetchone()[0]
-
-        # COMPLETED BOOKINGS
-
-        cursor.execute(
-            """
-            SELECT COUNT(*)
-            FROM bookings
-            WHERE status='completed'
-            """
-        )
-
-        completed = cursor.fetchone()[0]
-
-        # CANCELLED BOOKINGS
+        # CANCELLED
 
         cursor.execute(
             """
@@ -215,24 +279,33 @@ def get_stats(admin=Depends(get_current_user)):
 
         cancelled = cursor.fetchone()[0]
 
-        # TOTAL REVENUE
+        # REVENUE
 
         cursor.execute(
             """
             SELECT COALESCE(
-                SUM(budget),
+                SUM(
+                    COALESCE(
+                        adjusted_price,
+                        budget
+                    )
+                ),
                 0
             )
 
             FROM bookings
 
-            WHERE status='paid'
+            WHERE status IN
+            (
+                'paid',
+                'completed'
+            )
             """
         )
 
         revenue = cursor.fetchone()[0]
 
-        # TOTAL CLIENTS
+        # CLIENTS
 
         cursor.execute(
             """
@@ -245,29 +318,26 @@ def get_stats(admin=Depends(get_current_user)):
 
         return {
 
-            "total": total,
+            "total":
+                total,
 
-            "paid": paid,
+            "paid":
+                paid,
 
-            "approved": approved,
+            "pending":
+                pending,
 
-            "pending": pending,
+            "under_review":
+                under_review,
 
-            "under_review": under_review,
+            "cancelled":
+                cancelled,
 
-            "payment_pending": payment_pending,
+            "revenue":
+                float(revenue),
 
-            "cancelled": cancelled,
-
-            "completed": completed,
-
-            "revenue": revenue,
-
-            "clients": clients,
-
-            "cancellation_rate": round((cancelled / total) * 100, 2) if total else 0,
-
-            "conversion_rate": round((paid / total) * 100, 2) if total else 0
+            "clients":
+                clients,
 
         }
 
@@ -278,12 +348,14 @@ def get_stats(admin=Depends(get_current_user)):
         conn.close()
 
 
-# ============================================
-# ============== REVENUE CHART ===============
-# ============================================
+# =====================================================
+# REVENUE BY DATE
+# =====================================================
 
 @router.get("/revenue-by-date")
-def revenue_by_date(admin=Depends(get_current_user)):
+def revenue_by_date(
+    admin=Depends(get_current_user)
+):
 
     conn = get_connection()
 
@@ -297,11 +369,24 @@ def revenue_by_date(admin=Depends(get_current_user)):
             """
             SELECT
                 DATE(created_at),
-                SUM(budget)
+
+                COALESCE(
+                    SUM(
+                        COALESCE(
+                            adjusted_price,
+                            budget
+                        )
+                    ),
+                    0
+                )
 
             FROM bookings
 
-            WHERE status='paid'
+            WHERE status IN
+            (
+                'paid',
+                'completed'
+            )
 
             GROUP BY DATE(created_at)
 
@@ -317,7 +402,7 @@ def revenue_by_date(admin=Depends(get_current_user)):
 
                 {
                     "date": str(r[0]),
-                    "revenue": r[1]
+                    "revenue": float(r[1]),
                 }
 
                 for r in rows
@@ -333,12 +418,14 @@ def revenue_by_date(admin=Depends(get_current_user)):
         conn.close()
 
 
-# ============================================
-# ============ TOP DESTINATIONS ==============
-# ============================================
+# =====================================================
+# TOP DESTINATIONS
+# =====================================================
 
 @router.get("/top-destinations")
-def top_destinations(admin=Depends(get_current_user)):
+def top_destinations(
+    admin=Depends(get_current_user)
+):
 
     conn = get_connection()
 
@@ -388,14 +475,19 @@ def top_destinations(admin=Depends(get_current_user)):
         conn.close()
 
 
-# ============================================
-# ============== UPDATE STATUS ===============
-# ============================================
+# =====================================================
+# UPDATE STATUS
+# =====================================================
 
 @router.post("/update-status")
 def update_status(
+
     data: BookingStatusRequest,
-    admin=Depends(get_current_user)
+
+    admin=Depends(
+        get_current_user
+    )
+
 ):
 
     status = data.status.lower().strip()
@@ -404,7 +496,7 @@ def update_status(
 
         raise HTTPException(
             status_code=400,
-            detail="Invalid booking status"
+            detail="Invalid status"
         )
 
     conn = get_connection()
@@ -418,19 +510,17 @@ def update_status(
         cursor.execute(
             """
             UPDATE bookings
+
             SET
-                status=%s,
-                payment_status = CASE
-                    WHEN %s = 'payment_pending' THEN 'pending'
-                    WHEN %s = 'paid' THEN 'paid'
-                    ELSE payment_status
-                END,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE booking_id=%s
+
+                status = %s,
+
+                updated_at =
+                    CURRENT_TIMESTAMP
+
+            WHERE booking_id = %s
             """,
             (
-                status,
-                status,
                 status,
                 data.booking_id
             )
@@ -444,75 +534,28 @@ def update_status(
             )
 
         write_activity(
+
             cursor,
+
             admin,
-            "booking_cancelled",
+
+            "status_updated",
+
             "booking",
-            data.booking_id
-        )
 
-        conn.commit()
-
-        return {
-            "message": "Updated"
-        }
-
-    finally:
-
-        cursor.close()
-
-        conn.close()
-
-
-# ============================================
-# ============= CANCEL BOOKING ===============
-# ============================================
-
-@router.post("/cancel-booking")
-def cancel_booking(
-    data: BookingActionRequest,
-    admin=Depends(get_current_user)
-):
-
-    conn = get_connection()
-
-    cursor = conn.cursor()
-
-    try:
-
-        ensure_booking_workflow_columns(cursor)
-
-        cursor.execute(
-            """
-            UPDATE bookings
-            SET
-                status='cancelled',
-                updated_at=CURRENT_TIMESTAMP
-            WHERE booking_id=%s
-            """,
-            (data.booking_id,)
-        )
-
-        if cursor.rowcount == 0:
-
-            raise HTTPException(
-                status_code=404,
-                detail="Booking not found"
-            )
-
-        write_activity(
-            cursor,
-            admin,
-            "booking_reviewed",
-            "booking",
             data.booking_id,
+
             f'{{"status":"{status}"}}'
+
         )
 
         conn.commit()
 
         return {
-            "message": "Cancelled"
+
+            "message":
+                "Status updated"
+
         }
 
     finally:
@@ -521,24 +564,50 @@ def cancel_booking(
 
         conn.close()
 
+
+# =====================================================
+# REVIEW BOOKING
+# =====================================================
 
 @router.post("/review-booking")
 def review_booking(
+
     data: BookingReviewRequest,
-    admin=Depends(get_current_user)
+
+    admin=Depends(
+        get_current_user
+    )
+
 ):
 
     decision = data.decision.lower().strip()
 
     status_map = {
-        "review": "under_review",
-        "under_review": "under_review",
-        "approve": "payment_pending",
-        "approved": "payment_pending",
-        "reject": "rejected",
-        "rejected": "rejected",
-        "complete": "completed",
-        "completed": "completed",
+
+        "review":
+            "under_review",
+
+        "under_review":
+            "under_review",
+
+        "approve":
+            "payment_pending",
+
+        "approved":
+            "payment_pending",
+
+        "reject":
+            "rejected",
+
+        "rejected":
+            "rejected",
+
+        "complete":
+            "completed",
+
+        "completed":
+            "completed",
+
     }
 
     status = status_map.get(decision)
@@ -561,17 +630,34 @@ def review_booking(
         cursor.execute(
             """
             UPDATE bookings
+
             SET
+
                 status = %s,
+
                 payment_status = CASE
-                    WHEN %s = 'payment_pending' THEN 'pending'
-                    WHEN %s = 'rejected' THEN 'not_required'
+
+                    WHEN %s = 'payment_pending'
+                    THEN 'pending'
+
+                    WHEN %s = 'rejected'
+                    THEN 'not_required'
+
                     ELSE payment_status
+
                 END,
+
                 internal_notes = %s,
+
                 assigned_agent = %s,
-                adjusted_price = COALESCE(%s, adjusted_price),
+
+                adjusted_price = COALESCE(
+                    %s,
+                    adjusted_price
+                ),
+
                 updated_at = CURRENT_TIMESTAMP
+
             WHERE booking_id = %s
             """,
             (
@@ -593,19 +679,31 @@ def review_booking(
             )
 
         write_activity(
+
             cursor,
+
             admin,
-            "booking_status_updated",
+
+            "booking_reviewed",
+
             "booking",
+
             data.booking_id,
+
             f'{{"status":"{status}"}}'
+
         )
 
         conn.commit()
 
         return {
-            "message": "Booking review updated",
-            "status": status
+
+            "message":
+                "Booking updated",
+
+            "status":
+                status
+
         }
 
     finally:
@@ -615,10 +713,97 @@ def review_booking(
         conn.close()
 
 
+# =====================================================
+# CANCEL BOOKING
+# =====================================================
+
+@router.post("/cancel-booking")
+def cancel_booking(
+
+    data: BookingActionRequest,
+
+    admin=Depends(
+        get_current_user
+    )
+
+):
+
+    conn = get_connection()
+
+    cursor = conn.cursor()
+
+    try:
+
+        ensure_booking_workflow_columns(cursor)
+
+        cursor.execute(
+            """
+            UPDATE bookings
+
+            SET
+
+                status = 'cancelled',
+
+                updated_at =
+                    CURRENT_TIMESTAMP
+
+            WHERE booking_id = %s
+            """,
+            (
+                data.booking_id,
+            )
+        )
+
+        if cursor.rowcount == 0:
+
+            raise HTTPException(
+                status_code=404,
+                detail="Booking not found"
+            )
+
+        write_activity(
+
+            cursor,
+
+            admin,
+
+            "booking_cancelled",
+
+            "booking",
+
+            data.booking_id
+
+        )
+
+        conn.commit()
+
+        return {
+
+            "message":
+                "Booking cancelled"
+
+        }
+
+    finally:
+
+        cursor.close()
+
+        conn.close()
+
+
+# =====================================================
+# ADMIN BOOKING DETAIL
+# =====================================================
+
 @router.get("/bookings/{booking_id}")
 def get_admin_booking_detail(
+
     booking_id: str,
-    admin=Depends(get_current_user)
+
+    admin=Depends(
+        get_current_user
+    )
+
 ):
 
     conn = get_connection()
@@ -632,22 +817,42 @@ def get_admin_booking_detail(
         cursor.execute(
             """
             SELECT
+
                 id,
+
                 booking_id,
+
                 destination,
+
                 name,
+
                 email,
+
                 phone,
+
                 budget,
+
                 days,
+
                 status,
+
                 payment_status,
+
                 internal_notes,
+
                 assigned_agent,
-                COALESCE(adjusted_price, budget) AS total_cost,
+
+                COALESCE(
+                    adjusted_price,
+                    budget
+                ) AS total_cost,
+
                 created_at,
+
                 updated_at
+
             FROM bookings
+
             WHERE booking_id = %s
             """,
             (booking_id,)
@@ -663,23 +868,42 @@ def get_admin_booking_detail(
             )
 
         return {
+
             "booking": {
+
                 "id": row[0],
+
                 "booking_id": row[1],
+
                 "destination": row[2],
+
                 "name": row[3],
+
                 "email": row[4],
+
                 "phone": row[5],
+
                 "budget": row[6],
+
                 "days": row[7],
+
                 "status": row[8],
+
                 "payment_status": row[9],
+
                 "internal_notes": row[10],
+
                 "assigned_agent": row[11],
+
                 "total_cost": row[12],
+
                 "created_at": str(row[13]),
-                "updated_at": str(row[14]) if row[14] else None
+
+                "updated_at":
+                    str(row[14]) if row[14] else None
+
             }
+
         }
 
     finally:
@@ -689,8 +913,14 @@ def get_admin_booking_detail(
         conn.close()
 
 
+# =====================================================
+# ADVANCED ANALYTICS
+# =====================================================
+
 @router.get("/advanced-analytics")
-def advanced_analytics(admin=Depends(get_current_user)):
+def advanced_analytics(
+    admin=Depends(get_current_user)
+):
 
     conn = get_connection()
 
@@ -700,112 +930,92 @@ def advanced_analytics(admin=Depends(get_current_user)):
 
         ensure_booking_workflow_columns(cursor)
 
+        # MONTHLY
+
         cursor.execute(
             """
             SELECT
-                TO_CHAR(created_at, 'YYYY-MM') AS month,
+                TO_CHAR(created_at, 'YYYY-MM'),
+
                 COUNT(*),
+
                 COALESCE(
                     SUM(
                         CASE
-                            WHEN status IN ('paid', 'completed')
-                            THEN COALESCE(adjusted_price, budget)
+                            WHEN status IN
+                            (
+                                'paid',
+                                'completed'
+                            )
+                            THEN COALESCE(
+                                adjusted_price,
+                                budget
+                            )
                             ELSE 0
                         END
                     ),
                     0
                 )
+
             FROM bookings
-            GROUP BY TO_CHAR(created_at, 'YYYY-MM')
-            ORDER BY month
+
+            GROUP BY
+                TO_CHAR(created_at, 'YYYY-MM')
+
+            ORDER BY
+                TO_CHAR(created_at, 'YYYY-MM')
             """
         )
 
         monthly = [
+
             {
                 "month": row[0],
                 "bookings": row[1],
-                "revenue": row[2],
+                "revenue": float(row[2]),
             }
+
             for row in cursor.fetchall()
+
         ]
+
+        # DESTINATIONS
 
         cursor.execute(
             """
             SELECT
                 destination,
-                COUNT(*) AS total,
-                COALESCE(
-                    SUM(
-                        CASE
-                            WHEN status IN ('paid', 'completed')
-                            THEN COALESCE(adjusted_price, budget)
-                            ELSE 0
-                        END
-                    ),
-                    0
-                ) AS revenue
+                COUNT(*)
+
             FROM bookings
+
             GROUP BY destination
-            ORDER BY total DESC
+
+            ORDER BY COUNT(*) DESC
+
             LIMIT 10
             """
         )
 
         destinations = [
+
             {
                 "destination": row[0],
-                "bookings": row[1],
-                "revenue": row[2],
-            }
-            for row in cursor.fetchall()
-        ]
-
-        cursor.execute(
-            """
-            SELECT status, COUNT(*)
-            FROM bookings
-            GROUP BY status
-            ORDER BY COUNT(*) DESC
-            """
-        )
-
-        status_breakdown = [
-            {
-                "status": row[0],
                 "count": row[1],
             }
+
             for row in cursor.fetchall()
+
         ]
 
-        cursor.execute(
-            """
-            SELECT COUNT(DISTINCT user_id)
-            FROM bookings
-            """
-        )
-
-        customers_with_bookings = cursor.fetchone()[0]
-
-        cursor.execute(
-            """
-            SELECT COUNT(*)
-            FROM users
-            """
-        )
-
-        total_customers = cursor.fetchone()[0]
-
-        retention_rate = round(
-            (customers_with_bookings / total_customers) * 100,
-            2
-        ) if total_customers else 0
-
         return {
-            "monthly": monthly,
-            "destinations": destinations,
-            "status_breakdown": status_breakdown,
-            "retention_rate": retention_rate,
+
+            "monthly":
+                monthly,
+
+            "destinations":
+                destinations,
+
         }
 
     finally:
@@ -815,8 +1025,14 @@ def advanced_analytics(admin=Depends(get_current_user)):
         conn.close()
 
 
+# =====================================================
+# ACTIVITY LOGS
+# =====================================================
+
 @router.get("/activity-logs")
-def activity_logs(admin=Depends(get_current_user)):
+def activity_logs(
+    admin=Depends(get_current_user)
+):
 
     conn = get_connection()
 
@@ -829,30 +1045,53 @@ def activity_logs(admin=Depends(get_current_user)):
         cursor.execute(
             """
             SELECT
+
                 actor,
+
                 actor_role,
+
                 action,
+
                 entity_type,
+
                 entity_id,
+
                 created_at
+
             FROM activity_logs
+
             ORDER BY id DESC
+
             LIMIT 50
             """
         )
 
+        rows = cursor.fetchall()
+
         return {
+
             "logs": [
+
                 {
+
                     "actor": row[0],
+
                     "actor_role": row[1],
+
                     "action": row[2],
+
                     "entity_type": row[3],
+
                     "entity_id": row[4],
+
                     "created_at": str(row[5]),
+
                 }
-                for row in cursor.fetchall()
+
+                for row in rows
+
             ]
+
         }
 
     finally:

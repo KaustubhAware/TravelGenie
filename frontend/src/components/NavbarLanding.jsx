@@ -1,173 +1,294 @@
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
+
 import logo from "../assets/logo.svg";
-import { useNavigate, useLocation } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+
+import {
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
+
+import {
+  motion,
+  AnimatePresence,
+} from "framer-motion";
+
 import {
   FaBars,
-  FaChevronRight,
   FaCompass,
   FaTimes,
   FaUserCircle,
 } from "react-icons/fa";
 
 const NAV_LINKS = [
-  { id: "home", label: "Home", path: "/" },
-  { id: "treks", label: "Treks", path: "/treks" },
-  { id: "destinations", label: "Destinations", path: "/destinations" },
-  { id: "ai", label: "AI Planner", path: "/ai-planner" },
-  { id: "blog", label: "Guides", path: "/blog" },
+
+  {
+    label: "Home",
+    path: "/",
+  },
+
+  {
+    label: "Packages",
+    path: "/dashboard/packages",
+  },
+
+  {
+    label: "AI Planner",
+    path: "/dashboard/ai-planner",
+  },
+
 ];
 
 const NavbarLanding = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+
+  const navigate =
+    useNavigate();
+
+  const location =
+    useLocation();
+
+  const [mobileOpen, setMobileOpen] =
+    useState(false);
+
+  const [scrolled, setScrolled] =
+    useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 18);
+
+    const onScroll = () =>
+
+      setScrolled(
+        window.scrollY > 20
+      );
+
     onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+
+    window.addEventListener(
+      "scroll",
+      onScroll,
+      { passive: true }
+    );
+
+    return () =>
+
+      window.removeEventListener(
+        "scroll",
+        onScroll
+      );
+
   }, []);
 
-  const handleNavLink = (path) => {
-    setMobileOpen(false);
-    navigate(path);
-  };
-
   const isActive = (path) =>
-    path === "/"
-      ? location.pathname === "/"
-      : location.pathname === path || location.pathname.startsWith(`${path}/`);
+
+    location.pathname === path;
 
   return (
-    <nav className="fixed left-0 top-0 z-50 w-full px-3 pt-4 md:px-8">
-      <div className="mx-auto max-w-7xl">
+
+    <nav className="fixed top-0 left-0 w-full z-50 px-4 pt-4">
+
+      <div className="max-w-7xl mx-auto">
+
         <motion.div
           animate={{
-            backgroundColor: scrolled ? "rgba(22, 51, 40, 0.88)" : "rgba(0, 0, 0, 0.28)",
-            borderColor: scrolled ? "rgba(255, 255, 255, 0.14)" : "rgba(255, 255, 255, 0.1)",
+            backgroundColor:
+              scrolled
+
+                ? "rgba(15,23,42,0.92)"
+
+                : "rgba(15,23,42,0.55)",
           }}
-          transition={{ duration: 0.25 }}
-          className="rounded-2xl border px-4 shadow-2xl backdrop-blur-xl lg:px-6"
+          className="rounded-[28px] border border-white/10 backdrop-blur-xl shadow-2xl px-6"
         >
-          <motion.div
-            className="flex h-[72px] items-center justify-between"
-            initial={{ opacity: 0, y: -12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
+
+          <div className="h-[82px] flex items-center justify-between">
+
+            {/* LOGO */}
+
             <button
-              type="button"
-              onClick={() => handleNavLink("/")}
-              className="flex min-w-0 items-center gap-3 text-left"
+              onClick={() =>
+                navigate("/")
+              }
+              className="flex items-center gap-4"
             >
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-white/12">
+
+              <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center">
+
                 <img
                   src={logo}
                   alt="TravelGenie"
-                  className="h-8 w-8 object-contain"
+                  className="w-10 h-10"
                 />
-              </span>
-              <span className="min-w-0">
-                <span className="font-heading block truncate text-xl font-bold tracking-tight text-white md:text-2xl">
+
+              </div>
+
+              <div className="text-left">
+
+                <h2 className="text-4xl font-black text-white">
+
                   TravelGenie
-                </span>
-                <span className="mt-0.5 hidden text-[11px] uppercase tracking-[0.18em] text-white/55 sm:block">
+
+                </h2>
+
+                <p className="text-white/60 text-xs uppercase tracking-[0.25em] mt-1">
+
                   Trekking Ops SaaS
-                </span>
-              </span>
+
+                </p>
+
+              </div>
+
             </button>
 
-            <div className="hidden items-center rounded-full border border-white/10 bg-white/8 p-1 lg:flex">
-              {NAV_LINKS.map((link) => (
+            {/* DESKTOP NAV */}
+
+            <div className="hidden lg:flex items-center gap-2 bg-white/5 border border-white/10 rounded-full p-2">
+
+              {NAV_LINKS.map((item) => (
+
                 <button
-                  key={link.id}
-                  type="button"
-                  onClick={() => handleNavLink(link.path)}
-                  className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
-                    isActive(link.path)
-                      ? "bg-white text-primary"
-                      : "text-white/76 hover:bg-white/10 hover:text-white"
+                  key={item.path}
+                  onClick={() =>
+                    navigate(item.path)
+                  }
+                  className={`px-5 py-3 rounded-full text-sm font-bold transition ${
+                    isActive(item.path)
+
+                      ? "bg-white text-slate-900"
+
+                      : "text-white/80 hover:bg-white/10"
                   }`}
                 >
-                  {link.label}
+
+                  {item.label}
+
                 </button>
+
               ))}
+
             </div>
 
-            <div className="flex items-center gap-2 md:gap-3">
+            {/* ACTIONS */}
+
+            <div className="flex items-center gap-3">
+
               <button
-                type="button"
-                onClick={() => navigate("/login")}
-                className="hidden items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold text-white/78 transition hover:bg-white/10 hover:text-white md:flex"
+                onClick={() =>
+                  navigate("/login")
+                }
+                className="hidden md:flex items-center gap-2 text-white font-semibold hover:text-orange-400 transition"
               >
-                <FaUserCircle className="text-base" />
+
+                <FaUserCircle />
+
                 Login
-              </button>
 
-              <motion.button
-                type="button"
-                onClick={() => navigate("/treks")}
-                whileHover={{ y: -1 }}
-                whileTap={{ scale: 0.98 }}
-                className="hidden items-center gap-2 rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-accent-dark sm:inline-flex"
-              >
-                <FaCompass />
-                Explore Treks
-              </motion.button>
+              </button>
 
               <button
-                type="button"
-                onClick={() => setMobileOpen((value) => !value)}
-                className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/15 bg-white/8 text-white lg:hidden"
-                aria-label="Toggle menu"
+                onClick={() =>
+                  navigate(
+                    "/dashboard/packages"
+                  )
+                }
+                className="hidden sm:flex h-14 px-7 rounded-full bg-orange-500 hover:bg-orange-600 transition text-white font-bold items-center gap-3"
               >
-                {mobileOpen ? <FaTimes /> : <FaBars />}
+
+                <FaCompass />
+
+                Explore Treks
+
               </button>
+
+              {/* MOBILE */}
+
+              <button
+                onClick={() =>
+                  setMobileOpen(
+                    !mobileOpen
+                  )
+                }
+                className="lg:hidden w-12 h-12 rounded-2xl bg-white/10 text-white flex items-center justify-center"
+              >
+
+                {mobileOpen
+
+                  ? <FaTimes />
+
+                  : <FaBars />
+                }
+
+              </button>
+
             </div>
-          </motion.div>
+
+          </div>
+
+          {/* MOBILE MENU */}
 
           <AnimatePresence>
+
             {mobileOpen && (
+
               <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="overflow-hidden border-t border-white/10 pb-4 lg:hidden"
+                initial={{
+                  height: 0,
+                  opacity: 0,
+                }}
+                animate={{
+                  height: "auto",
+                  opacity: 1,
+                }}
+                exit={{
+                  height: 0,
+                  opacity: 0,
+                }}
+                className="overflow-hidden lg:hidden border-t border-white/10"
               >
-                <div className="flex flex-col gap-1 pt-3">
-                  {NAV_LINKS.map((link) => (
+
+                <div className="py-5 flex flex-col gap-3">
+
+                  {NAV_LINKS.map((item) => (
+
                     <button
-                      key={link.id}
-                      type="button"
-                      onClick={() => handleNavLink(link.path)}
-                      className={`flex items-center justify-between rounded-xl px-3 py-3 text-left text-sm font-semibold ${
-                        isActive(link.path)
-                          ? "bg-white text-primary"
-                          : "text-white/88 hover:bg-white/10"
-                      }`}
+                      key={item.path}
+                      onClick={() => {
+
+                        navigate(
+                          item.path
+                        );
+
+                        setMobileOpen(
+                          false
+                        );
+
+                      }}
+                      className="h-12 rounded-2xl bg-white/5 text-white font-semibold"
                     >
-                      {link.label}
-                      <FaChevronRight className="text-xs opacity-70" />
+
+                      {item.label}
+
                     </button>
+
                   ))}
-                  <button
-                    type="button"
-                    onClick={() => handleNavLink("/treks")}
-                    className="mt-2 rounded-xl bg-accent py-3 text-sm font-semibold text-white"
-                  >
-                    Explore Treks
-                  </button>
+
                 </div>
+
               </motion.div>
+
             )}
+
           </AnimatePresence>
+
         </motion.div>
+
       </div>
+
     </nav>
+
   );
+
 };
 
 export default NavbarLanding;

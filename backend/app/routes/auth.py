@@ -1,133 +1,333 @@
-from fastapi import APIRouter, HTTPException, Header
-from jose import jwt, JWTError
-from datetime import datetime, timedelta
+from fastapi import (
+    APIRouter,
+    HTTPException,
+    Header,
+    Depends,
+)
+
+from jose import (
+    jwt,
+    JWTError,
+)
+
+from datetime import (
+    datetime,
+    timedelta,
+)
+
 from pydantic import BaseModel
-import os
-from fastapi import Depends
-from app.firebase_auth import verify_firebase_token
+
+from app.firebase_auth import (
+    verify_firebase_token,
+)
+
 from app.db import get_connection
+
 from app.config import get_settings
+
 from app.responses import success_response
+
 
 router = APIRouter(prefix="/admin")
 
-# 🔐 CONFIG
+
+# =====================================================
+# CONFIG
+# =====================================================
+
 settings = get_settings()
+
 SECRET_KEY = settings.ADMIN_SECRET_KEY
+
 ALGORITHM = "HS256"
+
 TOKEN_EXPIRE_HOURS = 2
 
 
-# ================= MODELS =================
+# =====================================================
+# ADMIN MODEL
+# =====================================================
+
 class LoginRequest(BaseModel):
+
     username: str
+
     password: str
 
 
-# ================= ADMIN USER =================
+# =====================================================
+# ADMIN USER
+# =====================================================
+
 ADMIN_USER = {
-    "username": settings.ADMIN_USERNAME,
-    "password": settings.ADMIN_PASSWORD
+
+    "username":
+        settings.ADMIN_USERNAME,
+
+    "password":
+        settings.ADMIN_PASSWORD,
+
 }
 
 
-# ================= LOGIN =================
+# =====================================================
+# ADMIN LOGIN
+# =====================================================
+
 @router.post("/login")
 def login(data: LoginRequest):
 
     if (
-        data.username != ADMIN_USER["username"] or
+
+        data.username != ADMIN_USER["username"]
+
+        or
+
         data.password != ADMIN_USER["password"]
+
     ):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid credentials"
+        )
 
     payload = {
-        "sub": data.username,
-        "exp": datetime.utcnow() + timedelta(hours=TOKEN_EXPIRE_HOURS)
+
+        "sub":
+            data.username,
+
+        "exp":
+            datetime.utcnow()
+
+            +
+
+            timedelta(
+                hours=TOKEN_EXPIRE_HOURS
+            )
+
     }
 
-    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    token = jwt.encode(
+        payload,
+        SECRET_KEY,
+        algorithm=ALGORITHM
+    )
 
     return success_response(
+
         message="Admin login successful",
-        data={"access_token": token},
+
+        data={
+            "access_token": token
+        },
+
         access_token=token
+
     )
 
 
-# ================= VERIFY TOKEN =================
+# =====================================================
+# VERIFY ADMIN TOKEN
+# =====================================================
+
 def verify_token(token: str):
+
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+
+        payload = jwt.decode(
+            token,
+            SECRET_KEY,
+            algorithms=[ALGORITHM]
+        )
+
         return payload
+
     except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid or expired token"
+        )
 
 
-# ================= GET CURRENT USER =================
-def get_current_user(authorization: str = Header(None)):
+# =====================================================
+# GET CURRENT ADMIN
+# =====================================================
+
+def get_current_user(
+    authorization: str = Header(None)
+):
 
     if not authorization:
-        raise HTTPException(status_code=401, detail="Authorization header missing")
+
+        raise HTTPException(
+            status_code=401,
+            detail="Authorization header missing"
+        )
 
     parts = authorization.split(" ")
 
-    if len(parts) != 2 or parts[0] != "Bearer":
-        raise HTTPException(status_code=401, detail="Invalid token format")
+    if (
+
+        len(parts) != 2
+
+        or
+
+        parts[0] != "Bearer"
+
+    ):
+
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid token format"
+        )
 
     token = parts[1]
 
     return verify_token(token)
 
-# ================= SAVE USER =================
+
+# =====================================================
+# ENSURE USER COLUMNS
+# =====================================================
+
+def ensure_user_columns(cursor):
+
+    cursor.execute(
+        """
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS name VARCHAR(120),
+        ADD COLUMN IF NOT EXISTS role VARCHAR(40) DEFAULT 'user',
+        ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        """
+    )
+
+
+# =====================================================
+# SAVE FIREBASE USER
+# =====================================================
 
 @router.post("/save-user")
 async def save_user(
-    user=Depends(verify_firebase_token)
+
+    user=Depends(
+        verify_firebase_token
+    )
+
 ):
-
-    uid = user["uid"]
-
-    email = user["email"]
 
     conn = get_connection()
 
     cursor = conn.cursor()
 
-    # CHECK EXISTING USER
-    cursor.execute(
-        """
-        SELECT id
-        FROM users
-        WHERE firebase_uid = %s
-        """,
-        (uid,)
-    )
+    try:
 
-    existing = cursor.fetchone()
+        ensure_user_columns(cursor)
 
-    # INSERT USER
-    if not existing:
+        firebase_uid = user["uid"]
+
+        email = user.get(
+            "email",
+            ""
+        )
+
+        name = user.get(
+            "name",
+            "Traveler"
+        )
+
+        print(
+            "FIREBASE USER:",
+            firebase_uid,
+            email
+        )
 
         cursor.execute(
             """
-            INSERT INTO users
-            (
-                firebase_uid,
-                email
-            )
-            VALUES (%s, %s)
+            SELECT id
+            FROM users
+            WHERE firebase_uid = %s
             """,
-            (uid, email)
+            (firebase_uid,)
         )
 
-        conn.commit()
+        existing = cursor.fetchone()
 
-    cursor.close()
+        # CREATE USER
 
-    conn.close()
+        if not existing:
 
-    return success_response(
-        message="User saved",
-        data={}
-    )
+            cursor.execute(
+                """
+                INSERT INTO users
+                (
+                    firebase_uid,
+                    name,
+                    email,
+                    role
+                )
+
+                VALUES
+                (
+                    %s,
+                    %s,
+                    %s,
+                    %s
+                )
+                """,
+                (
+                    firebase_uid,
+                    name,
+                    email,
+                    "user"
+                )
+            )
+
+            conn.commit()
+
+            print(
+                "USER SAVED"
+            )
+
+        else:
+
+            print(
+                "USER ALREADY EXISTS"
+            )
+
+        return success_response(
+
+            message="User saved successfully",
+
+            data={
+
+                "firebase_uid":
+                    firebase_uid,
+
+                "email":
+                    email,
+
+            }
+
+        )
+
+    except Exception as e:
+
+        conn.rollback()
+
+        print(
+            "SAVE USER ERROR:",
+            str(e)
+        )
+
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
+
+    finally:
+
+        cursor.close()
+
+        conn.close()

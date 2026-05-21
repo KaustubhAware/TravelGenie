@@ -1,9 +1,21 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import {
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 
-import { useState, useEffect } from "react";
+import {
+  useState,
+  useEffect,
+} from "react";
+
 import { auth } from "../firebase";
+
 import { API_BASE } from "../services/httpClient";
-import { toast, Toaster } from "react-hot-toast";
+
+import {
+  toast,
+  Toaster,
+} from "react-hot-toast";
 
 import {
   FaLock,
@@ -13,6 +25,8 @@ import {
   FaCalendarAlt,
   FaArrowRight,
   FaShieldAlt,
+  FaUsers,
+  FaCheckCircle,
 } from "react-icons/fa";
 
 export default function Payment() {
@@ -23,9 +37,12 @@ export default function Payment() {
 
   const data = location.state || {};
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] =
+    useState(false);
 
-  /* ================= PROTECT ROUTE ================= */
+  // =====================================================
+  // PROTECT ROUTE
+  // =====================================================
 
   useEffect(() => {
 
@@ -33,7 +50,9 @@ export default function Payment() {
 
     if (!user) {
 
-      toast.error("Please login first");
+      toast.error(
+        "Please login first"
+      );
 
       navigate("/login");
 
@@ -43,15 +62,21 @@ export default function Payment() {
 
     if (!data?.booking_id) {
 
-      toast.error("Booking missing");
+      toast.error(
+        "Booking missing"
+      );
 
-      navigate("/dashboard/ai-planner");
+      navigate(
+        "/dashboard/bookings"
+      );
 
     }
 
   }, [data, navigate]);
 
-  /* ================= HANDLE PAYMENT ================= */
+  // =====================================================
+  // HANDLE PAYMENT
+  // =====================================================
 
   const handlePayment = async () => {
 
@@ -59,7 +84,9 @@ export default function Payment() {
 
     if (!user) {
 
-      toast.error("Please login first");
+      toast.error(
+        "Please login first"
+      );
 
       navigate("/login");
 
@@ -71,41 +98,66 @@ export default function Payment() {
 
     try {
 
-      const token = await user.getIdToken();
+      const token =
+        await user.getIdToken();
 
       const res = await fetch(
         `${API_BASE}/update-payment`,
         {
           method: "POST",
+
           headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            "Content-Type":
+              "application/json",
+
+            Authorization:
+              `Bearer ${token}`,
           },
+
           body: JSON.stringify({
-            booking_id: data.booking_id,
+            booking_id:
+              data.booking_id,
           }),
         }
       );
 
-      const result = await res.json();
+      const result =
+        await res.json();
 
-      if (!res.ok || result.error) {
+      if (
+        !res.ok ||
+        result.error
+      ) {
 
-        throw new Error(result.error || "Payment failed");
+        throw new Error(
+          result.error ||
+          "Payment failed"
+        );
 
       }
 
-      toast.success("Payment successful!");
+      toast.success(
+        "Payment successful!"
+      );
 
-      navigate("/dashboard/booking-success", {
-        state: data,
-      });
+      navigate(
+        "/dashboard/booking-success",
+        {
+          state: {
+            ...data,
+            paymentSuccess: true,
+          },
+        }
+      );
 
     } catch (err) {
 
       console.error(err);
 
-      toast.error(err.message || "Payment failed");
+      toast.error(
+        err.message ||
+        "Payment failed"
+      );
 
     } finally {
 
@@ -115,54 +167,138 @@ export default function Payment() {
 
   };
 
+  // =====================================================
+  // UI
+  // =====================================================
+
   return (
 
     <>
-   
 
       <Toaster position="top-right" />
 
-      <div className="min-h-screen bg-surface px-4 md:px-6 py-6">
+      <div className="min-h-screen bg-[#f7f8f5] pb-12">
 
-        <div className="max-w-7xl mx-auto">
+        {/* =====================================================
+            HERO
+        ===================================================== */}
 
-          {/* ================= HEADER ================= */}
+        <div className="relative h-[340px] overflow-hidden">
 
-          <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
+          <img
+            src={
+              data.package_image ||
+              "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1400&q=80"
+            }
+            alt={
+              data.package_title ||
+              data.destination
+            }
+            className="w-full h-full object-cover"
+          />
 
-            <div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-black/20" />
 
-              <h1 className="text-4xl font-bold text-gray-900">
-                Secure Payment
-              </h1>
+          <div className="absolute bottom-0 left-0 right-0 max-w-7xl mx-auto px-6 pb-10">
 
-              <p className="text-gray-500 mt-2">
-                Complete simulated payment after agency approval
-              </p>
+            <div className="flex flex-wrap justify-between gap-6 items-end">
 
-            </div>
+              <div>
 
-            {/* STEPS */}
+                <p className="uppercase tracking-[0.25em] text-white/70 text-sm font-semibold">
 
-            <div className="bg-white border border-gray-200 rounded-2xl px-6 py-4 shadow-sm">
+                  Secure Checkout
 
-              <div className="flex items-center gap-4 text-sm font-medium">
+                </p>
 
-                <span className="text-green-600">
-                  1. Booking
-                </span>
+                <h1 className="text-5xl font-bold text-white mt-3">
 
-                <span className="text-gray-300">→</span>
+                  {data.package_title ||
+                    data.destination}
 
-                <span className="text-primary">
-                  2. Payment
-                </span>
+                </h1>
 
-                <span className="text-gray-300">→</span>
+                <div className="flex flex-wrap gap-5 mt-5 text-white/85">
 
-                <span className="text-gray-400">
-                  3. Success
-                </span>
+                  <div className="flex items-center gap-2">
+
+                    <FaMapMarkedAlt />
+
+                    <span>
+
+                      {data.package_location ||
+                        data.destination}
+
+                    </span>
+
+                  </div>
+
+                  <div className="flex items-center gap-2">
+
+                    <FaCalendarAlt />
+
+                    <span>
+
+                      {data.package_duration ||
+                        `${data.days} Days`}
+
+                    </span>
+
+                  </div>
+
+                  <div className="flex items-center gap-2">
+
+                    <FaUsers />
+
+                    <span>
+
+                      {data.travelers || 1} Travelers
+
+                    </span>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+              {/* STEP */}
+
+              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl px-7 py-5">
+
+                <div className="flex items-center gap-5 text-sm font-semibold text-white">
+
+                  <span className="text-green-300">
+
+                    1. Booking
+
+                  </span>
+
+                  <span className="text-white/40">
+
+                    →
+
+                  </span>
+
+                  <span className="text-blue-300">
+
+                    2. Payment
+
+                  </span>
+
+                  <span className="text-white/40">
+
+                    →
+
+                  </span>
+
+                  <span className="text-white/60">
+
+                    3. Success
+
+                  </span>
+
+                </div>
 
               </div>
 
@@ -170,35 +306,45 @@ export default function Payment() {
 
           </div>
 
-          {/* ================= MAIN GRID ================= */}
+        </div>
 
-          <div className="grid lg:grid-cols-[1fr_360px] gap-6 items-start">
+        {/* =====================================================
+            MAIN
+        ===================================================== */}
 
-            {/* ================================================= */}
-            {/* ================= LEFT PAYMENT ================== */}
-            {/* ================================================= */}
+        <div className="max-w-7xl mx-auto px-6 -mt-12 relative z-10">
 
-            <div className="bg-white border border-gray-200 rounded-[30px] shadow-sm p-7">
+          <div className="grid lg:grid-cols-[1fr_400px] gap-7 items-start">
 
-              {/* TOP */}
+            {/* =====================================================
+                LEFT
+            ===================================================== */}
+
+            <div className="bg-white border border-gray-100 rounded-[32px] shadow-sm p-8">
+
+              {/* TITLE */}
 
               <div className="flex items-center justify-between mb-8">
 
                 <div>
 
-                  <h2 className="text-2xl font-bold text-gray-900">
+                  <h2 className="text-3xl font-bold text-gray-900">
+
                     Payment Details
+
                   </h2>
 
                   <p className="text-gray-500 mt-2">
-                    Enter your card information securely
+
+                    Complete your secure booking payment
+
                   </p>
 
                 </div>
 
-                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-3xl bg-blue-50 flex items-center justify-center">
 
-                  <FaCreditCard className="text-primary text-xl" />
+                  <FaCreditCard className="text-blue-600 text-2xl" />
 
                 </div>
 
@@ -206,7 +352,7 @@ export default function Payment() {
 
               {/* FORM */}
 
-              <div className="space-y-5">
+              <div className="space-y-6">
 
                 {/* CARD NUMBER */}
 
@@ -225,14 +371,14 @@ export default function Payment() {
                     <input
                       type="text"
                       placeholder="1234 5678 9012 3456"
-                      className="w-full rounded-2xl border border-gray-200 bg-gray-50 pl-14 pr-5 py-4 text-gray-800 outline-none transition-all duration-300 focus:border-primary focus:ring-4 focus:ring-primary/10 focus:bg-white"
+                      className="w-full rounded-2xl border border-gray-200 bg-gray-50 pl-14 pr-5 py-4 outline-none transition-all duration-300 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 focus:bg-white"
                     />
 
                   </div>
 
                 </div>
 
-                {/* EXPIRY + CVV */}
+                {/* EXPIRY */}
 
                 <div className="grid grid-cols-2 gap-5">
 
@@ -247,7 +393,7 @@ export default function Payment() {
                     <input
                       type="text"
                       placeholder="MM / YY"
-                      className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 text-gray-800 outline-none transition-all duration-300 focus:border-primary focus:ring-4 focus:ring-primary/10 focus:bg-white"
+                      className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 outline-none transition-all duration-300 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 focus:bg-white"
                     />
 
                   </div>
@@ -263,14 +409,14 @@ export default function Payment() {
                     <input
                       type="password"
                       placeholder="***"
-                      className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 text-gray-800 outline-none transition-all duration-300 focus:border-primary focus:ring-4 focus:ring-primary/10 focus:bg-white"
+                      className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 outline-none transition-all duration-300 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 focus:bg-white"
                     />
 
                   </div>
 
                 </div>
 
-                {/* CARD HOLDER */}
+                {/* HOLDER */}
 
                 <div>
 
@@ -283,32 +429,34 @@ export default function Payment() {
                   <input
                     type="text"
                     placeholder="John Doe"
-                    className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 text-gray-800 outline-none transition-all duration-300 focus:border-primary focus:ring-4 focus:ring-primary/10 focus:bg-white"
+                    className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 outline-none transition-all duration-300 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 focus:bg-white"
                   />
 
                 </div>
 
-                {/* SECURITY BOX */}
+                {/* SECURITY */}
 
-                <div className="bg-green-50 border border-green-100 rounded-3xl p-5">
+                <div className="bg-green-50 border border-green-100 rounded-3xl p-6">
 
-                  <div className="flex items-start gap-4">
+                  <div className="flex items-start gap-5">
 
-                    <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center">
+                    <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center shadow-sm">
 
-                      <FaShieldAlt className="text-green-600 text-lg" />
+                      <FaShieldAlt className="text-green-600 text-xl" />
 
                     </div>
 
                     <div>
 
-                      <h3 className="font-semibold text-green-700">
+                      <h3 className="font-semibold text-green-700 text-lg">
+
                         Secure Checkout
+
                       </h3>
 
-                      <p className="text-sm text-gray-600 mt-1 leading-relaxed">
+                      <p className="text-gray-600 mt-2 leading-relaxed">
 
-                        Your payment details are encrypted and securely processed.
+                        Your payment information is encrypted and protected with secure processing systems.
 
                       </p>
 
@@ -318,19 +466,26 @@ export default function Payment() {
 
                 </div>
 
-                {/* PAY BUTTON */}
+                {/* BUTTON */}
 
                 <button
                   onClick={handlePayment}
                   disabled={loading}
-                  className="w-full bg-primary text-white py-4 rounded-2xl font-semibold text-lg shadow-md hover:shadow-lg hover:bg-primary-dark transition duration-300 flex items-center justify-center gap-3"
+                  className="w-full bg-blue-600 hover:bg-blue-700 transition text-white py-5 rounded-2xl font-semibold text-lg shadow-md flex items-center justify-center gap-3"
                 >
 
                   {loading
                     ? "Processing Payment..."
-                    : `Pay Rs. ${data.cost || data.total_cost || data.budget || 0}`}
+                    : `Pay Rs. ${
+                        data.cost ||
+                        data.total_cost ||
+                        data.budget ||
+                        0
+                      }`}
 
-                  {!loading && <FaArrowRight />}
+                  {!loading && (
+                    <FaArrowRight />
+                  )}
 
                 </button>
 
@@ -348,163 +503,171 @@ export default function Payment() {
 
             </div>
 
-            {/* ================================================= */}
-            {/* ================= RIGHT SUMMARY ================= */}
-            {/* ================================================= */}
+            {/* =====================================================
+                RIGHT
+            ===================================================== */}
 
-            <div className="bg-white border border-gray-200 rounded-[30px] shadow-sm p-6 sticky top-24">
+            <div className="space-y-6 sticky top-24">
 
-              {/* TITLE */}
+              {/* SUMMARY */}
 
-              <div className="flex items-center justify-between mb-6">
+              <div className="bg-white border border-gray-100 rounded-[32px] shadow-sm p-7">
 
-                <div>
+                <div className="flex items-center justify-between mb-7">
 
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    Trip Summary
-                  </h2>
+                  <div>
 
-                  <p className="text-gray-500 mt-1">
-                    Booking overview
-                  </p>
+                    <h2 className="text-2xl font-bold text-gray-900">
+
+                      Booking Summary
+
+                    </h2>
+
+                    <p className="text-gray-500 mt-2">
+
+                      Expedition overview
+
+                    </p>
+
+                  </div>
+
+                  <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center">
+
+                    <FaWallet className="text-blue-600 text-xl" />
+
+                  </div>
 
                 </div>
 
-                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+                <div className="space-y-5">
 
-                  <FaWallet className="text-primary text-xl" />
+                  <SummaryRow
+                    icon={<FaMapMarkedAlt />}
+                    label="Destination"
+                    value={
+                      data.package_location ||
+                      data.destination
+                    }
+                  />
+
+                  <SummaryRow
+                    icon={<FaCalendarAlt />}
+                    label="Duration"
+                    value={
+                      data.package_duration ||
+                      `${data.days} Days`
+                    }
+                  />
+
+                  <SummaryRow
+                    icon={<FaUsers />}
+                    label="Travelers"
+                    value={`${
+                      data.travelers || 1
+                    } People`}
+                  />
+
+                </div>
+
+                {/* PRICE */}
+
+                <div className="mt-7 border border-gray-100 rounded-3xl p-6">
+
+                  <h3 className="font-semibold text-gray-900 mb-5">
+
+                    Payment Summary
+
+                  </h3>
+
+                  <div className="space-y-4">
+
+                    <div className="flex justify-between text-gray-600">
+
+                      <span>
+
+                        Package Cost
+
+                      </span>
+
+                      <span>
+
+                        Rs. {
+                          data.cost ||
+                          data.total_cost ||
+                          data.budget ||
+                          0
+                        }
+
+                      </span>
+
+                    </div>
+
+                    <div className="flex justify-between text-gray-600">
+
+                      <span>
+
+                        Taxes & Fees
+
+                      </span>
+
+                      <span>
+
+                        Rs. 0
+
+                      </span>
+
+                    </div>
+
+                    <div className="border-t pt-4 flex justify-between text-xl font-bold text-gray-900">
+
+                      <span>
+
+                        Total
+
+                      </span>
+
+                      <span>
+
+                        Rs. {
+                          data.cost ||
+                          data.total_cost ||
+                          data.budget ||
+                          0
+                        }
+
+                      </span>
+
+                    </div>
+
+                  </div>
 
                 </div>
 
               </div>
 
-              {/* DESTINATION */}
+              {/* PAYMENT SECURITY */}
 
-              <div className="space-y-4">
+              <div className="bg-blue-50 rounded-[32px] p-7 border border-blue-100">
 
-                <div className="bg-gray-50 rounded-2xl p-5">
+                <div className="flex gap-5">
 
-                  <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center shadow-sm">
 
-                    <div className="w-11 h-11 rounded-xl bg-white flex items-center justify-center">
-
-                      <FaMapMarkedAlt className="text-primary" />
-
-                    </div>
-
-                    <div>
-
-                      <p className="text-sm text-gray-500">
-                        Destination
-                      </p>
-
-                      <h3 className="font-semibold text-gray-900 mt-1">
-
-                        {data.destination || "-"}
-
-                      </h3>
-
-                    </div>
-
-                  </div>
-
-                </div>
-
-                {/* DAYS */}
-
-                <div className="bg-gray-50 rounded-2xl p-5">
-
-                  <div className="flex items-center gap-4">
-
-                    <div className="w-11 h-11 rounded-xl bg-white flex items-center justify-center">
-
-                      <FaCalendarAlt className="text-primary" />
-
-                    </div>
-
-                    <div>
-
-                      <p className="text-sm text-gray-500">
-                        Duration
-                      </p>
-
-                      <h3 className="font-semibold text-gray-900 mt-1">
-
-                        {data.days || "-"} Days
-
-                      </h3>
-
-                    </div>
-
-                  </div>
-
-                </div>
-
-              </div>
-
-              {/* PRICE */}
-
-              <div className="mt-6 border border-gray-200 rounded-3xl p-5">
-
-                <h3 className="font-semibold text-gray-900 mb-5">
-                  Payment Summary
-                </h3>
-
-                <div className="space-y-4">
-
-                  <div className="flex justify-between text-gray-600">
-
-                    <span>Trip Cost</span>
-
-                    <span>
-                      Rs. {data.cost || data.total_cost || data.budget || 0}
-                    </span>
-
-                  </div>
-
-                  <div className="flex justify-between text-gray-600">
-
-                    <span>Taxes & Fees</span>
-
-                    <span>Rs. 0</span>
-
-                  </div>
-
-                  <div className="border-t pt-4 flex justify-between text-lg font-bold text-gray-900">
-
-                    <span>Total</span>
-
-                    <span>
-                      Rs. {data.cost || data.total_cost || data.budget || 0}
-                    </span>
-
-                  </div>
-
-                </div>
-
-              </div>
-
-              {/* INFO */}
-
-              <div className="mt-5 bg-primary/10 rounded-3xl p-5">
-
-                <div className="flex gap-4">
-
-                  <div className="w-11 h-11 rounded-xl bg-white flex items-center justify-center">
-
-                    <FaShieldAlt className="text-primary" />
+                    <FaCheckCircle className="text-blue-600 text-xl" />
 
                   </div>
 
                   <div>
 
-                    <h3 className="font-semibold text-primary">
+                    <h3 className="font-semibold text-blue-700 text-lg">
+
                       Protected Payment
+
                     </h3>
 
-                    <p className="text-sm text-gray-600 mt-1 leading-relaxed">
+                    <p className="text-gray-600 mt-2 leading-relaxed">
 
-                      All payment transactions are encrypted and secure.
+                      All transactions are encrypted and processed securely.
 
                     </p>
 
@@ -523,5 +686,53 @@ export default function Payment() {
       </div>
 
     </>
+
   );
+
+}
+
+// =====================================================
+// SUMMARY ROW
+// =====================================================
+
+function SummaryRow({
+  icon,
+  label,
+  value,
+}) {
+
+  return (
+
+    <div className="bg-gray-50 rounded-2xl p-5">
+
+      <div className="flex items-center gap-4">
+
+        <div className="w-11 h-11 rounded-xl bg-white flex items-center justify-center text-blue-600">
+
+          {icon}
+
+        </div>
+
+        <div>
+
+          <p className="text-sm text-gray-500">
+
+            {label}
+
+          </p>
+
+          <h3 className="font-semibold text-gray-900 mt-1">
+
+            {value || "-"}
+
+          </h3>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  );
+
 }
