@@ -3,7 +3,10 @@
 # =====================================================
 
 import json
+import logging
 import re
+
+logger = logging.getLogger(__name__)
 
 # =====================================================
 # DEFAULT RESPONSE
@@ -57,11 +60,6 @@ def parse_itinerary_response(text):
             "",
             text
         ).strip()
-
-        print("=" * 40)
-        print("CLEANED RESPONSE")
-        print("=" * 40)
-        print(cleaned)
 
         # =====================================================
         # LOAD JSON
@@ -142,22 +140,14 @@ def parse_itinerary_response(text):
             )
         }
 
-        print("=" * 40)
-        print("FINAL PARSED RESPONSE")
-        print("=" * 40)
-        print(response)
-
         return response
 
     # =====================================================
     # ERROR
     # =====================================================
 
-    except Exception as e:
+    except Exception as exc:
 
-        print("=" * 40)
-        print("PARSER ERROR")
-        print("=" * 40)
-        print(e)
+        logger.warning("Itinerary parser returned default response: %s", exc)
 
         return DEFAULT_RESPONSE

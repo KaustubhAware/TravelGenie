@@ -1,113 +1,108 @@
 import {
-  motion,
-} from "framer-motion";
-
-import {
+  FaRobot,
   FaShieldAlt,
   FaMountain,
   FaUsers,
-  FaRobot,
+  FaChartLine,
+  FaClock,
 } from "react-icons/fa";
 
-const features = [
+import PageContainer from "../../components/ui/PageContainer";
 
-  {
-    icon: <FaMountain />,
-    title: "Curated Treks",
-    description:
-      "Handpicked Maharashtra trekking and adventure experiences with verified operators.",
-  },
+import SectionHeader from "../../components/ui/SectionHeader";
 
-  {
-    icon: <FaShieldAlt />,
-    title: "Safe & Trusted",
-    description:
-      "Secure booking workflow with approval-based operations and trusted travel coordination.",
-  },
+import Card from "../../components/ui/Card";
 
-  {
-    icon: <FaUsers />,
-    title: "Group Experiences",
-    description:
-      "Weekend getaways, fort treks, camping, and guided adventures built for groups and explorers.",
-  },
+export default function WhyChooseUsSection() {
 
-  {
-    icon: <FaRobot />,
-    title: "AI Travel Planner",
-    description:
-      "Smart AI-assisted recommendations for destinations, routes, and personalized travel planning.",
-  },
+  /* ===================================================== */
+  /* FEATURES */
+  /* ===================================================== */
 
-];
+  const features = [
 
-const WhyChooseUsSection = () => {
+    {
+      icon: <FaRobot />,
+      title: "AI Trip Planning",
+      description:
+        "Smart AI-powered itinerary generation based on your budget, travel style, and trekking experience.",
+    },
+
+    {
+      icon: <FaMountain />,
+      title: "Curated Adventures",
+      description:
+        "Explore handpicked trekking experiences, camping trips, forts, waterfalls, and mountain expeditions.",
+    },
+
+    {
+      icon: <FaShieldAlt />,
+      title: "Trusted Operators",
+      description:
+        "Verified trekking guides and travel organizers ensuring safe and professional adventure experiences.",
+    },
+
+    {
+      icon: <FaUsers />,
+      title: "Group Experiences",
+      description:
+        "Perfect for solo travelers, friends, student groups, and corporate adventure outings.",
+    },
+
+    {
+      icon: <FaChartLine />,
+      title: "Smart Booking System",
+      description:
+        "Track bookings, approvals, payments, and travel details through a streamlined dashboard experience.",
+    },
+
+    {
+      icon: <FaClock />,
+      title: "Fast Planning",
+      description:
+        "Save hours of planning with instant recommendations and optimized trek discovery workflows.",
+    },
+
+  ];
+
+  /* ===================================================== */
+  /* UI */
+  /* ===================================================== */
 
   return (
 
-    <section className="bg-[#f8fafc] py-24">
+    <section className="py-28 bg-white">
 
-      <div className="max-w-7xl mx-auto px-6">
+      <PageContainer>
 
+        {/* ===================================================== */}
         {/* HEADER */}
+        {/* ===================================================== */}
 
-        <div className="max-w-3xl">
+        <SectionHeader
+          badge="Why TravelGenie"
+          title="Built For Modern Adventure Travelers"
+          description="TravelGenie combines AI-powered planning with real trekking operations to create smarter travel experiences."
+        />
 
-          <p className="uppercase tracking-[0.3em] text-orange-500 font-bold text-sm mb-5">
-
-            Why TravelGenie
-
-          </p>
-
-          <h2 className="text-4xl md:text-5xl font-black text-slate-900 leading-tight">
-
-            Built For Modern
-            Adventure Travelers
-
-          </h2>
-
-          <p className="mt-6 text-lg text-slate-500 leading-relaxed">
-
-            TravelGenie combines
-            premium travel operations,
-            curated trekking experiences,
-            and AI-powered planning
-            into one modern platform.
-
-          </p>
-
-        </div>
-
+        {/* ===================================================== */}
         {/* GRID */}
+        {/* ===================================================== */}
 
-        <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-8 mt-16">
+        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8 mt-16">
 
-          {features.map((item, index) => (
+          {features.map((feature) => (
 
-            <motion.div
-              key={item.title}
-              initial={{
-                opacity: 0,
-                y: 20,
-              }}
-              whileInView={{
-                opacity: 1,
-                y: 0,
-              }}
-              transition={{
-                delay: index * 0.1,
-              }}
-              viewport={{
-                once: true,
-              }}
-              className="bg-white rounded-[32px] border border-slate-200 p-8 shadow-sm hover:shadow-2xl transition-all duration-500"
+            <Card
+              key={feature.title}
+              className="group"
             >
 
               {/* ICON */}
 
-              <div className="w-16 h-16 rounded-2xl bg-orange-100 text-orange-500 text-2xl flex items-center justify-center">
+              <div className="w-16 h-16 rounded-3xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-2xl transition-all duration-300 group-hover:scale-110">
 
-                {item.icon}
+                {feature.icon}
 
               </div>
 
@@ -115,28 +110,26 @@ const WhyChooseUsSection = () => {
 
               <h3 className="mt-8 text-2xl font-black text-slate-900">
 
-                {item.title}
+                {feature.title}
 
               </h3>
 
               <p className="mt-5 text-slate-500 leading-relaxed">
 
-                {item.description}
+                {feature.description}
 
               </p>
 
-            </motion.div>
+            </Card>
 
           ))}
 
         </div>
 
-      </div>
+      </PageContainer>
 
     </section>
 
   );
 
-};
-
-export default WhyChooseUsSection;
+}

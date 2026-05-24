@@ -15,11 +15,17 @@ const LandingLayout = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 }}
     >
+
       <NavbarLanding />
-      <main className="landing-main-offset">
+
+      <main>
+
         <Outlet />
+
       </main>
+
       <Footer />
+
     </motion.div>
   );
 };

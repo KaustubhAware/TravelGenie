@@ -8,7 +8,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from typing import Optional, List
-from psycopg2.extras import RealDictCursor
+from psycopg2.extras import Json, RealDictCursor
 from slugify import slugify
 
 from app.db import get_connection
@@ -17,6 +17,29 @@ from app.routes.auth import get_current_user
 router = APIRouter(
     tags=["Packages"]
 )
+
+
+def _text_lines(value):
+    if not value:
+        return []
+    if isinstance(value, list):
+        return value
+    return [
+        item.strip()
+        for item in str(value).splitlines()
+        if item.strip()
+    ]
+
+
+def _serialize_package(row):
+    item = dict(row)
+    item["included"] = _text_lines(item.get("included"))
+    item["excluded"] = _text_lines(item.get("excluded"))
+    if item.get("created_at"):
+        item["created_at"] = str(item["created_at"])
+    if item.get("updated_at"):
+        item["updated_at"] = str(item["updated_at"])
+    return item
 
 # =====================================================
 # PACKAGE MODEL
@@ -130,16 +153,28 @@ def get_packages():
                 price,
                 seasonal_price,
                 featured_image,
+                gallery,
                 short_description,
+                full_description,
+                included,
+                excluded,
+                pickup_points,
+                itinerary,
                 featured,
+                status,
                 rating,
-                total_reviews
+                total_reviews,
+                created_at,
+                updated_at
             FROM packages
             WHERE status = 'active'
             ORDER BY featured DESC, rating DESC
         """)
 
-        packages = cur.fetchall()
+        packages = [
+            _serialize_package(row)
+            for row in cur.fetchall()
+        ]
 
         return {
 
@@ -229,7 +264,7 @@ def get_single_package(slug: str):
 
             "success": True,
 
-            "package": package
+            "package": _serialize_package(package)
 
         }
 
@@ -352,13 +387,13 @@ def create_package(
             data.price,
             data.seasonal_price,
             data.featured_image,
-            data.gallery,
+            Json(data.gallery or []),
             data.short_description,
             data.full_description,
-            data.included,
-            data.excluded,
-            data.pickup_points,
-            data.itinerary,
+            "\n".join(data.included or []),
+            "\n".join(data.excluded or []),
+            Json(data.pickup_points or []),
+            Json(data.itinerary or []),
             data.featured,
             data.status,
             data.rating
@@ -471,13 +506,13 @@ def update_package(
             data.price,
             data.seasonal_price,
             data.featured_image,
-            data.gallery,
+            Json(data.gallery or []),
             data.short_description,
             data.full_description,
-            data.included,
-            data.excluded,
-            data.pickup_points,
-            data.itinerary,
+            "\n".join(data.included or []),
+            "\n".join(data.excluded or []),
+            Json(data.pickup_points or []),
+            Json(data.itinerary or []),
             data.featured,
             data.status,
             data.rating,

@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import (
     APIRouter,
     Depends,
@@ -14,6 +16,8 @@ from app.db import get_connection
 from app.routes.auth import (
     get_current_user,
 )
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin")
 
@@ -104,47 +108,16 @@ class BookingReviewRequest(BaseModel):
 # =====================================================
 
 def ensure_booking_workflow_columns(cursor):
-
-    cursor.execute(
-        """
-        ALTER TABLE bookings
-        ADD COLUMN IF NOT EXISTS payment_status VARCHAR(30) DEFAULT 'unpaid',
-        ADD COLUMN IF NOT EXISTS internal_notes TEXT,
-        ADD COLUMN IF NOT EXISTS assigned_agent VARCHAR(120),
-        ADD COLUMN IF NOT EXISTS adjusted_price NUMERIC(12,2),
-        ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        """
+    """Deprecated: schema is managed via schema.sql only."""
+    logger.debug(
+        "ensure_booking_workflow_columns is deprecated and no longer mutates schema"
     )
 
 
-# =====================================================
-# ACTIVITY LOG TABLE
-# =====================================================
-
 def ensure_audit_tables(cursor):
-
-    cursor.execute(
-        """
-        CREATE TABLE IF NOT EXISTS activity_logs (
-
-            id SERIAL PRIMARY KEY,
-
-            actor VARCHAR(120),
-
-            actor_role VARCHAR(40),
-
-            action VARCHAR(120),
-
-            entity_type VARCHAR(80),
-
-            entity_id VARCHAR(80),
-
-            metadata JSONB DEFAULT '{}'::jsonb,
-
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-
-        )
-        """
+    """Deprecated: schema is managed via schema.sql only."""
+    logger.debug(
+        "ensure_audit_tables is deprecated and no longer mutates schema"
     )
 
 

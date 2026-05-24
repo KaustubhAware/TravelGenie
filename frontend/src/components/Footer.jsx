@@ -1,115 +1,258 @@
-import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import {
-  FaEnvelope,
   FaInstagram,
   FaLinkedin,
-  FaMountain,
+  FaEnvelope,
 } from "react-icons/fa";
+
+import {
+  useNavigate,
+} from "react-router-dom";
 
 import logo from "../assets/logo.svg";
 
-const footerLinks = {
-  Explore: [
-    { label: "Trek Catalog", path: "/treks" },
-    { label: "Destinations", path: "/destinations" },
-    { label: "AI Planner", path: "/login" },
-    { label: "Trekking Guides", path: "/blog" },
-  ],
-  Platform: [
-    { label: "Customer Login", path: "/login" },
-    { label: "Register", path: "/register" },
-    { label: "Dashboard", path: "/dashboard" },
-    { label: "Operator Login", path: "/admin/login" },
-  ],
-  Company: [
-    { label: "About", path: "/" },
-    { label: "Privacy", path: "/" },
-    { label: "Terms", path: "/" },
-    { label: "Support", path: "/" },
-  ],
-};
+export default function Footer() {
 
-const Footer = () => {
-  const navigate = useNavigate();
+  const navigate =
+    useNavigate();
+
+  /* ===================================================== */
+  /* LINKS */
+  /* ===================================================== */
+
+  const footerLinks = {
+
+    Explore: [
+
+      {
+        label: "Treks",
+        path: "/dashboard/packages",
+      },
+
+      {
+        label: "Destinations",
+        path: "/destinations",
+      },
+
+      {
+        label: "AI Planner",
+        path: "/dashboard/ai-planner",
+      },
+
+      {
+        label: "Travel Blogs",
+        path: "/blog",
+      },
+
+    ],
+
+    Platform: [
+
+      {
+        label: "Dashboard",
+        path: "/dashboard",
+      },
+
+      {
+        label: "Bookings",
+        path: "/dashboard/bookings",
+      },
+
+      {
+        label: "Saved Trips",
+        path: "/dashboard/saved",
+      },
+
+      {
+        label: "Payments",
+        path: "/dashboard/payments",
+      },
+
+    ],
+
+    Company: [
+
+      {
+        label: "About",
+        path: "/",
+      },
+
+      {
+        label: "Privacy",
+        path: "/",
+      },
+
+      {
+        label: "Terms",
+        path: "/",
+      },
+
+      {
+        label: "Support",
+        path: "/",
+      },
+
+    ],
+
+  };
+
+  /* ===================================================== */
+  /* UI */
+  /* ===================================================== */
 
   return (
-    <footer className="border-t border-white/10 bg-primary-dark text-white">
-      <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
-        <div className="grid gap-12 lg:grid-cols-[1.2fr_2fr]">
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <div className="flex items-center gap-3">
-              <img
-                src={logo}
-                alt="TravelGenie"
-                className="h-11 w-11 object-contain brightness-0 invert"
-              />
-              <div>
-                <h2 className="font-heading text-2xl font-bold">TravelGenie</h2>
-                <p className="text-sm text-white/70">
-                  AI-Powered Trekking Operations
-                </p>
+
+    <footer className="border-t border-slate-200 bg-white">
+
+      <div className="max-w-7xl mx-auto px-5 md:px-8 py-20">
+
+        <div className="grid gap-16 lg:grid-cols-[1.2fr_2fr]">
+
+          {/* ===================================================== */}
+          {/* LEFT */}
+          {/* ===================================================== */}
+
+          <div>
+
+            <div className="flex items-center gap-4">
+
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-600 to-cyan-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+
+                <img
+                  src={logo}
+                  alt="TravelGenie"
+                  className="w-8 h-8 brightness-0 invert"
+                />
+
               </div>
+
+              <div>
+
+                <h2 className="text-2xl font-black text-slate-900">
+
+                  TravelGenie
+
+                </h2>
+
+                <p className="text-sm text-slate-500 mt-1">
+
+                  AI Travel Platform
+
+                </p>
+
+              </div>
+
             </div>
 
-            <p className="mt-6 max-w-sm text-sm leading-relaxed text-white/70">
-              Premium SaaS for Himalayan expedition operators: curated treks,
-              departures, bookings, and AI-assisted personalization.
+            <p className="mt-8 max-w-md text-slate-500 leading-relaxed">
+
+              Modern trekking and travel operations platform
+              built for adventure travelers, tour operators,
+              and AI-assisted itinerary planning workflows.
+
             </p>
 
-            <div className="mt-6 flex items-center gap-3 text-white/80">
-              <FaMountain className="text-accent" />
-              <span className="text-sm">Built for real trekking businesses</span>
+            {/* SOCIALS */}
+
+            <div className="flex items-center gap-4 mt-8">
+
+              {[
+
+                FaInstagram,
+                FaLinkedin,
+                FaEnvelope,
+
+              ].map((Icon, index) => (
+
+                <button
+                  key={index}
+                  className="w-11 h-11 rounded-2xl border border-slate-200 bg-white flex items-center justify-center text-slate-600 hover:bg-slate-100 transition"
+                >
+
+                  <Icon />
+
+                </button>
+
+              ))}
+
             </div>
 
-            <div className="mt-6 flex gap-4">
-              {[FaInstagram, FaLinkedin, FaEnvelope].map((Icon, i) => (
-                <motion.span
-                  key={i}
-                  whileHover={{ y: -2 }}
-                  className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-white/15 bg-white/5 text-white/80 transition hover:bg-white/10 hover:text-white"
-                >
-                  <Icon />
-                </motion.span>
-              ))}
-            </div>
-          </motion.div>
+          </div>
+
+          {/* ===================================================== */}
+          {/* RIGHT */}
+          {/* ===================================================== */}
 
           <div className="grid gap-10 sm:grid-cols-3">
-            {Object.entries(footerLinks).map(([title, links]) => (
-              <div key={title}>
-                <h3 className="text-sm font-semibold uppercase tracking-widest text-accent">
-                  {title}
-                </h3>
-                <ul className="mt-4 space-y-3">
-                  {links.map((link) => (
-                    <li key={link.label}>
+
+            {Object.entries(
+              footerLinks
+            ).map(
+              ([title, links]) => (
+
+                <div key={title}>
+
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900">
+
+                    {title}
+
+                  </h3>
+
+                  <div className="space-y-4 mt-6">
+
+                    {links.map((link) => (
+
                       <button
-                        type="button"
-                        onClick={() => navigate(link.path)}
-                        className="text-sm text-white/70 transition hover:text-white"
+                        key={link.label}
+                        onClick={() =>
+                          navigate(
+                            link.path
+                          )
+                        }
+                        className="block text-sm text-slate-500 hover:text-slate-900 transition"
                       >
+
                         {link.label}
+
                       </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+
+                    ))}
+
+                  </div>
+
+                </div>
+
+              )
+            )}
+
           </div>
+
         </div>
 
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-8 text-sm text-white/50 md:flex-row">
-          <p>Copyright 2026 TravelGenie. Himalayan trekking operations platform.</p>
-          <p>Curated expeditions - AI-assisted - Operator-first</p>
+        {/* ===================================================== */}
+        {/* BOTTOM */}
+        {/* ===================================================== */}
+
+        <div className="mt-16 pt-8 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between gap-5">
+
+          <p className="text-sm text-slate-500">
+
+            Copyright 2026 TravelGenie.
+            All rights reserved.
+
+          </p>
+
+          <p className="text-sm text-slate-500">
+
+            AI-powered trekking operations platform
+
+          </p>
+
         </div>
+
       </div>
-    </footer>
-  );
-};
 
-export default Footer;
+    </footer>
+
+  );
+
+}

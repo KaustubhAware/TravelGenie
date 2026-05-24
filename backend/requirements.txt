@@ -5,7 +5,9 @@ psycopg2-binary
 firebase-admin
 python-jose[cryptography]
 pydantic
+email-validator
 google-generativeai
-scikit-learn
 pandas
 numpy
+bcrypt
+python-slugify

@@ -1,7 +1,5 @@
 import { useState } from "react";
 
-import logo from "../assets/logo.svg";
-
 import {
   useNavigate,
   useLocation,
@@ -11,7 +9,11 @@ import {
   signOut,
 } from "firebase/auth";
 
-import { auth } from "../firebase";
+import {
+  auth,
+} from "../firebase";
+
+import logo from "../assets/logo.svg";
 
 import {
   FaBars,
@@ -23,12 +25,13 @@ import {
   FaTimes,
   FaUserCircle,
   FaBoxOpen,
+  FaMountain,
 } from "react-icons/fa";
 
 import {
   DASHBOARD_ROUTES,
   PUBLIC_ROUTES,
-} from "../constants/routes";
+} from "../constants/routesPath";
 
 /* ===================================================== */
 /* NAV LINKS */
@@ -56,7 +59,7 @@ const links = [
 
   {
     path: DASHBOARD_ROUTES.saved,
-    label: "Saved",
+    label: "Saved Trips",
     icon: FaBookmark,
   },
 
@@ -90,64 +93,65 @@ const NavbarApp = () => {
     useState(false);
 
   /* ===================================================== */
-  /* ACTIVE ROUTE */
+  /* ACTIVE */
   /* ===================================================== */
 
-  const isActive = (path) =>
+  const isActive =
+    (path) =>
 
-    location.pathname === path ||
+      location.pathname === path ||
 
-    (path !== DASHBOARD_ROUTES.root &&
+      (
+        path !== DASHBOARD_ROUTES.root &&
 
-      location.pathname.startsWith(`${path}/`));
+        location.pathname.startsWith(
+          `${path}/`
+        )
+      );
 
   /* ===================================================== */
   /* LOGOUT */
   /* ===================================================== */
 
-  const handleLogout = async () => {
+  const handleLogout =
+    async () => {
 
-    try {
+      try {
 
-      /* USER TOKENS */
+        localStorage.removeItem(
+          "user_token"
+        );
 
-      localStorage.removeItem(
-        "user_token"
-      );
+        localStorage.removeItem(
+          "token"
+        );
 
-      localStorage.removeItem(
-        "token"
-      );
+        await signOut(auth);
 
-      /* FIREBASE SIGNOUT */
+        navigate(
+          PUBLIC_ROUTES.home
+        );
 
-      await signOut(auth);
+      } catch (error) {
 
-      /* REDIRECT */
+        console.error(error);
 
-      navigate(
-        PUBLIC_ROUTES.home
-      );
+      }
 
-    } catch (error) {
-
-      console.error(error);
-
-    }
-
-  };
+    };
 
   /* ===================================================== */
-  /* NAVIGATION */
+  /* GO */
   /* ===================================================== */
 
-  const go = (path) => {
+  const go =
+    (path) => {
 
-    setOpen(false);
+      setOpen(false);
 
-    navigate(path);
+      navigate(path);
 
-  };
+    };
 
   /* ===================================================== */
   /* UI */
@@ -155,96 +159,109 @@ const NavbarApp = () => {
 
   return (
 
-    <nav className="sticky top-0 z-50 border-b border-white/10 bg-primary-dark/95 text-white shadow-card backdrop-blur-xl">
+    <nav className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur-xl shadow-sm">
 
-      <div className="mx-auto max-w-7xl px-4 lg:px-8">
+      <div className="max-w-[1600px] mx-auto px-4 md:px-6 xl:px-8">
 
         {/* ===================================================== */}
-        {/* MAIN NAVBAR */}
+        {/* MAIN NAV */}
         {/* ===================================================== */}
 
-        <div className="flex h-[68px] items-center justify-between gap-4">
+        <div className="h-[74px] flex items-center justify-between gap-5">
 
           {/* ===================================================== */}
-          {/* LOGO */}
+          {/* LEFT */}
           {/* ===================================================== */}
 
-          <button
-            type="button"
-            onClick={() =>
-              go(
-                DASHBOARD_ROUTES.root
-              )
-            }
-            className="flex items-center gap-3 text-left"
-          >
+          <div className="flex items-center gap-10">
 
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-white/12">
+            {/* LOGO */}
 
-              <img
-                src={logo}
-                alt="TravelGenie"
-                className="h-7 w-7 object-contain"
-              />
+            <button
+              type="button"
+              onClick={() =>
+                go(
+                  DASHBOARD_ROUTES.root
+                )
+              }
+              className="flex items-center gap-3 shrink-0"
+            >
 
-            </span>
+              <div className="w-11 h-11 rounded-2xl bg-orange-500 flex items-center justify-center shadow-sm overflow-hidden">
 
-            <span>
+                <img
+                  src={logo}
+                  alt="TravelGenie"
+                  className="w-6 h-6 object-contain brightness-0 invert"
+                />
 
-              <span className="font-heading block text-lg font-bold">
+              </div>
 
-                TravelGenie
+              <div>
 
-              </span>
+                <h2 className="text-lg font-black text-slate-900 leading-none">
 
-              <span className="hidden text-[10px] uppercase tracking-[0.18em] text-white/52 sm:block">
+                  TravelGenie
 
-                Trekker Workspace
+                </h2>
 
-              </span>
+                <p className="text-[11px] uppercase tracking-[0.22em] text-slate-400 mt-1">
 
-            </span>
+                  AI Trek Platform
 
-          </button>
+                </p>
 
-          {/* ===================================================== */}
-          {/* DESKTOP LINKS */}
-          {/* ===================================================== */}
+              </div>
 
-          <div className="hidden items-center gap-1 rounded-full border border-white/10 bg-white/8 p-1 lg:flex">
+            </button>
 
-            {links.map((link) => (
+            {/* DESKTOP NAV */}
 
-              <button
-                key={link.path}
-                type="button"
-                onClick={() =>
-                  go(link.path)
-                }
-                className={`rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 ${
-                  isActive(link.path)
+            <div className="hidden xl:flex items-center gap-2">
 
-                    ? "bg-white text-primary shadow-sm"
+              {links.map((link) => {
 
-                    : "text-white/72 hover:bg-white/10 hover:text-white"
-                }`}
-              >
+                const Icon =
+                  link.icon;
 
-                {link.label}
+                return (
 
-              </button>
+                  <button
+                    key={link.path}
+                    type="button"
+                    onClick={() =>
+                      go(link.path)
+                    }
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ${
+                      isActive(link.path)
 
-            ))}
+                        ? "bg-orange-500 text-white shadow-sm"
+
+                        : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                    }`}
+                  >
+
+                    <Icon className="text-sm" />
+
+                    {link.label}
+
+                  </button>
+
+                );
+
+              })}
+
+            </div>
 
           </div>
 
           {/* ===================================================== */}
-          {/* RIGHT ACTIONS */}
+          {/* RIGHT */}
           {/* ===================================================== */}
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
 
-            {/* EXPLORE TREKS */}
+            {/* EXPLORE */}
 
             <button
               type="button"
@@ -253,8 +270,10 @@ const NavbarApp = () => {
                   PUBLIC_ROUTES.treks
                 )
               }
-              className="hidden rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-white transition hover:bg-accent-dark md:inline-flex"
+              className="hidden md:flex items-center gap-2 bg-slate-900 hover:bg-black transition text-white px-5 py-3 rounded-xl font-semibold shadow-sm"
             >
+
+              <FaMountain />
 
               Explore Treks
 
@@ -265,7 +284,7 @@ const NavbarApp = () => {
             <button
               type="button"
               onClick={handleLogout}
-              className="hidden items-center gap-2 rounded-full border border-white/14 px-4 py-2.5 text-sm font-semibold text-white/76 transition hover:bg-white/10 hover:text-white md:inline-flex"
+              className="hidden md:flex items-center gap-2 border border-slate-200 bg-white hover:bg-slate-50 transition px-5 py-3 rounded-xl text-slate-700 font-semibold"
             >
 
               <FaSignOutAlt />
@@ -283,15 +302,13 @@ const NavbarApp = () => {
                   (value) => !value
                 )
               }
-              className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/14 bg-white/8 lg:hidden"
-              aria-label="Toggle app menu"
+              className="xl:hidden w-11 h-11 rounded-xl border border-slate-200 bg-white flex items-center justify-center text-slate-700"
+              aria-label="Toggle menu"
             >
 
-              {open ? (
-                <FaTimes />
-              ) : (
-                <FaBars />
-              )}
+              {open
+                ? <FaTimes />
+                : <FaBars />}
 
             </button>
 
@@ -305,46 +322,73 @@ const NavbarApp = () => {
 
         {open && (
 
-          <div className="grid gap-2 border-t border-white/10 py-4 lg:hidden">
+          <div className="xl:hidden border-t border-slate-200 py-4 space-y-2">
 
-            {links.map((link) => (
+            {links.map((link) => {
+
+              const Icon =
+                link.icon;
+
+              return (
+
+                <button
+                  key={link.path}
+                  type="button"
+                  onClick={() =>
+                    go(link.path)
+                  }
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-semibold transition ${
+                    isActive(link.path)
+
+                      ? "bg-orange-500 text-white"
+
+                      : "bg-slate-50 text-slate-700 hover:bg-slate-100"
+                  }`}
+                >
+
+                  <Icon />
+
+                  {link.label}
+
+                </button>
+
+              );
+
+            })}
+
+            {/* MOBILE ACTIONS */}
+
+            <div className="grid gap-2 pt-3">
 
               <button
-                key={link.path}
                 type="button"
                 onClick={() =>
-                  go(link.path)
+                  go(
+                    PUBLIC_ROUTES.treks
+                  )
                 }
-                className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
-                  isActive(link.path)
-
-                    ? "bg-white text-primary"
-
-                    : "bg-white/8 text-white/82 hover:bg-white/10"
-                }`}
+                className="flex items-center justify-center gap-2 bg-slate-900 text-white px-4 py-3 rounded-xl font-semibold"
               >
 
-                <link.icon />
+                <FaMountain />
 
-                {link.label}
+                Explore Treks
 
               </button>
 
-            ))}
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="flex items-center justify-center gap-2 bg-red-500 text-white px-4 py-3 rounded-xl font-semibold"
+              >
 
-            {/* MOBILE LOGOUT */}
+                <FaSignOutAlt />
 
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="flex items-center gap-3 rounded-2xl bg-accent px-4 py-3 text-left text-sm font-semibold text-white"
-            >
+                Logout
 
-              <FaSignOutAlt />
+              </button>
 
-              Logout
-
-            </button>
+            </div>
 
           </div>
 
@@ -358,4 +402,4 @@ const NavbarApp = () => {
 
 };
 
-export default NavbarApp;   
+export default NavbarApp;

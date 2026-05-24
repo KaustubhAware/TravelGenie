@@ -1,47 +1,27 @@
 import {
-  useEffect,
   useState,
 } from "react";
 
-import logo from "../assets/logo.svg";
-
 import {
-  useNavigate,
+  Link,
   useLocation,
+  useNavigate,
 } from "react-router-dom";
 
 import {
-  motion,
-  AnimatePresence,
-} from "framer-motion";
-
-import {
   FaBars,
-  FaCompass,
   FaTimes,
-  FaUserCircle,
+  FaMountain,
 } from "react-icons/fa";
 
-const NAV_LINKS = [
+import logo from "../assets/logo.svg";
 
-  {
-    label: "Home",
-    path: "/",
-  },
+import Button from "./ui/Button";
 
-  {
-    label: "Packages",
-    path: "/dashboard/packages",
-  },
+export default function NavbarLanding() {
 
-  {
-    label: "AI Planner",
-    path: "/dashboard/ai-planner",
-  },
-
-];
-
-const NavbarLanding = () => {
+  const [mobileOpen, setMobileOpen] =
+    useState(false);
 
   const navigate =
     useNavigate();
@@ -49,175 +29,249 @@ const NavbarLanding = () => {
   const location =
     useLocation();
 
-  const [mobileOpen, setMobileOpen] =
-    useState(false);
+  /* ===================================================== */
+  /* LINKS */
+  /* ===================================================== */
 
-  const [scrolled, setScrolled] =
-    useState(false);
+  const navLinks = [
 
-  useEffect(() => {
+    {
+      label: "Home",
+      href: "/",
+    },
 
-    const onScroll = () =>
+    {
+      label: "Treks",
+      href: "/dashboard/packages",
+    },
 
-      setScrolled(
-        window.scrollY > 20
-      );
+    {
+      label: "AI Planner",
+      href: "/dashboard/ai-planner",
+    },
 
-    onScroll();
+    {
+      label: "Destinations",
+      href: "/destinations",
+    },
 
-    window.addEventListener(
-      "scroll",
-      onScroll,
-      { passive: true }
-    );
+  ];
 
-    return () =>
+  /* ===================================================== */
+  /* ACTIVE */
+  /* ===================================================== */
 
-      window.removeEventListener(
-        "scroll",
-        onScroll
-      );
+  const isActive =
+    (href) =>
 
-  }, []);
+      location.pathname === href;
 
-  const isActive = (path) =>
-
-    location.pathname === path;
+  /* ===================================================== */
+  /* UI */
+  /* ===================================================== */
 
   return (
 
-    <nav className="fixed top-0 left-0 w-full z-50 px-4 pt-4">
+    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur-xl shadow-sm">
 
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-[1600px] mx-auto px-4 md:px-6 xl:px-8">
 
-        <motion.div
-          animate={{
-            backgroundColor:
-              scrolled
+        {/* ===================================================== */}
+        {/* MAIN NAV */}
+        {/* ===================================================== */}
 
-                ? "rgba(15,23,42,0.92)"
+        <div className="h-[74px] flex items-center justify-between gap-5">
 
-                : "rgba(15,23,42,0.55)",
-          }}
-          className="rounded-[28px] border border-white/10 backdrop-blur-xl shadow-2xl px-6"
-        >
+          {/* ===================================================== */}
+          {/* LOGO */}
+          {/* ===================================================== */}
 
-          <div className="h-[82px] flex items-center justify-between">
+          <Link
+            to="/"
+            className="flex items-center gap-3 shrink-0"
+          >
 
-            {/* LOGO */}
+            <div className="w-11 h-11 rounded-2xl bg-orange-500 flex items-center justify-center shadow-sm overflow-hidden">
 
-            <button
-              onClick={() =>
-                navigate("/")
-              }
-              className="flex items-center gap-4"
-            >
-
-              <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center">
-
-                <img
-                  src={logo}
-                  alt="TravelGenie"
-                  className="w-10 h-10"
-                />
-
-              </div>
-
-              <div className="text-left">
-
-                <h2 className="text-4xl font-black text-white">
-
-                  TravelGenie
-
-                </h2>
-
-                <p className="text-white/60 text-xs uppercase tracking-[0.25em] mt-1">
-
-                  Trekking Ops SaaS
-
-                </p>
-
-              </div>
-
-            </button>
-
-            {/* DESKTOP NAV */}
-
-            <div className="hidden lg:flex items-center gap-2 bg-white/5 border border-white/10 rounded-full p-2">
-
-              {NAV_LINKS.map((item) => (
-
-                <button
-                  key={item.path}
-                  onClick={() =>
-                    navigate(item.path)
-                  }
-                  className={`px-5 py-3 rounded-full text-sm font-bold transition ${
-                    isActive(item.path)
-
-                      ? "bg-white text-slate-900"
-
-                      : "text-white/80 hover:bg-white/10"
-                  }`}
-                >
-
-                  {item.label}
-
-                </button>
-
-              ))}
+              <img
+                src={logo}
+                alt="TravelGenie"
+                className="w-6 h-6 object-contain brightness-0 invert"
+              />
 
             </div>
 
+            <div>
+
+              <h2 className="text-lg font-black text-slate-900 leading-none">
+
+                TravelGenie
+
+              </h2>
+
+              <p className="text-[11px] uppercase tracking-[0.22em] text-slate-400 mt-1">
+
+                AI Trek Platform
+
+              </p>
+
+            </div>
+
+          </Link>
+
+          {/* ===================================================== */}
+          {/* DESKTOP NAV */}
+          {/* ===================================================== */}
+
+          <nav className="hidden xl:flex items-center gap-2">
+
+            {navLinks.map((item) => (
+
+              <button
+                key={item.label}
+                onClick={() =>
+                  navigate(item.href)
+                }
+                className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ${
+                  isActive(item.href)
+
+                    ? "bg-orange-500 text-white shadow-sm"
+
+                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                }`}
+              >
+
+                {item.label}
+
+              </button>
+
+            ))}
+
+          </nav>
+
+          {/* ===================================================== */}
+          {/* ACTIONS */}
+          {/* ===================================================== */}
+
+          <div className="hidden xl:flex items-center gap-3">
+
+            <button
+              onClick={() =>
+                navigate("/login")
+              }
+              className="border border-slate-200 bg-white hover:bg-slate-50 transition px-5 py-3 rounded-xl text-slate-700 font-semibold"
+            >
+
+              Sign In
+
+            </button>
+
+            <button
+              onClick={() =>
+                navigate(
+                  "/dashboard/ai-planner"
+                )
+              }
+              className="flex items-center gap-2 bg-slate-900 hover:bg-black transition text-white px-5 py-3 rounded-xl font-semibold shadow-sm"
+            >
+
+              <FaMountain />
+
+              Start Planning
+
+            </button>
+
+          </div>
+
+          {/* ===================================================== */}
+          {/* MOBILE BUTTON */}
+          {/* ===================================================== */}
+
+          <button
+            onClick={() =>
+              setMobileOpen(
+                !mobileOpen
+              )
+            }
+            className="xl:hidden w-11 h-11 rounded-xl border border-slate-200 bg-white flex items-center justify-center text-slate-700"
+          >
+
+            {mobileOpen
+
+              ? <FaTimes />
+
+              : <FaBars />
+            }
+
+          </button>
+
+        </div>
+
+      </div>
+
+      {/* ===================================================== */}
+      {/* MOBILE MENU */}
+      {/* ===================================================== */}
+
+      {mobileOpen && (
+
+        <div className="xl:hidden border-t border-slate-200 bg-white">
+
+          <div className="px-4 py-5 space-y-2">
+
+            {navLinks.map((item) => (
+
+              <button
+                key={item.label}
+                onClick={() => {
+
+                  navigate(item.href);
+
+                  setMobileOpen(false);
+
+                }}
+                className={`w-full text-left px-4 py-3 rounded-xl font-semibold transition ${
+                  isActive(item.href)
+
+                    ? "bg-orange-500 text-white"
+
+                    : "bg-slate-50 text-slate-700 hover:bg-slate-100"
+                }`}
+              >
+
+                {item.label}
+
+              </button>
+
+            ))}
+
             {/* ACTIONS */}
 
-            <div className="flex items-center gap-3">
+            <div className="grid gap-2 pt-4">
 
               <button
                 onClick={() =>
                   navigate("/login")
                 }
-                className="hidden md:flex items-center gap-2 text-white font-semibold hover:text-orange-400 transition"
+                className="w-full border border-slate-200 bg-white hover:bg-slate-50 transition px-4 py-3 rounded-xl text-slate-700 font-semibold"
               >
 
-                <FaUserCircle />
-
-                Login
+                Sign In
 
               </button>
 
               <button
                 onClick={() =>
                   navigate(
-                    "/dashboard/packages"
+                    "/dashboard/ai-planner"
                   )
                 }
-                className="hidden sm:flex h-14 px-7 rounded-full bg-orange-500 hover:bg-orange-600 transition text-white font-bold items-center gap-3"
+                className="w-full flex items-center justify-center gap-2 bg-slate-900 text-white px-4 py-3 rounded-xl font-semibold"
               >
 
-                <FaCompass />
+                <FaMountain />
 
-                Explore Treks
-
-              </button>
-
-              {/* MOBILE */}
-
-              <button
-                onClick={() =>
-                  setMobileOpen(
-                    !mobileOpen
-                  )
-                }
-                className="lg:hidden w-12 h-12 rounded-2xl bg-white/10 text-white flex items-center justify-center"
-              >
-
-                {mobileOpen
-
-                  ? <FaTimes />
-
-                  : <FaBars />
-                }
+                Start Planning
 
               </button>
 
@@ -225,70 +279,12 @@ const NavbarLanding = () => {
 
           </div>
 
-          {/* MOBILE MENU */}
+        </div>
 
-          <AnimatePresence>
+      )}
 
-            {mobileOpen && (
-
-              <motion.div
-                initial={{
-                  height: 0,
-                  opacity: 0,
-                }}
-                animate={{
-                  height: "auto",
-                  opacity: 1,
-                }}
-                exit={{
-                  height: 0,
-                  opacity: 0,
-                }}
-                className="overflow-hidden lg:hidden border-t border-white/10"
-              >
-
-                <div className="py-5 flex flex-col gap-3">
-
-                  {NAV_LINKS.map((item) => (
-
-                    <button
-                      key={item.path}
-                      onClick={() => {
-
-                        navigate(
-                          item.path
-                        );
-
-                        setMobileOpen(
-                          false
-                        );
-
-                      }}
-                      className="h-12 rounded-2xl bg-white/5 text-white font-semibold"
-                    >
-
-                      {item.label}
-
-                    </button>
-
-                  ))}
-
-                </div>
-
-              </motion.div>
-
-            )}
-
-          </AnimatePresence>
-
-        </motion.div>
-
-      </div>
-
-    </nav>
+    </header>
 
   );
 
-};
-
-export default NavbarLanding;
+}

@@ -1,154 +1,144 @@
 import {
-  motion,
-} from "framer-motion";
-
-import {
   FaStar,
 } from "react-icons/fa";
 
-const testimonials = [
+import PageContainer from "../../components/ui/PageContainer";
 
-  {
-    id: 1,
-    name: "Rahul Patil",
-    role: "Weekend Trekker",
-    rating: 5,
-    quote:
-      "TravelGenie made our Rajmachi trek experience seamless. Booking, planning, and coordination felt extremely professional.",
-  },
+import SectionHeader from "../../components/ui/SectionHeader";
 
-  {
-    id: 2,
-    name: "Sneha Joshi",
-    role: "Adventure Explorer",
-    rating: 5,
-    quote:
-      "The AI planner and curated packages helped us discover hidden places in Maharashtra we never knew existed.",
-  },
+import Card from "../../components/ui/Card";
 
-  {
-    id: 3,
-    name: "Amit Kulkarni",
-    role: "Group Organizer",
-    rating: 5,
-    quote:
-      "Clean booking workflow, excellent trek planning, and very organized communication from the operators.",
-  },
+export default function TestimonialsSection() {
 
-];
+  /* ===================================================== */
+  /* TESTIMONIALS */
+  /* ===================================================== */
 
-const TestimonialsSection = () => {
+  const testimonials = [
+
+    {
+      id: 1,
+      name: "Aarav Sharma",
+      role: "Adventure Traveler",
+      image:
+        "https://randomuser.me/api/portraits/men/32.jpg",
+      review:
+        "TravelGenie completely changed how I plan trekking trips. The AI itinerary recommendations were surprisingly accurate and saved a lot of time.",
+    },
+
+    {
+      id: 2,
+      name: "Priya Mehta",
+      role: "Solo Backpacker",
+      image:
+        "https://randomuser.me/api/portraits/women/44.jpg",
+      review:
+        "The booking workflow and curated trek suggestions made the experience feel extremely professional and easy to manage.",
+    },
+
+    {
+      id: 3,
+      name: "Rahul Patil",
+      role: "Trek Organizer",
+      image:
+        "https://randomuser.me/api/portraits/men/76.jpg",
+      review:
+        "As a trek operator, managing clients and bookings through one platform is incredibly useful. The admin workflow is very clean.",
+    },
+
+  ];
+
+  /* ===================================================== */
+  /* UI */
+  /* ===================================================== */
 
   return (
 
-    <section className="bg-[#f8fafc] py-24">
+    <section className="py-28 bg-white">
 
-      <div className="max-w-7xl mx-auto px-6">
+      <PageContainer>
 
+        {/* ===================================================== */}
         {/* HEADER */}
+        {/* ===================================================== */}
 
-        <div className="text-center max-w-3xl mx-auto">
+        <SectionHeader
+          badge="Testimonials"
+          title="What Travelers Are Saying"
+          description="Thousands of travelers and adventure enthusiasts trust TravelGenie for smarter trip planning and seamless booking experiences."
+        />
 
-          <p className="uppercase tracking-[0.3em] text-orange-500 font-bold text-sm mb-5">
+        {/* ===================================================== */}
+        {/* GRID */}
+        {/* ===================================================== */}
 
-            Trekker Stories
+        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8 mt-16">
 
-          </p>
+          {testimonials.map((item) => (
 
-          <h2 className="text-4xl md:text-5xl font-black text-slate-900 leading-tight">
-
-            Trusted By Adventure
-            Travelers Across Maharashtra
-
-          </h2>
-
-          <p className="mt-6 text-lg text-slate-500 leading-relaxed">
-
-            Real feedback from trekkers,
-            campers, and travel groups
-            using TravelGenie for curated adventures.
-
-          </p>
-
-        </div>
-
-        {/* CARDS */}
-
-        <div className="grid md:grid-cols-3 gap-8 mt-16">
-
-          {testimonials.map((item, index) => (
-
-            <motion.div
+            <Card
               key={item.id}
-              initial={{
-                opacity: 0,
-                y: 20,
-              }}
-              whileInView={{
-                opacity: 1,
-                y: 0,
-              }}
-              transition={{
-                delay: index * 0.1,
-              }}
-              viewport={{
-                once: true,
-              }}
-              className="bg-white rounded-[32px] border border-slate-200 p-8 shadow-sm hover:shadow-xl transition"
+              className="h-full"
             >
 
               {/* STARS */}
 
-              <div className="flex gap-1 text-orange-400">
+              <div className="flex items-center gap-2 text-yellow-400">
 
-                {Array.from({
-                  length: item.rating,
-                }).map((_, i) => (
+                {[...Array(5)].map((_, index) => (
 
-                  <FaStar key={i} />
+                  <FaStar key={index} />
 
                 ))}
 
               </div>
 
-              {/* QUOTE */}
+              {/* REVIEW */}
 
               <p className="mt-6 text-slate-600 leading-relaxed">
 
-                "{item.quote}"
+                "{item.review}"
 
               </p>
 
               {/* USER */}
 
-              <div className="mt-8 pt-6 border-t border-slate-200">
+              <div className="flex items-center gap-4 mt-8">
 
-                <h4 className="font-black text-slate-900">
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="w-14 h-14 rounded-2xl object-cover"
+                />
 
-                  {item.name}
+                <div>
 
-                </h4>
+                  <h3 className="font-black text-slate-900">
 
-                <p className="text-slate-500 mt-1">
+                    {item.name}
 
-                  {item.role}
+                  </h3>
 
-                </p>
+                  <p className="text-sm text-slate-500 mt-1">
+
+                    {item.role}
+
+                  </p>
+
+                </div>
 
               </div>
 
-            </motion.div>
+            </Card>
 
           ))}
 
         </div>
 
-      </div>
+      </PageContainer>
 
     </section>
 
   );
 
-};
-
-export default TestimonialsSection;
+}

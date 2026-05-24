@@ -85,13 +85,30 @@ def generate_trip(data: dict):
         preferences_text
     )
 
-    # =====================================================
-    # GENERATE AI RESPONSE
-    # =====================================================
-
-    raw_text = generate_ai_itinerary(
-        data
-    )
+    try:
+        raw_text = generate_ai_itinerary(
+            data
+        )
+    except ValueError as exc:
+        from fastapi.responses import JSONResponse
+        from app.responses import error_response
+        return JSONResponse(
+            status_code=400,
+            content=error_response(
+                message=str(exc),
+                error="ConfigError"
+            )
+        )
+    except RuntimeError as exc:
+        from fastapi.responses import JSONResponse
+        from app.responses import error_response
+        return JSONResponse(
+            status_code=502,
+            content=error_response(
+                message=str(exc),
+                error="AIServiceError"
+            )
+        )
 
     # =====================================================
     # PARSE RESPONSE

@@ -1,14 +1,9 @@
-import UserProtectedRoute from "../components/UserProtectedRoute";
 import AppLayout from "./AppLayout";
 
 /**
  * Authenticated customer workspace shell.
- * AppLayout + NavbarApp only — no landing chrome.
+ * AppLayout + NavbarApp only.
  */
 export default function DashboardLayout() {
-  return (
-    <UserProtectedRoute>
-      <AppLayout />
-    </UserProtectedRoute>
-  );
+  return <AppLayout />;
 }

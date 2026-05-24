@@ -1,3 +1,6 @@
+import logging
+import random
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
@@ -5,7 +8,7 @@ from app.db import get_connection
 from app.firebase_auth import verify_firebase_token
 from app.routes.auth import get_current_user
 
-import random
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -84,51 +87,10 @@ class PaymentRequest(BaseModel):
 # =====================================================
 
 def ensure_booking_workflow_columns(cursor):
-
-    cursor.execute("""
-        ALTER TABLE bookings
-        ADD COLUMN IF NOT EXISTS payment_status VARCHAR(30) DEFAULT 'unpaid'
-    """)
-
-    cursor.execute("""
-        ALTER TABLE bookings
-        ADD COLUMN IF NOT EXISTS internal_notes TEXT
-    """)
-
-    cursor.execute("""
-        ALTER TABLE bookings
-        ADD COLUMN IF NOT EXISTS assigned_agent VARCHAR(120)
-    """)
-
-    cursor.execute("""
-        ALTER TABLE bookings
-        ADD COLUMN IF NOT EXISTS adjusted_price NUMERIC(12, 2)
-    """)
-
-    cursor.execute("""
-        ALTER TABLE bookings
-        ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    """)
-
-    cursor.execute("""
-        ALTER TABLE bookings
-        ADD COLUMN IF NOT EXISTS package_id INTEGER
-    """)
-
-    cursor.execute("""
-        ALTER TABLE bookings
-        ADD COLUMN IF NOT EXISTS travel_date VARCHAR(100)
-    """)
-
-    cursor.execute("""
-        ALTER TABLE bookings
-        ADD COLUMN IF NOT EXISTS travelers INTEGER DEFAULT 1
-    """)
-
-    cursor.execute("""
-        ALTER TABLE bookings
-        ADD COLUMN IF NOT EXISTS special_request TEXT
-    """)
+    """Deprecated: schema is managed via schema.sql only."""
+    logger.debug(
+        "ensure_booking_workflow_columns is deprecated and no longer mutates schema"
+    )
 
 # =====================================================
 # GENERATE BOOKING ID
@@ -199,11 +161,10 @@ def save_booking(
 
         ensure_booking_workflow_columns(cursor)
 
-        if "@" not in data.email or "." not in data.email:
-
+        if "@" not in data.email or "." not in data.email.split("@")[-1]:
             raise HTTPException(
                 status_code=422,
-                detail="Invalid email address"
+                detail="Invalid email address",
             )
 
         booking_id = generate_booking_id()

@@ -1,6 +1,13 @@
 import os
 from functools import lru_cache
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Load env variables before Settings class initialization to prevent import-order issues
+_env_path = Path(__file__).resolve().parents[1] / ".env"
+if not _env_path.exists():
+    _env_path = Path(__file__).resolve().parents[2] / ".env"
+load_dotenv(_env_path)
 
 
 class Settings:
@@ -25,8 +32,19 @@ class Settings:
     ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
     ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")
 
+    # Legacy single key (fallback for both services)
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+    GEMINI_ITINERARY_API_KEY = os.getenv(
+        "GEMINI_ITINERARY_API_KEY",
+        os.getenv("GEMINI_API_KEY", ""),
+    )
+    GEMINI_CHAT_API_KEY = os.getenv(
+        "GEMINI_CHAT_API_KEY",
+        os.getenv("GEMINI_API_KEY", ""),
+    )
+
     FIREBASE_KEY_PATH = os.getenv("FIREBASE_KEY_PATH", "")
+    CLOUDINARY_URL = os.getenv("CLOUDINARY_URL", "")
 
     @property
     def cors_origin_list(self):
@@ -40,25 +58,22 @@ class Settings:
     def firebase_key_path(self):
         if self.FIREBASE_KEY_PATH:
             return Path(self.FIREBASE_KEY_PATH)
-
         return Path(__file__).resolve().parent.parent / "firebase_key.json"
 
     def validate(self):
         missing = []
-
         if self.ENVIRONMENT == "production":
             required = {
                 "ADMIN_SECRET_KEY": self.ADMIN_SECRET_KEY,
-                "GEMINI_API_KEY": self.GEMINI_API_KEY,
                 "DB_PASSWORD": self.DB_PASSWORD,
             }
-
             missing = [
                 key
                 for key, value in required.items()
                 if not value or value in {"MYSECRET123", "root"}
             ]
-
+            if not self.GEMINI_ITINERARY_API_KEY and not self.GEMINI_CHAT_API_KEY:
+                missing.append("GEMINI_ITINERARY_API_KEY or GEMINI_CHAT_API_KEY")
         return missing
 
 

@@ -1,5 +1,18 @@
-const PageContainer = ({ children, className = "" }) => {
-  return <main className={`tg-page ${className}`}>{children}</main>;
-};
+export default function PageContainer({
+  children,
+  className = "",
+}) {
 
-export default PageContainer;
+  return (
+
+    <div
+      className={`max-w-7xl mx-auto px-5 md:px-8 ${className}`}
+    >
+
+      {children}
+
+    </div>
+
+  );
+
+}

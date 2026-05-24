@@ -1,51 +1,63 @@
-import pandas as pd
+"""
+Build city cost lookup from travel cost.csv.
+Run: python -m app.ml.cost_model (from backend/)
+"""
+
+import json
 import re
-from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import LabelEncoder
-import pickle
+from pathlib import Path
 
-# Load dataset
-df = pd.read_csv("app/ml/travel cost.csv")
+import pandas as pd
 
-# Rename columns (fix spelling issues)
-df.columns = ["City", "Type", "Cost_Range"]
+ML_DIR = Path(__file__).resolve().parent
+CSV_PATH = ML_DIR / "travel cost.csv"
+OUTPUT_PATH = ML_DIR / "city_cost_lookup.json"
 
-# Function to clean cost
-def extract_avg_cost(cost):
+
+def extract_avg_cost(cost_range):
     try:
-        # Remove unwanted characters
-        cost = re.sub(r"[^\d\-]", "", str(cost))
-
-        # Split range
-        parts = cost.split("-")
-
+        cleaned = re.sub(r"[^\d\-]", "", str(cost_range))
+        parts = cleaned.split("-")
         if len(parts) == 2:
             low = int(parts[0])
             high = int(parts[1])
             return (low + high) / 2
-    except:
-        return None
+    except (ValueError, TypeError):
+        pass
+    return None
 
-# Apply cleaning
-df["Cost"] = df["Cost_Range"].apply(extract_avg_cost)
 
-# Drop invalid rows
-df = df.dropna()
+def build_lookup():
+    if not CSV_PATH.exists():
+        raise FileNotFoundError(f"Dataset not found: {CSV_PATH}")
 
-# Encode city
-le_city = LabelEncoder()
-df["City"] = le_city.fit_transform(df["City"])
+    df = pd.read_csv(CSV_PATH)
+    df.columns = ["City", "Type", "Cost_Range"]
+    df["Cost"] = df["Cost_Range"].apply(extract_avg_cost)
+    df = df.dropna(subset=["Cost"])
 
-# Features & target
-X = df[["City"]]
-y = df["Cost"]
+    city_costs = {}
+    for city, group in df.groupby("City"):
+        key = str(city).strip().lower()
+        city_costs[key] = int(round(group["Cost"].mean()))
 
-# Train model
-model = LinearRegression()
-model.fit(X, y)
+    overall_average = (
+        int(round(df["Cost"].mean())) if len(df) else 25000
+    )
 
-# Save model
-pickle.dump(model, open("app/ml/cost_model.pkl", "wb"))
-pickle.dump(le_city, open("app/ml/le_city.pkl", "wb"))
+    payload = {
+        "city_costs": city_costs,
+        "overall_average": overall_average,
+    }
 
-print("✅ Cost model trained successfully!")
+    OUTPUT_PATH.write_text(
+        json.dumps(payload, indent=2),
+        encoding="utf-8",
+    )
+
+    print(f"City cost lookup saved to {OUTPUT_PATH}")
+    return payload
+
+
+if __name__ == "__main__":
+    build_lookup()

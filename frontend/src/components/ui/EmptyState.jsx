@@ -1,22 +1,47 @@
-import { FaMountain } from "react-icons/fa";
-import GlassCard from "./GlassCard";
-import GradientButton from "./GradientButton";
+import Button from "./Button";
 
-const EmptyState = ({ title, description, actionLabel, onAction, icon: Icon = FaMountain }) => {
+export default function EmptyState({
+  title,
+  description,
+  buttonText,
+  onClick,
+}) {
+
   return (
-    <GlassCard className="p-10 text-center">
-      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-2xl text-primary">
-        <Icon />
-      </div>
-      <h3 className="font-heading mt-6 text-2xl font-bold text-ink">{title}</h3>
-      {description && <p className="mx-auto mt-3 max-w-md text-ink-muted">{description}</p>}
-      {actionLabel && (
-        <GradientButton onClick={onAction} className="mt-6">
-          {actionLabel}
-        </GradientButton>
-      )}
-    </GlassCard>
-  );
-};
 
-export default EmptyState;
+    <div className="py-20 text-center">
+
+      <div className="max-w-md mx-auto">
+
+        <h3 className="text-3xl font-black text-slate-900">
+
+          {title}
+
+        </h3>
+
+        <p className="mt-4 text-slate-500 leading-relaxed">
+
+          {description}
+
+        </p>
+
+        {buttonText && (
+
+          <Button
+            onClick={onClick}
+            className="mt-8"
+          >
+
+            {buttonText}
+
+          </Button>
+
+        )}
+
+      </div>
+
+    </div>
+
+  );
+
+}

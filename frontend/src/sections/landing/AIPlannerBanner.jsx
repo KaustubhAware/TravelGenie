@@ -1,216 +1,319 @@
 import {
-  motion,
-} from "framer-motion";
+  FaArrowRight,
+  FaRobot,
+  FaBrain,
+  FaMapMarkedAlt,
+  FaRoute,
+} from "react-icons/fa";
 
 import {
   useNavigate,
 } from "react-router-dom";
 
-import {
-  FaArrowRight,
-  FaRobot,
-  FaRoute,
-  FaMapMarkedAlt,
-  FaCloudSun,
-} from "react-icons/fa";
+import PageContainer from "../../components/ui/PageContainer";
 
-const features = [
+import Button from "../../components/ui/Button";
 
-  {
-    icon: FaRobot,
-    title: "AI Recommendations",
-    text:
-      "Get intelligent trek and travel suggestions across Maharashtra based on season, difficulty, and budget.",
-  },
-
-  {
-    icon: FaRoute,
-    title: "Smart Itineraries",
-    text:
-      "Generate optimized travel plans for forts, camping, waterfalls, and weekend adventures.",
-  },
-
-  {
-    icon: FaCloudSun,
-    title: "Weather Insights",
-    text:
-      "Plan monsoon, winter, and summer treks with smart seasonal recommendations.",
-  },
-
-  {
-    icon: FaMapMarkedAlt,
-    title: "Custom Travel Planning",
-    text:
-      "Build personalized adventure experiences for solo travelers, groups, and weekend explorers.",
-  },
-
-];
-
-const AIPlannerBanner = () => {
+export default function AIPlannerBanner() {
 
   const navigate =
     useNavigate();
 
+  /* ===================================================== */
+  /* FEATURES */
+  /* ===================================================== */
+
+  const features = [
+
+    {
+      icon: <FaBrain />,
+      title: "Smart Recommendations",
+    },
+
+    {
+      icon: <FaMapMarkedAlt />,
+      title: "Personalized Itineraries",
+    },
+
+    {
+      icon: <FaRoute />,
+      title: "Optimized Trek Planning",
+    },
+
+  ];
+
+  /* ===================================================== */
+  /* UI */
+  /* ===================================================== */
+
   return (
 
-    <section className="relative overflow-hidden bg-[#081018] py-24">
+    <section className="py-28 bg-slate-50 overflow-hidden">
 
-      {/* BACKGROUND */}
+      <PageContainer>
 
-      <div className="absolute inset-0 opacity-20">
+        <div className="relative overflow-hidden rounded-[40px] bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 px-8 md:px-16 py-16 md:py-20">
 
-        <img
-          src="https://images.unsplash.com/photo-1527631746610-bca00a040d60?q=80&w=2070&auto=format&fit=crop"
-          alt="AI Travel"
-          className="w-full h-full object-cover"
-        />
+          {/* ===================================================== */}
+          {/* GLOW EFFECTS */}
+          {/* ===================================================== */}
 
-      </div>
+          <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-indigo-500/20 rounded-full blur-3xl" />
 
-      {/* OVERLAY */}
+          <div className="absolute bottom-0 left-0 w-[350px] h-[350px] bg-cyan-500/10 rounded-full blur-3xl" />
 
-      <div className="absolute inset-0 bg-gradient-to-r from-[#081018] via-[#081018]/90 to-[#081018]/70" />
+          {/* ===================================================== */}
+          {/* CONTENT */}
+          {/* ===================================================== */}
 
-      {/* CONTENT */}
+          <div className="relative z-10 grid lg:grid-cols-2 gap-16 items-center">
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6">
+            {/* ===================================================== */}
+            {/* LEFT */}
+            {/* ===================================================== */}
 
-        {/* HEADER */}
+            <div>
 
-        <div className="max-w-3xl">
+              {/* BADGE */}
 
-          <p className="uppercase tracking-[0.3em] text-orange-400 font-bold text-sm mb-5">
+              <div className="inline-flex items-center gap-3 px-5 py-3 rounded-full bg-white/10 border border-white/10 backdrop-blur-xl">
 
-            AI Powered Planning
+                <FaRobot className="text-cyan-400" />
 
-          </p>
+                <span className="text-sm font-semibold text-white/80">
 
-          <h2 className="text-4xl md:text-6xl font-black text-white leading-tight">
+                  AI Travel Assistant
 
-            Plan Smarter
-            Adventures With AI
-
-          </h2>
-
-          <p className="mt-8 text-lg text-white/70 leading-relaxed">
-
-            TravelGenie AI helps travelers discover,
-            personalize, and plan Maharashtra trekking
-            and travel experiences with intelligent recommendations.
-
-          </p>
-
-        </div>
-
-        {/* FEATURES */}
-
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mt-16">
-
-          {features.map((feature, index) => (
-
-            <motion.div
-              key={feature.title}
-              initial={{
-                opacity: 0,
-                y: 20,
-              }}
-              whileInView={{
-                opacity: 1,
-                y: 0,
-              }}
-              viewport={{
-                once: true,
-              }}
-              transition={{
-                delay: index * 0.08,
-              }}
-              whileHover={{
-                y: -6,
-              }}
-              className="rounded-[32px] border border-white/10 bg-white/5 backdrop-blur-xl p-7 hover:bg-white/10 transition-all duration-500"
-            >
-
-              {/* ICON */}
-
-              <div className="w-16 h-16 rounded-2xl bg-orange-500 text-white flex items-center justify-center text-2xl">
-
-                <feature.icon />
+                </span>
 
               </div>
 
               {/* TITLE */}
 
-              <h3 className="mt-6 text-xl font-black text-white leading-snug">
+              <h2 className="mt-8 text-4xl md:text-6xl font-black text-white leading-tight">
 
-                {feature.title}
+                Plan Your Perfect
+                Adventure With AI
 
-              </h3>
+              </h2>
 
-              {/* TEXT */}
+              {/* DESCRIPTION */}
 
-              <p className="mt-4 text-sm leading-relaxed text-white/70">
+              <p className="mt-8 text-lg text-slate-300 leading-relaxed max-w-2xl">
 
-                {feature.text}
+                TravelGenie uses intelligent AI assistance
+                to generate smarter itineraries, optimize
+                budgets, recommend treks, and simplify
+                travel planning workflows.
 
               </p>
 
-            </motion.div>
+              {/* FEATURES */}
 
-          ))}
+              <div className="grid sm:grid-cols-3 gap-5 mt-10">
+
+                {features.map((feature) => (
+
+                  <div
+                    key={feature.title}
+                    className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-5"
+                  >
+
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 text-cyan-400 flex items-center justify-center text-lg">
+
+                      {feature.icon}
+
+                    </div>
+
+                    <h3 className="mt-4 text-sm font-bold text-white leading-relaxed">
+
+                      {feature.title}
+
+                    </h3>
+
+                  </div>
+
+                ))}
+
+              </div>
+
+              {/* BUTTON */}
+
+              <Button
+                size="lg"
+                className="mt-12"
+                icon={<FaArrowRight />}
+                onClick={() =>
+                  navigate(
+                    "/dashboard/ai-planner"
+                  )
+                }
+              >
+
+                Start AI Planning
+
+              </Button>
+
+            </div>
+
+            {/* ===================================================== */}
+            {/* RIGHT */}
+            {/* ===================================================== */}
+
+            <div className="relative">
+
+              {/* MAIN CARD */}
+
+              <div className="rounded-[36px] border border-white/10 bg-white/10 backdrop-blur-2xl p-8 shadow-2xl">
+
+                {/* TOP */}
+
+                <div className="flex items-center justify-between">
+
+                  <div>
+
+                    <p className="text-sm text-slate-300">
+
+                      AI Planning Session
+
+                    </p>
+
+                    <h3 className="mt-2 text-3xl font-black text-white">
+
+                      Kedarkantha Trek
+
+                    </h3>
+
+                  </div>
+
+                  <div className="w-14 h-14 rounded-2xl bg-indigo-500 flex items-center justify-center text-white text-xl shadow-lg shadow-indigo-500/30">
+
+                    <FaRobot />
+
+                  </div>
+
+                </div>
+
+                {/* STEPS */}
+
+                <div className="space-y-5 mt-10">
+
+                  <div className="rounded-2xl bg-white/5 border border-white/10 p-5">
+
+                    <p className="text-sm text-slate-400">
+
+                      Budget Optimization
+
+                    </p>
+
+                    <div className="mt-3 flex items-center justify-between">
+
+                      <h4 className="text-lg font-bold text-white">
+
+                        ₹7,500 Estimated
+
+                      </h4>
+
+                      <span className="text-emerald-400 text-sm font-semibold">
+
+                        Optimized
+
+                      </span>
+
+                    </div>
+
+                  </div>
+
+                  <div className="rounded-2xl bg-white/5 border border-white/10 p-5">
+
+                    <p className="text-sm text-slate-400">
+
+                      Trek Matching
+
+                    </p>
+
+                    <div className="mt-3 flex items-center justify-between">
+
+                      <h4 className="text-lg font-bold text-white">
+
+                        98% Match Score
+
+                      </h4>
+
+                      <span className="text-cyan-400 text-sm font-semibold">
+
+                        AI Suggested
+
+                      </span>
+
+                    </div>
+
+                  </div>
+
+                  <div className="rounded-2xl bg-white/5 border border-white/10 p-5">
+
+                    <p className="text-sm text-slate-400">
+
+                      Best Season
+
+                    </p>
+
+                    <div className="mt-3 flex items-center justify-between">
+
+                      <h4 className="text-lg font-bold text-white">
+
+                        December - February
+
+                      </h4>
+
+                      <span className="text-indigo-400 text-sm font-semibold">
+
+                        Recommended
+
+                      </span>
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+              {/* FLOATING CARD */}
+
+              <div className="absolute -bottom-8 -left-8 hidden xl:block rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl p-6 shadow-2xl">
+
+                <p className="text-sm text-slate-300">
+
+                  Active AI Users
+
+                </p>
+
+                <h3 className="mt-3 text-4xl font-black text-white">
+
+                  12K+
+
+                </h3>
+
+                <p className="mt-2 text-sm text-emerald-400 font-semibold">
+
+                  +18% this month
+
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
 
         </div>
 
-        {/* BUTTONS */}
-
-        <motion.div
-          className="mt-14 flex flex-col items-center justify-center gap-5 sm:flex-row"
-          initial={{
-            opacity: 0,
-          }}
-          whileInView={{
-            opacity: 1,
-          }}
-          viewport={{
-            once: true,
-          }}
-        >
-
-          <button
-            onClick={() =>
-              navigate(
-                "/dashboard/ai-planner"
-              )
-            }
-            className="h-14 px-8 rounded-2xl bg-orange-500 hover:bg-orange-600 transition text-white font-bold flex items-center gap-3"
-          >
-
-            Start AI Planning
-
-            <FaArrowRight />
-
-          </button>
-
-          <button
-            onClick={() =>
-              navigate(
-                "/dashboard/packages"
-              )
-            }
-            className="h-14 px-8 rounded-2xl border border-white/15 bg-white/5 hover:bg-white hover:text-black transition text-white font-bold"
-          >
-
-            Explore Packages
-
-          </button>
-
-        </motion.div>
-
-      </div>
+      </PageContainer>
 
     </section>
 
   );
 
-};
-
-export default AIPlannerBanner;
+}

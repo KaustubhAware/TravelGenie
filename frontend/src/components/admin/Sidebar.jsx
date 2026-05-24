@@ -1,98 +1,296 @@
-import { Link, useLocation } from "react-router-dom";
+import {
+  Link,
+  useLocation,
+} from "react-router-dom";
 
 import {
-  FaChartBar,
-  FaSuitcaseRolling,
+  FaChartPie,
+  FaBoxOpen,
+  FaCalendarCheck,
   FaMoneyBillWave,
   FaSignOutAlt,
-  FaMapMarkedAlt,
   FaUsers,
   FaUserTie,
   FaMountain,
+  FaBars,
+  FaStar,
 } from "react-icons/fa";
 
+/* ===================================================== */
+/* NAVIGATION */
+/* ===================================================== */
+
 const links = [
-  { to: "/admin", label: "Command Center", icon: FaChartBar },
-  { to: "/admin/clients", label: "Customers", icon: FaUsers },
-  { to: "/admin/bookings", label: "Bookings", icon: FaSuitcaseRolling },
-  { to: "/admin/packages", label: "Packages", icon: FaMapMarkedAlt },
-  { to: "/agent", label: "Guides", icon: FaUserTie },
-  { to: "/admin/analytics", label: "Analytics", icon: FaMoneyBillWave },
+
+  {
+    to: "/admin",
+    label: "Dashboard",
+    icon: FaChartPie,
+  },
+
+  {
+    to: "/admin/bookings",
+    label: "Bookings",
+    icon: FaCalendarCheck,
+  },
+
+  {
+    to: "/admin/packages",
+    label: "Packages",
+    icon: FaBoxOpen,
+  },
+
+  {
+    to: "/admin/clients",
+    label: "Customers",
+    icon: FaUsers,
+  },
+
+  {
+    to: "/admin/analytics",
+    label: "Analytics",
+    icon: FaMoneyBillWave,
+  },
+
+  {
+    to: "/admin/guides",
+    label: "Guides",
+    icon: FaUserTie,
+  },
+
+  {
+    to: "/admin/vendors",
+    label: "Vendors",
+    icon: FaMountain,
+  },
+
+  {
+    to: "/admin/reviews",
+    label: "Reviews",
+    icon: FaStar,
+  },
+
 ];
+
+/* ===================================================== */
+/* COMPONENT */
+/* ===================================================== */
 
 export default function Sidebar({
   sidebarOpen,
   setSidebarOpen,
   logout,
 }) {
-  const location = useLocation();
+
+  const location =
+    useLocation();
+
+  /* ===================================================== */
+  /* ACTIVE */
+  /* ===================================================== */
+
+  const isActive = (path) =>
+
+    location.pathname === path ||
+
+    (path !== "/admin" &&
+      location.pathname.startsWith(path));
+
+  /* ===================================================== */
+  /* MENU STYLE */
+  /* ===================================================== */
 
   const menuClass = (path) =>
-    `w-full flex items-center gap-4 px-4 py-3 rounded-2xl transition font-semibold ${
-      location.pathname === path
-        ? "bg-white text-primary shadow-soft"
-        : "text-white/68 hover:bg-white/10 hover:text-white"
+
+    `flex items-center gap-4 rounded-xl px-4 py-3 transition-all duration-200 ${
+      isActive(path)
+
+        ? "bg-slate-100 text-slate-900 font-semibold"
+
+        : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
     }`;
 
+  /* ===================================================== */
+  /* UI */
+  /* ===================================================== */
+
   return (
+
     <aside
-      className={`${
-        sidebarOpen ? "lg:w-72" : "lg:w-24"
-      } hidden min-h-screen flex-col border-r border-white/10 bg-primary-dark/96 text-white shadow-card backdrop-blur-xl transition-all duration-300 lg:sticky lg:top-0 lg:flex`}
+      className={`hidden lg:flex flex-col shrink-0 border-r border-slate-200 bg-white transition-all duration-300 ${
+        sidebarOpen
+          ? "w-[260px]"
+          : "w-[92px]"
+      }`}
     >
-      <div className="border-b border-white/10 p-5">
-        <button
-          type="button"
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="flex w-full items-center gap-3 rounded-3xl border border-white/10 bg-white/8 p-4 text-left transition hover:bg-white/12"
-        >
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent text-white">
-            <FaMountain />
-          </span>
+
+      {/* ===================================================== */}
+      {/* TOP */}
+      {/* ===================================================== */}
+
+      <div className="h-[82px] border-b border-slate-200 px-5 flex items-center justify-between shrink-0">
+
+        {/* LOGO */}
+
+        <div className="flex items-center gap-4 overflow-hidden">
+
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-900">
+
+            <FaMountain className="text-white text-lg" />
+
+          </div>
+
           {sidebarOpen && (
-            <span>
-              <span className="font-heading block text-xl font-bold">TravelGenie</span>
-              <span className="text-xs uppercase tracking-[0.18em] text-white/50">
-                Ops command
-              </span>
-            </span>
+
+            <div>
+
+              <h2 className="text-slate-900 text-lg font-bold">
+
+                TravelGenie
+
+              </h2>
+
+              <p className="text-slate-400 text-xs mt-1">
+
+                Admin Dashboard
+
+              </p>
+
+            </div>
+
           )}
-        </button>
+
+        </div>
+
+        {/* TOGGLE */}
+
+        {sidebarOpen && (
+
+          <button
+            onClick={() =>
+              setSidebarOpen(false)
+            }
+            className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+          >
+
+            <FaBars />
+
+          </button>
+
+        )}
+
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-6">
-        <div className="space-y-2">
-          {links.map((item) => (
-            <Link key={item.to} to={item.to} className={menuClass(item.to)}>
-              <item.icon className="min-w-[20px] text-lg" />
-              {sidebarOpen && <span>{item.label}</span>}
-            </Link>
-          ))}
-        </div>
-      </div>
+      {/* ===================================================== */}
+      {/* COLLAPSED BUTTON */}
+      {/* ===================================================== */}
 
-      {sidebarOpen && (
-        <div className="mx-4 mb-4 rounded-3xl border border-white/10 bg-white/8 p-5">
-          <p className="text-sm text-white/62">Active workflow</p>
-          <h2 className="font-heading mt-1 text-xl font-bold">
-            Expedition Operations
-          </h2>
-          <p className="mt-2 text-sm text-white/60">
-            Packages, departures, guides, bookings, and revenue.
-          </p>
+      {!sidebarOpen && (
+
+        <div className="px-4 py-5">
+
+          <button
+            onClick={() =>
+              setSidebarOpen(true)
+            }
+            className="flex h-12 w-full items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+          >
+
+            <FaBars />
+
+          </button>
+
         </div>
+
       )}
 
-      <div className="border-t border-white/10 p-4">
-        <button
-          type="button"
-          onClick={logout}
-          className="flex w-full items-center justify-center gap-3 rounded-2xl bg-accent py-3 font-semibold text-white shadow-lg transition hover:bg-accent-dark"
-        >
-          <FaSignOutAlt />
-          {sidebarOpen && <span>Logout</span>}
-        </button>
+      {/* ===================================================== */}
+      {/* NAVIGATION */}
+      {/* ===================================================== */}
+
+      <div className="flex-1 overflow-y-auto px-4 py-6">
+
+        {sidebarOpen && (
+
+          <div className="mb-5 px-2">
+
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+
+              Management
+
+            </p>
+
+          </div>
+
+        )}
+
+        <div className="space-y-1.5">
+
+          {links.map((item) => (
+
+            <Link
+              key={item.to}
+              to={item.to}
+              className={menuClass(item.to)}
+            >
+
+              {/* ICON */}
+
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100">
+
+                <item.icon className="text-base" />
+
+              </div>
+
+              {/* TEXT */}
+
+              {sidebarOpen && (
+
+                <span className="truncate">
+
+                  {item.label}
+
+                </span>
+
+              )}
+
+            </Link>
+
+          ))}
+
+        </div>
+
       </div>
+
+      {/* ===================================================== */}
+      {/* FOOTER */}
+      {/* ===================================================== */}
+
+      <div className="border-t border-slate-200 p-4">
+
+        <button
+          onClick={logout}
+          className="flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 py-3 text-slate-600 transition hover:bg-red-50 hover:text-red-600"
+        >
+
+          <FaSignOutAlt />
+
+          {sidebarOpen && (
+
+            <span>
+
+              Logout
+
+            </span>
+
+          )}
+
+        </button>
+
+      </div>
+
     </aside>
+
   );
+
 }

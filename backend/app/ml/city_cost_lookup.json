@@ -1,0 +1,20 @@
+{
+  "city_costs": {
+    "bangalore": 4500,
+    "chennai": 4000,
+    "darjeeling": 4750,
+    "delhi": 4000,
+    "goa": 5100,
+    "hyderabad": 4000,
+    "jaipur": 3500,
+    "kerala": 5000,
+    "ladakh": 15000,
+    "manali": 6350,
+    "mumbai": 4200,
+    "pune": 3600,
+    "rishikesh": 4250,
+    "shimla": 5650,
+    "udaipur": 3750
+  },
+  "overall_average": 5177
+}
