@@ -58,6 +58,9 @@ CREATE TABLE IF NOT EXISTS vendors (
     description TEXT,
     verification_status VARCHAR(30) DEFAULT 'pending',
     logo TEXT,
+    rating NUMERIC(3, 2) DEFAULT 4.7,
+    response_time VARCHAR(80) DEFAULT 'Within 24 hours',
+    verified_badge BOOLEAN DEFAULT FALSE,
     is_active BOOLEAN DEFAULT TRUE,
     is_deleted BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -133,6 +136,32 @@ CREATE TABLE IF NOT EXISTS vendor_packages (
 CREATE INDEX IF NOT EXISTS idx_vendor_packages_vendor ON vendor_packages(vendor_id);
 
 -- =====================================================
+-- TRIP BATCHES / DEPARTURES
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS trip_batches (
+    id SERIAL PRIMARY KEY,
+    package_id INTEGER NOT NULL REFERENCES packages(id) ON DELETE CASCADE,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    booking_deadline DATE NOT NULL,
+    max_seats INTEGER NOT NULL DEFAULT 20,
+    booked_seats INTEGER NOT NULL DEFAULT 0,
+    pickup_location VARCHAR(160),
+    guide_name VARCHAR(160),
+    batch_status VARCHAR(30) DEFAULT 'open',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CHECK (max_seats >= 0),
+    CHECK (booked_seats >= 0),
+    CHECK (booked_seats <= max_seats)
+);
+
+CREATE INDEX IF NOT EXISTS idx_trip_batches_package ON trip_batches(package_id);
+CREATE INDEX IF NOT EXISTS idx_trip_batches_start_date ON trip_batches(start_date);
+CREATE INDEX IF NOT EXISTS idx_trip_batches_status ON trip_batches(batch_status);
+
+-- =====================================================
 -- TRIPS
 -- =====================================================
 
@@ -172,6 +201,7 @@ CREATE TABLE IF NOT EXISTS bookings (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     package_id INTEGER REFERENCES packages(id) ON DELETE SET NULL,
+    trip_batch_id INTEGER REFERENCES trip_batches(id) ON DELETE SET NULL,
     booking_id VARCHAR(40) UNIQUE NOT NULL,
     destination VARCHAR(120) NOT NULL,
     name VARCHAR(180) NOT NULL,

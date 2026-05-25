@@ -4,6 +4,9 @@ export const packageService = {
   list: () =>
     apiRequest("/packages"),
 
+  getBatches: (slug) =>
+    apiRequest(`/packages/${slug}/batches`, { auth: false }),
+
   create: (payload) =>
     apiRequest("/packages", {
       method: "POST",

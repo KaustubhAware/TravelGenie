@@ -4,6 +4,8 @@ import {
   FaClipboardList,
   FaMoneyBillWave,
   FaStore,
+  FaCalendarAlt,
+  FaChartLine,
 } from "react-icons/fa";
 
 import { vendorService } from "../../services/vendorService";
@@ -29,12 +31,15 @@ export default function VendorDashboard() {
   const [profile, setProfile] = useState(null);
   const [packages, setPackages] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [batches, setBatches] = useState([]);
   const [stats, setStats] = useState({
     packages: 0,
     total_bookings: 0,
     completed_bookings: 0,
     pending_bookings: 0,
     revenue: 0,
+    upcoming_batches: 0,
+    occupancy: 0,
   });
   const [loading, setLoading] = useState(true);
   const [savingPackage, setSavingPackage] = useState(false);
@@ -52,6 +57,16 @@ export default function VendorDashboard() {
     pricing: "",
     itinerary: "",
   });
+  const [batchForm, setBatchForm] = useState({
+    package_id: "",
+    start_date: "",
+    end_date: "",
+    booking_deadline: "",
+    max_seats: "20",
+    booked_seats: "0",
+    pickup_location: "Pune",
+    guide_name: "",
+  });
 
   const loadVendorData = useCallback(async () => {
     setLoading(true);
@@ -64,6 +79,7 @@ export default function VendorDashboard() {
           vendorService.getPackages(),
           vendorService.getAnalytics(),
         ]);
+        const batchRes = await vendorService.getBatches().catch(() => ({ data: { batches: [] } }));
         setPackages(pkgRes.data?.packages || []);
         setStats(
           analyticsRes.data?.stats || {
@@ -75,6 +91,7 @@ export default function VendorDashboard() {
           }
         );
         setBookings(analyticsRes.data?.bookings || []);
+        setBatches(batchRes.data?.batches || []);
       }
     } catch {
       setProfile(null);
@@ -131,6 +148,41 @@ export default function VendorDashboard() {
       await loadVendorData();
     } catch (err) {
       setFormError(err.message || "Package could not be created.");
+    } finally {
+      setSavingPackage(false);
+    }
+  };
+
+  const handleCreateBatch = async (e) => {
+    e.preventDefault();
+    const packageId = Number(batchForm.package_id);
+    if (!packageId || !batchForm.start_date || !batchForm.end_date || !batchForm.booking_deadline) {
+      setFormError("Select a package and complete all batch dates.");
+      return;
+    }
+
+    try {
+      setSavingPackage(true);
+      setFormError("");
+      await vendorService.createBatch({
+        ...batchForm,
+        package_id: packageId,
+        max_seats: Number(batchForm.max_seats || 0),
+        booked_seats: Number(batchForm.booked_seats || 0),
+      });
+      setBatchForm({
+        package_id: "",
+        start_date: "",
+        end_date: "",
+        booking_deadline: "",
+        max_seats: "20",
+        booked_seats: "0",
+        pickup_location: "Pune",
+        guide_name: "",
+      });
+      await loadVendorData();
+    } catch (err) {
+      setFormError(err.message || "Batch could not be created.");
     } finally {
       setSavingPackage(false);
     }
@@ -246,6 +298,12 @@ export default function VendorDashboard() {
               icon={<FaMoneyBillWave className="text-emerald-600 text-xl" />}
               bgColor="bg-emerald-50"
             />
+            <StatCard
+              title="Occupancy"
+              value={`${Number(stats.occupancy || 0)}%`}
+              icon={<FaChartLine className="text-cyan-600 text-xl" />}
+              bgColor="bg-cyan-50"
+            />
           </div>
 
           <div className="grid gap-8 lg:grid-cols-2">
@@ -323,6 +381,66 @@ export default function VendorDashboard() {
                       <p className="font-semibold text-slate-900">{pkg.title}</p>
                       <p className="text-sm text-slate-500">
                         {pkg.location || pkg.destination} · ₹{pkg.pricing}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+
+          <div className="grid gap-8 lg:grid-cols-2">
+            <form
+              onSubmit={handleCreateBatch}
+              className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-4"
+            >
+              <h2 className="text-xl font-bold text-slate-900">
+                Create trek batch
+              </h2>
+              <select
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm"
+                value={batchForm.package_id}
+                onChange={(e) => setBatchForm({ ...batchForm, package_id: e.target.value })}
+              >
+                <option value="">Select package</option>
+                {packages.map((pkg) => (
+                  <option key={pkg.id} value={pkg.package_id || pkg.id}>
+                    {pkg.title}
+                  </option>
+                ))}
+              </select>
+              <div className="grid grid-cols-2 gap-3">
+                <Input type="date" value={batchForm.start_date} onChange={(e) => setBatchForm({ ...batchForm, start_date: e.target.value })} />
+                <Input type="date" value={batchForm.end_date} onChange={(e) => setBatchForm({ ...batchForm, end_date: e.target.value })} />
+                <Input type="date" value={batchForm.booking_deadline} onChange={(e) => setBatchForm({ ...batchForm, booking_deadline: e.target.value })} />
+                <Input type="number" placeholder="Max seats" value={batchForm.max_seats} onChange={(e) => setBatchForm({ ...batchForm, max_seats: e.target.value })} />
+                <Input placeholder="Pickup location" value={batchForm.pickup_location} onChange={(e) => setBatchForm({ ...batchForm, pickup_location: e.target.value })} />
+                <Input placeholder="Guide name" value={batchForm.guide_name} onChange={(e) => setBatchForm({ ...batchForm, guide_name: e.target.value })} />
+              </div>
+              <Button type="submit" loading={savingPackage}>
+                Create batch
+              </Button>
+            </form>
+
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <h2 className="text-xl font-bold text-slate-900 mb-4">
+                Upcoming batches
+              </h2>
+              {batches.length === 0 ? (
+                <p className="text-sm text-slate-500">No batches scheduled yet.</p>
+              ) : (
+                <ul className="space-y-3 max-h-[360px] overflow-y-auto">
+                  {batches.map((batch) => (
+                    <li key={batch.id} className="rounded-xl border border-slate-100 p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="font-semibold text-slate-900">{batch.package_title}</p>
+                        <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
+                          {batch.seats_left} left
+                        </span>
+                      </div>
+                      <p className="mt-2 text-sm text-slate-500">
+                        <FaCalendarAlt className="inline mr-2" />
+                        {batch.start_date} to {batch.end_date} · {batch.pickup_location}
                       </p>
                     </li>
                   ))}

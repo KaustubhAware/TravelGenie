@@ -29,6 +29,8 @@ import {
   FaUsers,
 } from "react-icons/fa";
 
+import LoadingScreen from "../components/ai/LoadingScreen";
+
 const AITripResult = lazy(() =>
   import("../components/ai/AITripResult")
 );

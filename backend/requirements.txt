@@ -6,7 +6,7 @@ firebase-admin
 python-jose[cryptography]
 pydantic
 email-validator
-google-generativeai
+google-genai
 pandas
 numpy
 bcrypt

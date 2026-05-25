@@ -51,6 +51,9 @@ export default function Booking() {
   const packageData =
     tripData.package || {};
 
+  const selectedBatch =
+    tripData.selected_batch || null;
+
   const [loading, setLoading] =
     useState(false);
 
@@ -231,6 +234,8 @@ export default function Booking() {
           ...form,
 
           destination:
+            packageData.location ||
+
             packageData.destination ||
 
             tripData.destination ||
@@ -248,10 +253,14 @@ export default function Booking() {
           package_id:
             packageData.id,
 
+          trip_batch_id:
+            selectedBatch?.id,
+
           package_title:
             packageData.title,
 
           package_image:
+            packageData.featured_image ||
             packageData.image,
 
           travel_date:
@@ -602,6 +611,8 @@ export default function Booking() {
 
               <img
                 src={
+                  packageData.featured_image ||
+
                   packageData.image ||
 
                   "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b"
@@ -632,7 +643,9 @@ export default function Booking() {
 
                   <p className="text-slate-500 mt-2">
 
-                    {packageData.destination ||
+                    {packageData.location ||
+
+                      packageData.destination ||
 
                       "-"}
 
@@ -668,6 +681,14 @@ export default function Booking() {
                     "-"
                   }
                 />
+
+                {selectedBatch && (
+                  <SidebarInfo
+                    icon={<FaCalendarAlt />}
+                    title="Selected Batch"
+                    value={`${selectedBatch.start_date} to ${selectedBatch.end_date}`}
+                  />
+                )}
 
                 <SidebarInfo
                   icon={<FaUsers />}

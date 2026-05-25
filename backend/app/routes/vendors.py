@@ -4,6 +4,7 @@ from typing import Any, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field, field_validator, model_validator
+from slugify import slugify
 
 from app.db import get_connection, get_cursor
 from app.firebase_auth import verify_firebase_token
@@ -111,6 +112,21 @@ class VendorProfileUpdate(BaseModel):
     phone: Optional[str] = None
     description: Optional[str] = None
     logo: Optional[str] = None
+
+
+class VendorBatchCreate(BaseModel):
+    package_id: int
+    start_date: str
+    end_date: str
+    booking_deadline: str
+    max_seats: int = Field(default=20, ge=0)
+    booked_seats: int = Field(default=0, ge=0)
+    pickup_location: Optional[str] = "Pune"
+    guide_name: Optional[str] = ""
+    batch_status: Optional[str] = Field(
+        default="open",
+        pattern="^(open|closed|cancelled|completed)$",
+    )
 
 
 def _get_user_id(cursor, firebase_uid):
@@ -343,6 +359,25 @@ def vendor_analytics(user=Depends(verify_firebase_token)):
                 item["created_at"] = str(item["created_at"])
             bookings.append(item)
 
+        cursor.execute(
+            """
+            SELECT
+                COUNT(*) AS upcoming_batches,
+                COALESCE(AVG(
+                    CASE WHEN tb.max_seats > 0
+                    THEN (tb.booked_seats::numeric / tb.max_seats::numeric) * 100
+                    ELSE 0 END
+                ), 0) AS occupancy
+            FROM trip_batches tb
+            INNER JOIN packages p ON p.id = tb.package_id
+            WHERE p.vendor_id = %s
+            AND tb.start_date >= CURRENT_DATE
+            AND tb.batch_status = 'open'
+            """,
+            (vid,),
+        )
+        batch_stats = dict(cursor.fetchone())
+
         return success_response(
             message="Vendor analytics",
             data={
@@ -352,6 +387,8 @@ def vendor_analytics(user=Depends(verify_firebase_token)):
                     "completed_bookings": stats.get("completed_bookings", 0),
                     "pending_bookings": stats.get("pending_bookings", 0),
                     "revenue": float(stats.get("revenue") or 0),
+                    "upcoming_batches": batch_stats.get("upcoming_batches", 0),
+                    "occupancy": round(float(batch_stats.get("occupancy") or 0), 1),
                 },
                 "bookings": bookings,
             },
@@ -367,6 +404,8 @@ def vendor_analytics(user=Depends(verify_firebase_token)):
                     "completed_bookings": 0,
                     "pending_bookings": 0,
                     "revenue": 0,
+                    "upcoming_batches": 0,
+                    "occupancy": 0,
                 },
                 "bookings": [],
             },
@@ -433,11 +472,16 @@ def list_vendor_packages(user=Depends(verify_firebase_token)):
         cursor.execute(
             """
             SELECT
-                id, title, destination, destination AS location,
-                pricing, status, created_at
-            FROM vendor_packages
-            WHERE vendor_id = %s AND is_deleted = FALSE
-            ORDER BY id DESC
+                vp.id, vp.title, vp.destination, vp.destination AS location,
+                vp.pricing, vp.status, vp.created_at,
+                p.id AS package_id
+            FROM vendor_packages vp
+            LEFT JOIN packages p
+              ON p.vendor_id = vp.vendor_id
+             AND p.title = vp.title
+             AND p.location = vp.destination
+            WHERE vp.vendor_id = %s AND vp.is_deleted = FALSE
+            ORDER BY vp.id DESC
             """,
             (vendor["vendor_id"],),
         )
@@ -492,21 +536,31 @@ def create_vendor_package(
         pkg_id = row["id"] if hasattr(row, "keys") else row[0]
 
         cursor.execute(
+            "SELECT COUNT(*) AS count FROM packages WHERE slug = %s",
+            (slugify(data.title),),
+        )
+        slug_count = cursor.fetchone()["count"]
+        package_slug = slugify(data.title)
+        if slug_count:
+            package_slug = f"{package_slug}-{vendor['vendor_id']}-{pkg_id}"
+
+        cursor.execute(
             """
             INSERT INTO packages (
-                vendor_id, title, location,
+                vendor_id, title, slug, location,
                 price, duration, category, difficulty,
                 short_description, description, status,
                 featured_image, gallery
             )
             VALUES (
-                %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                 'active', %s, %s::jsonb
             )
             """,
             (
                 vendor["vendor_id"],
                 data.title,
+                package_slug,
                 data.location,
                 data.pricing,
                 data.duration or "2D/1N",
@@ -533,6 +587,109 @@ def create_vendor_package(
         conn.close()
 
 
+@router.get("/vendors/batches")
+def list_vendor_batches(user=Depends(verify_firebase_token)):
+    conn = get_connection()
+    cursor = get_cursor(conn)
+    try:
+        user_id = _get_user_id(cursor, user["uid"])
+        vendor = _get_vendor_for_user(cursor, user_id)
+        cursor.execute(
+            """
+            SELECT
+                tb.id, tb.package_id, tb.start_date, tb.end_date,
+                tb.booking_deadline, tb.max_seats, tb.booked_seats,
+                tb.pickup_location, tb.guide_name, tb.batch_status,
+                p.title AS package_title, p.location
+            FROM trip_batches tb
+            INNER JOIN packages p ON p.id = tb.package_id
+            WHERE p.vendor_id = %s
+            ORDER BY tb.start_date ASC
+            """,
+            (vendor["vendor_id"],),
+        )
+        batches = []
+        for row in cursor.fetchall():
+            item = dict(row)
+            for key in ("start_date", "end_date", "booking_deadline"):
+                if item.get(key):
+                    item[key] = str(item[key])
+            item["seats_left"] = max(
+                int(item.get("max_seats") or 0) - int(item.get("booked_seats") or 0),
+                0,
+            )
+            batches.append(item)
+        return success_response(message="Vendor batches", data={"batches": batches})
+    except Exception as exc:
+        if "trip_batches" in str(exc) and "does not exist" in str(exc):
+            logger.warning("Trip batches table missing: %s", exc)
+            return success_response(
+                message="Trip batch schema has not been applied yet",
+                data={"batches": []},
+            )
+        raise
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@router.post("/vendors/batches")
+def create_vendor_batch(data: VendorBatchCreate, user=Depends(verify_firebase_token)):
+    conn = get_connection()
+    cursor = get_cursor(conn)
+    try:
+        user_id = _get_user_id(cursor, user["uid"])
+        vendor = _get_vendor_for_user(cursor, user_id)
+        if vendor["verification_status"] != "approved":
+            raise HTTPException(
+                status_code=403,
+                detail="Vendor must be approved before managing batches",
+            )
+        if data.booked_seats > data.max_seats:
+            raise HTTPException(status_code=400, detail="Booked seats cannot exceed max seats")
+
+        cursor.execute(
+            "SELECT id FROM packages WHERE id = %s AND vendor_id = %s",
+            (data.package_id, vendor["vendor_id"]),
+        )
+        if not cursor.fetchone():
+            raise HTTPException(status_code=404, detail="Vendor package not found")
+
+        cursor.execute(
+            """
+            INSERT INTO trip_batches (
+                package_id, start_date, end_date, booking_deadline,
+                max_seats, booked_seats, pickup_location, guide_name,
+                batch_status
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING id
+            """,
+            (
+                data.package_id, data.start_date, data.end_date,
+                data.booking_deadline, data.max_seats, data.booked_seats,
+                data.pickup_location, data.guide_name, data.batch_status,
+            ),
+        )
+        row = cursor.fetchone()
+        conn.commit()
+        return success_response(message="Batch created", data={"batch_id": row["id"]})
+    except HTTPException:
+        conn.rollback()
+        raise
+    except Exception as exc:
+        conn.rollback()
+        if "trip_batches" in str(exc) and "does not exist" in str(exc):
+            raise HTTPException(
+                status_code=503,
+                detail="Trip batch schema has not been applied. Run backend/schema.sql or backend/migrations/20260525_trip_batches.sql.",
+            ) from exc
+        raise
+    finally:
+        cursor.close()
+        conn.close()
+
+
 @router.get("/vendors/marketplace")
 def marketplace_vendors():
     conn = get_connection()
@@ -541,7 +698,8 @@ def marketplace_vendors():
     try:
         cursor.execute(
             """
-            SELECT vendor_id, business_name, description, logo, created_at
+            SELECT vendor_id, business_name, description, logo, created_at,
+                   rating, response_time, verified_badge
             FROM vendors
             WHERE verification_status = 'approved'
             AND is_active = TRUE
@@ -569,7 +727,8 @@ def admin_list_vendors(admin=Depends(get_current_user)):
             """
             SELECT
                 vendor_id, business_name, owner_name, contact_email,
-                verification_status, is_active, created_at
+                verification_status, is_active, created_at,
+                rating, response_time, verified_badge
             FROM vendors
             WHERE is_deleted = FALSE
             ORDER BY created_at DESC

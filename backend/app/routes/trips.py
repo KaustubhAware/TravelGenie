@@ -96,17 +96,20 @@ def generate_trip(data: dict):
             status_code=400,
             content=error_response(
                 message=str(exc),
-                error="ConfigError"
+                error="ConfigError",
+                detail=str(exc),
             )
         )
     except RuntimeError as exc:
         from fastapi.responses import JSONResponse
         from app.responses import error_response
+        status_code = 429 if "quota" in str(exc).lower() else 502
         return JSONResponse(
-            status_code=502,
+            status_code=status_code,
             content=error_response(
                 message=str(exc),
-                error="AIServiceError"
+                error="AIServiceError",
+                detail=str(exc),
             )
         )
 

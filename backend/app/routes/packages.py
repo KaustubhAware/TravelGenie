@@ -33,12 +33,31 @@ def _text_lines(value):
 
 def _serialize_package(row):
     item = dict(row)
+    if not item.get("slug") and item.get("id") is not None:
+        item["slug"] = str(item["id"])
     item["included"] = _text_lines(item.get("included"))
     item["excluded"] = _text_lines(item.get("excluded"))
     if item.get("created_at"):
         item["created_at"] = str(item["created_at"])
     if item.get("updated_at"):
         item["updated_at"] = str(item["updated_at"])
+    return item
+
+
+def _serialize_batch(row):
+    item = dict(row)
+    for key in ("start_date", "end_date", "booking_deadline", "created_at", "updated_at"):
+        if item.get(key):
+            item[key] = str(item[key])
+    item["seats_left"] = max(
+        int(item.get("max_seats") or 0) - int(item.get("booked_seats") or 0),
+        0,
+    )
+    item["occupancy"] = (
+        round((int(item.get("booked_seats") or 0) / int(item.get("max_seats") or 1)) * 100, 1)
+        if int(item.get("max_seats") or 0) > 0
+        else 0
+    )
     return item
 
 # =====================================================
@@ -118,6 +137,18 @@ class PackageRequest(BaseModel):
         ge=0,
         le=5
     )
+
+
+class TripBatchRequest(BaseModel):
+    package_id: int
+    start_date: str
+    end_date: str
+    booking_deadline: str
+    max_seats: int = Field(default=20, ge=0)
+    booked_seats: int = Field(default=0, ge=0)
+    pickup_location: Optional[str] = "Pune"
+    guide_name: Optional[str] = ""
+    batch_status: Optional[str] = Field(default="open", pattern="^(open|closed|cancelled|completed)$")
 
 # =====================================================
 # GET ALL PACKAGES
@@ -247,9 +278,9 @@ def get_single_package(slug: str):
                 created_at,
                 updated_at
             FROM packages
-            WHERE slug = %s
+            WHERE (slug = %s OR id::text = %s)
             AND status = 'active'
-        """, (slug,))
+        """, (slug, slug))
 
         package = cur.fetchone()
 
@@ -280,6 +311,149 @@ def get_single_package(slug: str):
 
     finally:
 
+        cur.close()
+        conn.close()
+
+
+@router.get("/packages/{slug}/batches")
+def get_package_batches(slug: str):
+    conn = get_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        cur.execute(
+            """
+            SELECT
+                tb.id, tb.package_id, tb.start_date, tb.end_date,
+                tb.booking_deadline, tb.max_seats, tb.booked_seats,
+                tb.pickup_location, tb.guide_name, tb.batch_status,
+                tb.created_at, tb.updated_at
+            FROM trip_batches tb
+            INNER JOIN packages p ON p.id = tb.package_id
+            WHERE p.slug = %s
+            AND tb.batch_status = 'open'
+            AND tb.start_date >= CURRENT_DATE
+            ORDER BY tb.start_date ASC
+            """,
+            (slug,),
+        )
+        batches = [_serialize_batch(row) for row in cur.fetchall()]
+        return {"success": True, "batches": batches}
+    except Exception as exc:
+        if "trip_batches" in str(exc) and "does not exist" in str(exc):
+            return {
+                "success": True,
+                "message": "Trip batch schema has not been applied yet",
+                "batches": [],
+            }
+        raise
+    finally:
+        cur.close()
+        conn.close()
+
+
+@router.get("/trip-batches")
+def get_trip_batches(admin=Depends(get_current_user)):
+    conn = get_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        cur.execute(
+            """
+            SELECT
+                tb.id, tb.package_id, tb.start_date, tb.end_date,
+                tb.booking_deadline, tb.max_seats, tb.booked_seats,
+                tb.pickup_location, tb.guide_name, tb.batch_status,
+                tb.created_at, tb.updated_at,
+                p.title AS package_title, p.location
+            FROM trip_batches tb
+            INNER JOIN packages p ON p.id = tb.package_id
+            ORDER BY tb.start_date ASC
+            """
+        )
+        return {"success": True, "batches": [_serialize_batch(row) for row in cur.fetchall()]}
+    except Exception as exc:
+        if "trip_batches" in str(exc) and "does not exist" in str(exc):
+            raise HTTPException(
+                status_code=503,
+                detail="Trip batch schema has not been applied. Run backend/schema.sql or backend/migrations/20260525_trip_batches.sql.",
+            ) from exc
+        raise
+    finally:
+        cur.close()
+        conn.close()
+
+
+@router.post("/trip-batches")
+def create_trip_batch(data: TripBatchRequest, admin=Depends(get_current_user)):
+    conn = get_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        if data.booked_seats > data.max_seats:
+            raise HTTPException(status_code=400, detail="Booked seats cannot exceed max seats")
+        cur.execute(
+            """
+            INSERT INTO trip_batches (
+                package_id, start_date, end_date, booking_deadline,
+                max_seats, booked_seats, pickup_location, guide_name,
+                batch_status
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING id
+            """,
+            (
+                data.package_id, data.start_date, data.end_date,
+                data.booking_deadline, data.max_seats, data.booked_seats,
+                data.pickup_location, data.guide_name, data.batch_status,
+            ),
+        )
+        row = cur.fetchone()
+        conn.commit()
+        return {"success": True, "message": "Trip batch created", "batch_id": row["id"]}
+    except HTTPException:
+        conn.rollback()
+        raise
+    except Exception as exc:
+        conn.rollback()
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    finally:
+        cur.close()
+        conn.close()
+
+
+@router.put("/trip-batches/{batch_id}")
+def update_trip_batch(batch_id: int, data: TripBatchRequest, admin=Depends(get_current_user)):
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        if data.booked_seats > data.max_seats:
+            raise HTTPException(status_code=400, detail="Booked seats cannot exceed max seats")
+        cur.execute(
+            """
+            UPDATE trip_batches
+            SET
+                package_id = %s, start_date = %s, end_date = %s,
+                booking_deadline = %s, max_seats = %s, booked_seats = %s,
+                pickup_location = %s, guide_name = %s, batch_status = %s,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = %s
+            """,
+            (
+                data.package_id, data.start_date, data.end_date,
+                data.booking_deadline, data.max_seats, data.booked_seats,
+                data.pickup_location, data.guide_name, data.batch_status,
+                batch_id,
+            ),
+        )
+        if cur.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Trip batch not found")
+        conn.commit()
+        return {"success": True, "message": "Trip batch updated"}
+    except HTTPException:
+        conn.rollback()
+        raise
+    except Exception as exc:
+        conn.rollback()
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    finally:
         cur.close()
         conn.close()
 

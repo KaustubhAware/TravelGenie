@@ -118,7 +118,7 @@ def get_cursor(conn):
     return conn.cursor(cursor_factory=RealDictCursor)
 
 
-def _ensure_columns(cursor, table_name, columns):
+def _fetch_existing_columns(cursor, table_name):
     cursor.execute(
         """
         SELECT column_name
@@ -128,15 +128,7 @@ def _ensure_columns(cursor, table_name, columns):
         """,
         (table_name,),
     )
-    existing = {row[0] for row in cursor.fetchall()}
-
-    for column_name, definition in columns.items():
-        if column_name in existing:
-            continue
-        cursor.execute(
-            f"ALTER TABLE {table_name} ADD COLUMN {column_name} {definition}"
-        )
-        logger.info("Added missing column %s.%s", table_name, column_name)
+    return {row[0] for row in cursor.fetchall()}
 
 
 def check_and_init_db():
@@ -177,6 +169,7 @@ def check_and_init_db():
             "booking_notes",
             "analytics_events",
             "activity_logs",
+            "trip_batches",
         ]
         missing_tables = []
 
@@ -204,53 +197,40 @@ def check_and_init_db():
         else:
             logger.info("All required tables are present in the database.")
 
-        _ensure_columns(
-            cursor,
-            "packages",
-            {
-                "vendor_id": "INTEGER REFERENCES vendors(vendor_id) ON DELETE SET NULL",
-                "slug": "VARCHAR(180)",
-                "region": "VARCHAR(120)",
-                "seasonal_price": "NUMERIC(12, 2)",
-                "short_description": "TEXT",
-                "full_description": "TEXT",
-                "featured_image": "TEXT",
-                "gallery": "JSONB DEFAULT '[]'::jsonb",
-                "category": "VARCHAR(80)",
-                "difficulty": "VARCHAR(50)",
-                "group_size": "VARCHAR(50)",
-                "best_season": "VARCHAR(120)",
-                "altitude": "VARCHAR(120)",
-                "trek_distance": "VARCHAR(80)",
-                "pickup_points": "JSONB DEFAULT '[]'::jsonb",
-                "fitness_required": "VARCHAR(120)",
-                "travel_type": "VARCHAR(80)",
-                "featured": "BOOLEAN DEFAULT FALSE",
-                "availability_calendar": "JSONB DEFAULT '{}'::jsonb",
-                "rating": "NUMERIC(3, 2) DEFAULT 0",
-                "total_reviews": "INTEGER DEFAULT 0",
-                "updated_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+        expected_columns = {
+            "packages": {
+                "vendor_id", "slug", "region", "seasonal_price",
+                "short_description", "full_description", "featured_image",
+                "gallery", "category", "difficulty", "group_size",
+                "best_season", "altitude", "trek_distance", "pickup_points",
+                "fitness_required", "travel_type", "featured",
+                "availability_calendar", "rating", "total_reviews", "updated_at",
             },
-        )
-        _ensure_columns(
-            cursor,
-            "bookings",
-            {
-                "agent_id": "INTEGER REFERENCES agents(id) ON DELETE SET NULL",
-                "package_title": "TEXT",
-                "package_image": "TEXT",
-                "travel_date": "DATE",
-                "travelers": "INTEGER DEFAULT 1",
-                "special_request": "TEXT",
-                "internal_notes": "TEXT",
-                "assigned_agent": "VARCHAR(120)",
-                "adjusted_price": "NUMERIC(12, 2)",
-                "departure_date": "DATE",
-                "return_date": "DATE",
-                "notes": "TEXT",
-                "updated_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+            "bookings": {
+                "agent_id", "package_title", "package_image", "travel_date",
+                "travelers", "trip_batch_id", "special_request", "internal_notes",
+                "assigned_agent", "adjusted_price", "departure_date",
+                "return_date", "notes", "updated_at",
             },
-        )
+            "vendors": {
+                "rating", "response_time", "verified_badge",
+            },
+            "trip_batches": {
+                "id", "package_id", "start_date", "end_date",
+                "booking_deadline", "max_seats", "booked_seats",
+                "pickup_location", "guide_name", "batch_status", "created_at",
+                "updated_at",
+            },
+        }
+        for table, columns in expected_columns.items():
+            existing = _fetch_existing_columns(cursor, table)
+            missing = sorted(columns - existing)
+            if missing:
+                logger.warning(
+                    "Database table %s is missing schema.sql columns: %s",
+                    table,
+                    ", ".join(missing),
+                )
         conn.commit()
         logger.info("Safe database bootstrap checks complete.")
 

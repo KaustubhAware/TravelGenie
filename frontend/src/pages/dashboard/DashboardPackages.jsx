@@ -18,6 +18,8 @@ import {
   FaTimes,
   FaFire,
   FaUsers,
+  FaUmbrellaBeach,
+  FaCampground,
 } from "react-icons/fa";
 
 import {
@@ -51,8 +53,17 @@ export default function DashboardPackages() {
   const [sortBy, setSortBy] =
     useState("popular");
 
+  const [selectedTags, setSelectedTags] =
+    useState([]);
+
+  const [budgetRange, setBudgetRange] =
+    useState("all");
+
   const [showFilters, setShowFilters] =
     useState(false);
+
+  const packageKey = (pkg) =>
+    pkg.slug || pkg.id;
 
   /* ===================================================== */
   /* FETCH PACKAGES */
@@ -213,6 +224,30 @@ export default function DashboardPackages() {
 
       }
 
+      if (selectedTags.length > 0) {
+        filtered = filtered.filter((pkg) => {
+          const haystack = `${pkg.title} ${pkg.short_description} ${pkg.full_description} ${pkg.travel_type} ${pkg.category} ${pkg.best_season} ${(pkg.pickup_points || []).join(" ")}`.toLowerCase();
+          return selectedTags.every((tag) => {
+            if (tag === "weekend") return haystack.includes("weekend") || String(pkg.duration || "").includes("2");
+            if (tag === "monsoon") return haystack.includes("monsoon") || haystack.includes("waterfall");
+            if (tag === "camping") return haystack.includes("camp") || haystack.includes("tent");
+            if (tag === "beginner") return haystack.includes("beginner") || String(pkg.difficulty || "").toLowerCase().includes("easy");
+            if (tag === "pune") return haystack.includes("pune");
+            return true;
+          });
+        });
+      }
+
+      if (budgetRange !== "all") {
+        filtered = filtered.filter((pkg) => {
+          const price = Number(pkg.price || 0);
+          if (budgetRange === "under2000") return price <= 2000;
+          if (budgetRange === "2000to5000") return price > 2000 && price <= 5000;
+          if (budgetRange === "above5000") return price > 5000;
+          return true;
+        });
+      }
+
       /* SORTING */
 
       if (
@@ -258,6 +293,8 @@ export default function DashboardPackages() {
       search,
       selectedDifficulty,
       selectedRegion,
+      selectedTags,
+      budgetRange,
       sortBy,
     ]);
 
@@ -546,7 +583,7 @@ export default function DashboardPackages() {
 
               {/* REGION */}
 
-              <div>
+              <div className="mb-10">
 
                 <h3 className="text-lg font-black text-slate-900 mb-5">
 
@@ -594,6 +631,52 @@ export default function DashboardPackages() {
 
                 </div>
 
+              </div>
+
+              <div className="mb-10">
+                <h3 className="text-lg font-black text-slate-900 mb-5">
+                  Trek Type
+                </h3>
+                <div className="space-y-4">
+                  {[
+                    ["weekend", "Weekend trek"],
+                    ["monsoon", "Monsoon trek"],
+                    ["camping", "Camping"],
+                    ["beginner", "Beginner friendly"],
+                    ["pune", "Pune pickup"],
+                  ].map(([value, label]) => (
+                    <label
+                      key={value}
+                      className="flex items-center gap-3 cursor-pointer text-slate-600"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedTags.includes(value)}
+                        onChange={() =>
+                          toggleFilter(value, selectedTags, setSelectedTags)
+                        }
+                        className="w-4 h-4 accent-orange-500"
+                      />
+                      <span className="font-medium">{label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-black text-slate-900 mb-5">
+                  Budget
+                </h3>
+                <select
+                  value={budgetRange}
+                  onChange={(e) => setBudgetRange(e.target.value)}
+                  className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm outline-none"
+                >
+                  <option value="all">Any budget</option>
+                  <option value="under2000">Under Rs. 2,000</option>
+                  <option value="2000to5000">Rs. 2,000 to Rs. 5,000</option>
+                  <option value="above5000">Above Rs. 5,000</option>
+                </select>
               </div>
 
             </div>
@@ -756,6 +839,20 @@ export default function DashboardPackages() {
 
                       </div>
 
+                      {String(pkg.best_season || "").toLowerCase().includes("monsoon") && (
+                        <div className="flex items-center gap-2">
+                          <FaUmbrellaBeach />
+                          <span>Monsoon</span>
+                        </div>
+                      )}
+
+                      {`${pkg.travel_type} ${pkg.category} ${pkg.short_description}`.toLowerCase().includes("camp") && (
+                        <div className="flex items-center gap-2">
+                          <FaCampground />
+                          <span>Camping</span>
+                        </div>
+                      )}
+
                       <div className="flex items-center gap-2">
 
                         <FaMountain />
@@ -795,7 +892,7 @@ export default function DashboardPackages() {
                       <button
                         onClick={() =>
                           navigate(
-                            `/dashboard/packages/${pkg.slug}`
+                            `/dashboard/packages/${packageKey(pkg)}`
                           )
                         }
                         className="h-11 rounded-xl border border-slate-300 font-semibold text-slate-700 hover:bg-slate-50 transition"
@@ -808,7 +905,7 @@ export default function DashboardPackages() {
                       <button
                         onClick={() =>
                           navigate(
-                            `/dashboard/packages/${pkg.slug}?ai=true`
+                            `/dashboard/packages/${packageKey(pkg)}?ai=true`
                           )
                         }
                         className="h-11 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold transition"

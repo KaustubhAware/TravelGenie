@@ -20,6 +20,12 @@ import {
   FaFire,
   FaArrowRight,
   FaDownload,
+  FaCalendarAlt,
+  FaCampground,
+  FaShieldAlt,
+  FaWater,
+  FaImages,
+  FaExclamationTriangle,
 } from "react-icons/fa";
 
 import {
@@ -27,6 +33,7 @@ import {
 } from "../../services/httpClient";
 
 import ReviewSection from "../../components/reviews/ReviewSection";
+import { packageService } from "../../services/packageService";
 
 export default function DashboardPackageDetail() {
 
@@ -57,6 +64,18 @@ export default function DashboardPackageDetail() {
 
   const [activeTab, setActiveTab] =
     useState("overview");
+
+  const [batches, setBatches] =
+    useState([]);
+
+  const [selectedBatch, setSelectedBatch] =
+    useState(null);
+
+  const [lightboxImage, setLightboxImage] =
+    useState("");
+
+  const [expandedDays, setExpandedDays] =
+    useState([0]);
 
   /* ===================================================== */
   /* FETCH */
@@ -107,6 +126,16 @@ export default function DashboardPackageDetail() {
         setPkg(
           data.package
         );
+
+        try {
+          const batchData = await packageService.getBatches(slug);
+          const upcoming = batchData.batches || [];
+          setBatches(upcoming);
+          setSelectedBatch(upcoming[0] || null);
+        } catch {
+          setBatches([]);
+          setSelectedBatch(null);
+        }
 
       } catch (err) {
 
@@ -163,6 +192,51 @@ export default function DashboardPackageDetail() {
       return [];
 
     }, [pkg]);
+
+  const galleryImages =
+    useMemo(() => {
+      const images = Array.isArray(pkg?.gallery) ? pkg.gallery.filter(Boolean) : [];
+      return [
+        pkg?.featured_image,
+        ...images,
+      ].filter(Boolean).slice(0, 8);
+    }, [pkg]);
+
+  const trekHighlights = [
+    ["Sunrise point", FaStar],
+    ["Waterfalls", FaWater],
+    ["Camping", FaCampground],
+    ["Historic forts", FaMountain],
+    ["Night trek option", FaClock],
+  ];
+
+  const nearbyAttractions = [
+    "Base village viewpoints",
+    "Sahyadri ridge walk",
+    "Historic fort ruins",
+    "Seasonal waterfalls",
+    "Local Maharashtrian food stop",
+  ];
+
+  const downloadTrekGuide =
+    async () => {
+      const { exportTrekGuidePDF } = await import("../../utils/exportPDF");
+      exportTrekGuidePDF(pkg, selectedBatch);
+    };
+
+  const toggleDay =
+    (index) => {
+      setExpandedDays((days) =>
+        days.includes(index)
+          ? days.filter((day) => day !== index)
+          : [...days, index]
+      );
+    };
+
+  const weatherInsight =
+    String(pkg?.best_season || "").toLowerCase().includes("monsoon")
+      ? "Monsoon batches can have heavy rain, slippery rock patches, and low visibility. Trek leaders may alter summit timing for safety."
+      : "Best conditions are usually post-monsoon and winter, with cooler mornings and clearer Sahyadri views.";
 
   /* ===================================================== */
   /* LOADING */
@@ -328,6 +402,21 @@ export default function DashboardPackageDetail() {
 
           </div>
 
+          <div className="absolute inset-x-0 bottom-0 p-7 bg-gradient-to-t from-black/75 via-black/20 to-transparent">
+            <p className="text-white/75 uppercase tracking-[0.22em] text-xs font-bold">
+              Maharashtra Trek
+            </p>
+            <h1 className="text-4xl md:text-5xl font-black text-white mt-2">
+              {pkg.title}
+            </h1>
+            <div className="mt-4 flex flex-wrap gap-3 text-sm text-white/90">
+              <InfoPill dark icon={<FaMapMarkerAlt />} text={pkg.location || "Maharashtra"} />
+              <InfoPill dark icon={<FaClock />} text={pkg.duration || "Weekend"} />
+              <InfoPill dark icon={<FaMountain />} text={pkg.altitude || "Sahyadri range"} />
+              <InfoPill dark icon={<FaUsers />} text={`${selectedBatch?.seats_left ?? 12} seats left`} />
+            </div>
+          </div>
+
         </div>
 
         {/* ===================================================== */}
@@ -430,6 +519,7 @@ export default function DashboardPackageDetail() {
                         state: {
                           package_id: pkg.id,
                           package: pkg,
+                          selected_batch: selectedBatch,
                         },
                       }
                     )
@@ -443,6 +533,7 @@ export default function DashboardPackageDetail() {
                 </button>
 
                 <button
+                  onClick={downloadTrekGuide}
                   className="h-12 rounded-xl border border-slate-300 hover:bg-slate-50 transition text-slate-700 font-semibold flex items-center justify-center gap-2"
                 >
 
@@ -468,6 +559,10 @@ export default function DashboardPackageDetail() {
               "overview",
               "itinerary",
               "inclusions",
+              "schedule",
+              "gallery",
+              "safety",
+              "nearby",
               "faq",
               "reviews",
             ].map((tab) => (
@@ -588,9 +683,15 @@ export default function DashboardPackageDetail() {
                     <QuickInfoRow
                       label="Base Camp"
                       value={
-                        pkg.base_camp ||
-                        "Sankri"
+                        (pkg.pickup_points || [])[0] ||
+                        selectedBatch?.pickup_location ||
+                        "Pune"
                       }
+                    />
+
+                    <QuickInfoRow
+                      label="Best Season"
+                      value={pkg.best_season || "Post-monsoon"}
                     />
 
                   </div>
@@ -617,6 +718,20 @@ export default function DashboardPackageDetail() {
 
                   </div>
 
+                </div>
+
+                <div className="bg-white border border-slate-200 rounded-2xl p-6 lg:col-span-3">
+                  <h3 className="text-xl font-black text-slate-900 mb-5">
+                    Trek Highlights
+                  </h3>
+                  <div className="grid sm:grid-cols-2 xl:grid-cols-5 gap-4">
+                    {trekHighlights.map(([label, Icon]) => (
+                      <div key={label} className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
+                        <Icon className="text-orange-500 text-xl" />
+                        <p className="mt-3 font-semibold text-slate-800">{label}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
               </div>
@@ -655,9 +770,11 @@ export default function DashboardPackageDetail() {
                         },
                       ]).map((day, index) => (
 
-                    <div
+                    <button
+                      type="button"
                       key={index}
-                      className="border border-slate-200 rounded-2xl p-6"
+                      onClick={() => toggleDay(index)}
+                      className="w-full text-left border border-slate-200 rounded-2xl p-6 hover:bg-slate-50 transition"
                     >
 
                       <div className="flex gap-5">
@@ -677,18 +794,23 @@ export default function DashboardPackageDetail() {
 
                           </h3>
 
-                          <p className="text-slate-500 mt-3 leading-relaxed">
+                          {expandedDays.includes(index) && (
+                            <p className="text-slate-500 mt-3 leading-relaxed">
 
-                            {day.description ||
-                              day}
+                              {Array.isArray(day.activities)
+                                ? day.activities.join(" • ")
+                                : day.description ||
+                                  day.activities ||
+                                  day}
 
-                          </p>
+                            </p>
+                          )}
 
                         </div>
 
                       </div>
 
-                    </div>
+                    </button>
 
                   ))}
 
@@ -746,14 +868,126 @@ export default function DashboardPackageDetail() {
                     <h3 className="text-lg font-bold text-slate-900 mb-4">
                       Excluded
                     </h3>
-                    <p className="text-slate-600 text-sm leading-relaxed">
-                      {pkg.excluded}
-                    </p>
+                    <div className="grid md:grid-cols-2 gap-3">
+                      {(Array.isArray(pkg.excluded) ? pkg.excluded : [pkg.excluded]).map((item, index) => (
+                        <p key={index} className="rounded-xl bg-slate-50 px-4 py-3 text-slate-600 text-sm leading-relaxed">
+                          {item}
+                        </p>
+                      ))}
+                    </div>
                   </div>
                 )}
 
               </div>
 
+            )}
+
+            {activeTab === "schedule" && (
+              <div className="bg-white border border-slate-200 rounded-2xl p-7">
+                <h2 className="text-3xl font-black text-slate-900 mb-3">
+                  Upcoming Departures
+                </h2>
+                <p className="text-slate-500 mb-7">
+                  Weekend batches, seats, pickup point, and booking deadlines.
+                </p>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {(batches.length ? batches : []).map((batch) => (
+                    <button
+                      type="button"
+                      key={batch.id}
+                      onClick={() => setSelectedBatch(batch)}
+                      className={`text-left rounded-2xl border p-5 transition ${
+                        selectedBatch?.id === batch.id
+                          ? "border-orange-400 bg-orange-50"
+                          : "border-slate-200 bg-white hover:bg-slate-50"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-4">
+                        <p className="font-black text-slate-900">
+                          {batch.start_date} to {batch.end_date}
+                        </p>
+                        <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
+                          {batch.seats_left} seats left
+                        </span>
+                      </div>
+                      <div className="mt-4 grid grid-cols-2 gap-3 text-sm text-slate-600">
+                        <span>Deadline: {batch.booking_deadline}</span>
+                        <span>Pickup: {batch.pickup_location || "Pune"}</span>
+                        <span>Guide: {batch.guide_name || "Assigned soon"}</span>
+                        <span>{batch.batch_status}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+                {batches.length === 0 && (
+                  <div className="rounded-2xl border border-dashed border-slate-200 p-10 text-center text-slate-500">
+                    New batch dates will be announced soon.
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === "gallery" && (
+              <div className="bg-white border border-slate-200 rounded-2xl p-7">
+                <h2 className="text-3xl font-black text-slate-900 mb-7">
+                  Gallery
+                </h2>
+                <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {(galleryImages.length ? galleryImages : [
+                    "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
+                    "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80",
+                  ]).map((image) => (
+                    <button
+                      key={image}
+                      type="button"
+                      onClick={() => setLightboxImage(image)}
+                      className="relative h-56 overflow-hidden rounded-2xl border border-slate-200"
+                    >
+                      <img src={image} alt={pkg.title} className="h-full w-full object-cover" />
+                      <span className="absolute right-3 top-3 rounded-full bg-black/50 p-2 text-white">
+                        <FaImages />
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {activeTab === "safety" && (
+              <div className="bg-white border border-slate-200 rounded-2xl p-7">
+                <h2 className="text-3xl font-black text-slate-900 mb-7">
+                  Safety & Weather
+                </h2>
+                <div className="grid md:grid-cols-3 gap-5">
+                  <SafetyCard icon={<FaShieldAlt />} title="Fitness Required" text={pkg.fitness_required || "Basic endurance for sustained uphill walking."} />
+                  <SafetyCard icon={<FaExclamationTriangle />} title="Medical Warning" text="Share asthma, vertigo, cardiac, injury, or medication details before departure." />
+                  <SafetyCard icon={<FaWater />} title="Weather Caution" text={weatherInsight} />
+                </div>
+              </div>
+            )}
+
+            {activeTab === "nearby" && (
+              <div className="bg-white border border-slate-200 rounded-2xl p-7">
+                <h2 className="text-3xl font-black text-slate-900 mb-7">
+                  Nearby Attractions
+                </h2>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {nearbyAttractions.map((item) => (
+                    <div
+                      key={item}
+                      className="rounded-2xl border border-slate-100 bg-slate-50 p-5 flex items-start gap-4"
+                    >
+                      <FaMapMarkerAlt className="mt-1 text-orange-500" />
+                      <div>
+                        <h3 className="font-bold text-slate-900">{item}</h3>
+                        <p className="mt-2 text-sm text-slate-600">
+                          Confirm exact access and timings with the trek leader before departure.
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
 
             {activeTab === "faq" && (
@@ -805,6 +1039,31 @@ export default function DashboardPackageDetail() {
           {/* ===================================================== */}
 
           <div className="space-y-6 sticky top-24">
+
+            <div className="bg-white border border-slate-200 rounded-2xl p-6">
+              <p className="text-sm uppercase tracking-wider text-slate-400">
+                Booking
+              </p>
+              <h3 className="text-4xl font-black text-slate-900 mt-2">
+                Rs. {Number(pkg.price || 0).toLocaleString("en-IN")}
+              </h3>
+              <div className="mt-5 space-y-3 text-sm text-slate-600">
+                <QuickInfoRow label="Seats left" value={selectedBatch?.seats_left ?? "Ask operator"} />
+                <QuickInfoRow label="Next batch" value={selectedBatch?.start_date || "Announcing soon"} />
+                <QuickInfoRow label="Last date" value={selectedBatch?.booking_deadline || "Before departure"} />
+                <QuickInfoRow label="Pickup" value={selectedBatch?.pickup_location || (pkg.pickup_points || [])[0] || "Pune"} />
+              </div>
+              <button
+                onClick={() =>
+                  navigate("/dashboard/booking", {
+                    state: { package_id: pkg.id, package: pkg, selected_batch: selectedBatch },
+                  })
+                }
+                className="mt-6 h-12 w-full rounded-xl bg-orange-500 font-semibold text-white transition hover:bg-orange-600"
+              >
+                Book Now
+              </button>
+            </div>
 
             {/* WHY CHOOSE */}
 
@@ -888,6 +1147,16 @@ export default function DashboardPackageDetail() {
 
       </div>
 
+      {lightboxImage && (
+        <button
+          type="button"
+          onClick={() => setLightboxImage("")}
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 p-6"
+        >
+          <img src={lightboxImage} alt={pkg.title} className="max-h-full max-w-full rounded-2xl object-contain" />
+        </button>
+      )}
+
     </div>
 
   );
@@ -901,11 +1170,16 @@ export default function DashboardPackageDetail() {
 function InfoPill({
   icon,
   text,
+  dark = false,
 }) {
 
   return (
 
-    <div className="h-11 px-4 rounded-xl border border-slate-200 bg-slate-50 flex items-center gap-3 text-sm text-slate-700">
+    <div className={`h-11 px-4 rounded-xl border flex items-center gap-3 text-sm ${
+      dark
+        ? "border-white/20 bg-white/15 text-white backdrop-blur"
+        : "border-slate-200 bg-slate-50 text-slate-700"
+    }`}>
 
       {icon}
 
@@ -994,4 +1268,16 @@ function WhyChooseItem({
 
   );
 
+}
+
+function SafetyCard({ icon, title, text }) {
+  return (
+    <div className="rounded-2xl border border-slate-100 bg-slate-50 p-6">
+      <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 text-orange-500 flex items-center justify-center">
+        {icon}
+      </div>
+      <h3 className="mt-5 font-black text-slate-900">{title}</h3>
+      <p className="mt-3 text-sm leading-relaxed text-slate-600">{text}</p>
+    </div>
+  );
 }

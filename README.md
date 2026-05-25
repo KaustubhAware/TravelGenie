@@ -69,7 +69,7 @@ graph TD
 ## ✨ Feature Breakdown
 
 ### 1. 🤖 AI Trip Planner & Travel Assistant
-* **Generative Itineraries**: Harnesses Gemini 1.5 Flash to write highly descriptive daily plans including sightseeing, logistics, and scheduling.
+* **Generative Itineraries**: Harnesses Gemini 1.5 Flash to write Maharashtra-focused trek plans including Sahyadri logistics, monsoon safety, camping guidance, and budgets in INR.
 * **Smart Budget Breakdown**: Instantly calculates estimated expenses split into hotels (40%), dining (25%), transportation (20%), activities (10%), and emergency margins (5%).
 * **Recommendation System**: Content-based recommendation utilizing **Cosine Similarity** (via scikit-learn CountVectorizer) to suggest alternate destinations matching the traveler's preference and region.
 * **Sentiment Analysis**: Custom pipeline checks the user's travel tone (e.g., Adventure, Relaxed, Family) to dynamically alter recommendation targets.
@@ -93,6 +93,74 @@ graph TD
 * **Activity Audit Trail**: Chronological logging system tracking all action items performed by administrative users.
 
 ---
+
+## Multi-Laptop Setup Checklist
+
+1. Clone the repository:
+   ```powershell
+   git clone <repo-url>
+   cd Live-Project
+   ```
+2. Install backend requirements:
+   ```powershell
+   cd backend
+   python -m venv venv
+   .\venv\Scripts\activate
+   pip install -r requirements.txt
+   pip install -U google-generativeai
+   ```
+3. Install frontend packages:
+   ```powershell
+   cd ..\frontend
+   npm install
+   ```
+4. Create PostgreSQL DB:
+   ```powershell
+   createdb -U postgres travelgenie
+   ```
+5. Run `schema.sql`:
+   ```powershell
+   cd ..\backend
+   psql -U postgres -d travelgenie -f schema.sql
+   ```
+6. Create `backend/.env` with DB, admin, Firebase, and Gemini values:
+   ```properties
+   DB_HOST=localhost
+   DB_NAME=travelgenie
+   DB_USER=postgres
+   DB_PASSWORD=your_postgres_password
+   DB_PORT=5432
+   GEMINI_API_KEY=your_gemini_api_key_here
+   GEMINI_MODEL=gemini-1.5-flash
+   ADMIN_SECRET_KEY=generate_a_random_jwt_key
+   ADMIN_USERNAME=admin
+   ADMIN_PASSWORD=secure_admin_password
+   FIREBASE_KEY_PATH=firebase_key.json
+   ```
+7. Create `frontend/.env`:
+   ```properties
+   VITE_API_BASE_URL=http://localhost:8000/api
+   VITE_FIREBASE_API_KEY=your_firebase_api_key
+   VITE_FIREBASE_AUTH_DOMAIN=your_firebase_auth_domain
+   VITE_FIREBASE_PROJECT_ID=your_firebase_project_id
+   VITE_FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket
+   VITE_FIREBASE_MESSAGING_SENDER_ID=your_firebase_messaging_sender_id
+   VITE_FIREBASE_APP_ID=your_firebase_app_id
+   ```
+8. Add `backend/firebase_key.json`.
+9. Start backend:
+   ```powershell
+   cd backend
+   .\venv\Scripts\activate
+   python -m uvicorn app.main:app --reload
+   ```
+10. Start frontend:
+   ```powershell
+   cd frontend
+   npm run dev
+   ```
+
+Protected local files: `.env`, `firebase_key.json`, `node_modules`, `venv`, `dist`, and `__pycache__` are ignored by git.
 
 ## 🛠️ Local Setup Instructions
 
@@ -169,15 +237,14 @@ In `backend/app/db.py`, the `get_connection()` method initiates a fresh TCP/IP h
 * **Impact**: Under moderate load, database port exhaustion will occur, and API response latency will surge due to constant connection handshake overhead.
 * **Solution**: Implement a connection pooler using `psycopg2.pool.SimpleConnectionPool` or upgrade to an ORM like SQL Alchemy with built-in connection management.
 
-### 2. Live Schema Mutation in Router Methods
-Routes like `save_booking` (`booking.py`) and `save_user` (`auth.py`) call functions such as `ensure_booking_workflow_columns()` and `ensure_user_columns()` on every single request. These functions invoke dynamic SQL queries like `ALTER TABLE bookings ADD COLUMN IF NOT EXISTS...`.
-* **Impact**: Database locks, potential race conditions during concurrent user operations, and schema drift bypasses safe database migration patterns.
-* **Solution**: Remove the `ALTER TABLE` statements from runtime routing logic. Use database migrations (e.g., Alembic or db-migrate tool) to baseline and update schemas out-of-band.
+### 2. Schema Safety
+Runtime schema mutation has been removed from request paths. Startup now uses `information_schema.columns` to report missing columns and relies on `schema.sql` as the database source of truth.
+* **Remaining production recommendation**: Introduce Alembic or another versioned migration tool before multi-environment deployment.
 
 ### 3. Duplicate Schema Inconsistencies
 There is a naming disconnect between `backend/schema.sql` and the dynamically injected columns in `auth.py`:
 * `schema.sql` defines the user's name as `full_name VARCHAR(160)`.
-* `auth.py` dynamically forces `ALTER TABLE users ADD COLUMN IF NOT EXISTS name VARCHAR(120)`.
+* Older builds dynamically patched user columns at runtime. Current code keeps those checks non-mutating and expects `schema.sql` to be applied.
 This creates double columns (`full_name` and `name` in the database) containing duplicate or mismatched information. The role column also defaults to `'customer'` in the SQL schema but defaults to `'user'` in the dynamic python router script.
 
 ### 4. ML Cost Prediction Logic Flaw (Alphabetical Bias)

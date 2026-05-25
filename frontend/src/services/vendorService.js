@@ -34,6 +34,17 @@ export const vendorService = {
     return apiRequest("/vendors/analytics");
   },
 
+  getBatches() {
+    return apiRequest("/vendors/batches");
+  },
+
+  createBatch(payload) {
+    return apiRequest("/vendors/batches", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+
   getBookings() {
     return apiRequest("/vendors/bookings");
   },

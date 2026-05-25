@@ -62,6 +62,8 @@ class BookingRequest(BaseModel):
 
     package_id: int | None = None
 
+    trip_batch_id: int | None = None
+
     travel_date: str | None = None
 
     travelers: int | None = Field(
@@ -226,6 +228,24 @@ def save_booking(
 
             destination = data.destination
 
+        if data.trip_batch_id:
+            cursor.execute(
+                """
+                SELECT max_seats, booked_seats, batch_status
+                FROM trip_batches
+                WHERE id = %s AND package_id = %s
+                FOR UPDATE
+                """,
+                (data.trip_batch_id, data.package_id),
+            )
+            batch = cursor.fetchone()
+            if not batch:
+                raise HTTPException(status_code=404, detail="Trip batch not found")
+            if batch[2] != "open":
+                raise HTTPException(status_code=400, detail="Selected batch is not open")
+            if int(batch[1] or 0) + int(data.travelers or 1) > int(batch[0] or 0):
+                raise HTTPException(status_code=400, detail="Not enough seats available in selected batch")
+
         # =====================================================
         # INSERT BOOKING
         # =====================================================
@@ -246,6 +266,7 @@ def save_booking(
                 payment_status,
 
                 package_id,
+                trip_batch_id,
                 package_title,
                 package_image,
                 travel_date,
@@ -255,6 +276,7 @@ def save_booking(
 
             VALUES
             (
+                %s,
                 %s,
                 %s,
                 %s,
@@ -296,6 +318,7 @@ def save_booking(
                 "unpaid",
 
                 data.package_id,
+                data.trip_batch_id,
 
                 package_title,
 
@@ -308,6 +331,17 @@ def save_booking(
                 data.special_request
             )
         )
+
+        if data.trip_batch_id:
+            cursor.execute(
+                """
+                UPDATE trip_batches
+                SET booked_seats = booked_seats + %s,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+                """,
+                (data.travelers or 1, data.trip_batch_id),
+            )
 
         conn.commit()
 

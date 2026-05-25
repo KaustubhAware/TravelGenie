@@ -18,10 +18,12 @@ def error_response(
     message="Request failed",
     error=None,
     data=None,
+    detail=None,
 ):
     return {
         "success": False,
         "message": message,
         "error": error or message,
+        "detail": detail if detail is not None else error or message,
         "data": data or {},
     }
