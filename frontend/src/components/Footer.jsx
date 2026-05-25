@@ -95,17 +95,17 @@ export default function Footer() {
 
   };
 
-  /* ===================================================== */
-  /* UI */
-  /* ===================================================== */
-
   return (
 
-    <footer className="border-t border-slate-200 bg-white">
+    <footer className="relative bg-[#ececec] border-t border-slate-200 overflow-hidden">
 
-      <div className="max-w-7xl mx-auto px-5 md:px-8 py-20">
+      <div className="max-w-7xl mx-auto px-5 md:px-8 py-16">
 
-        <div className="grid gap-16 lg:grid-cols-[1.2fr_2fr]">
+        {/* ===================================================== */}
+        {/* MAIN */}
+        {/* ===================================================== */}
+
+        <div className="grid gap-14 lg:grid-cols-[1.1fr_2fr]">
 
           {/* ===================================================== */}
           {/* LEFT */}
@@ -113,29 +113,51 @@ export default function Footer() {
 
           <div>
 
-            <div className="flex items-center gap-4">
+            {/* LOGO */}
 
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-600 to-cyan-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+            <div className="flex items-center gap-2">
+
+              {/* ICON */}
+
+              <div className="w-14 h-14 rounded-3xl bg-white flex items-center justify-center border border-slate-200 shadow-sm overflow-hidden">
 
                 <img
                   src={logo}
                   alt="TravelGenie"
-                  className="w-8 h-8 brightness-0 invert"
+                  className="w-9 h-9 object-contain"
                 />
 
               </div>
 
+              {/* TEXT */}
+
               <div>
 
-                <h2 className="text-2xl font-black text-slate-900">
+                <h2
+                  className="text-[34px] leading-none"
+                  style={{
+                    fontFamily: "'Lobster Two', cursive",
+                    fontWeight: 700,
+                  }}
+                >
 
-                  TravelGenie
+                  <span className="text-[#08112b]">
+
+                    Travel
+
+                  </span>
+
+                  <span className="text-orange-500">
+
+                    Genie
+
+                  </span>
 
                 </h2>
 
-                <p className="text-sm text-slate-500 mt-1">
+                <p className="text-[10px] uppercase tracking-[0.30em] text-slate-500 mt-1 font-semibold">
 
-                  AI Travel Platform
+                  AI TREK PLATFORM
 
                 </p>
 
@@ -143,17 +165,20 @@ export default function Footer() {
 
             </div>
 
-            <p className="mt-8 max-w-md text-slate-500 leading-relaxed">
+            {/* DESCRIPTION */}
 
-              Modern trekking and travel operations platform
-              built for adventure travelers, tour operators,
-              and AI-assisted itinerary planning workflows.
+            <p className="mt-7 max-w-md text-slate-600 leading-relaxed">
+
+              AI-powered Maharashtra trekking
+              platform built for modern adventure
+              travelers, trek organizers, camping
+              groups, and weekend explorers.
 
             </p>
 
             {/* SOCIALS */}
 
-            <div className="flex items-center gap-4 mt-8">
+            <div className="flex items-center gap-3 mt-8">
 
               {[
 
@@ -165,7 +190,7 @@ export default function Footer() {
 
                 <button
                   key={index}
-                  className="w-11 h-11 rounded-2xl border border-slate-200 bg-white flex items-center justify-center text-slate-600 hover:bg-slate-100 transition"
+                  className="w-11 h-11 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:text-orange-500 hover:border-orange-200 transition-all duration-300 shadow-sm"
                 >
 
                   <Icon />
@@ -191,13 +216,17 @@ export default function Footer() {
 
                 <div key={title}>
 
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900">
+                  {/* TITLE */}
+
+                  <h3 className="text-xs font-bold uppercase tracking-[0.28em] text-slate-500">
 
                     {title}
 
                   </h3>
 
-                  <div className="space-y-4 mt-6">
+                  {/* LINKS */}
+
+                  <div className="space-y-4 mt-7">
 
                     {links.map((link) => (
 
@@ -208,7 +237,7 @@ export default function Footer() {
                             link.path
                           )
                         }
-                        className="block text-sm text-slate-500 hover:text-slate-900 transition"
+                        className="block text-sm text-slate-600 hover:text-orange-500 transition-all duration-300"
                       >
 
                         {link.label}
@@ -232,7 +261,7 @@ export default function Footer() {
         {/* BOTTOM */}
         {/* ===================================================== */}
 
-        <div className="mt-16 pt-8 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between gap-5">
+        <div className="mt-14 pt-7 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
 
           <p className="text-sm text-slate-500">
 
@@ -243,7 +272,7 @@ export default function Footer() {
 
           <p className="text-sm text-slate-500">
 
-            AI-powered trekking operations platform
+            AI-powered Maharashtra trekking platform
 
           </p>
 

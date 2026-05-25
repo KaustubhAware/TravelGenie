@@ -8,21 +8,47 @@ import AIPlannerBanner from "../../sections/landing/AIPlannerBanner";
 
 import TestimonialsSection from "../../sections/landing/TestimonialsSection";
 
+import heroBg from "../../assets/images/backgrounds/hero-bg.jpg";
+
 export default function Home() {
 
   return (
 
-    <main className="bg-slate-50 overflow-hidden">
+    <main className="relative overflow-hidden bg-[#ededed]">
 
-      <HeroSection />
+      {/* Global Cinematic Background */}
+      <div
+        className="fixed inset-0 -z-10 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url(${heroBg})`,
+        }}
+      >
 
-      <FeaturedTreksSection />
+        {/* Dark Overlay */}
+        <div className="absolute inset-0 bg-black/60" />
 
-      <WhyChooseUsSection />
+        {/* Soft Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-[#0b0f1a]/90" />
 
-     
+      </div>
 
-      <TestimonialsSection />
+      {/* Main Content */}
+      <div className="relative z-10">
+
+        {/* Hero Section */}
+        <HeroSection />
+
+        {/* Featured Treks */}
+        <FeaturedTreksSection />
+
+        {/* Why Choose Us */}
+        <WhyChooseUsSection />
+
+       
+        {/* Testimonials */}
+        <TestimonialsSection />
+
+      </div>
 
     </main>
 

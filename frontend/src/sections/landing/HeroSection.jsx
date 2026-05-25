@@ -14,8 +14,6 @@ import {
 
 import heroBg from "../../assets/images/backgrounds/hero-bg.jpg";
 
-import Button from "../../components/ui/Button";
-
 export default function HeroSection() {
 
   const navigate =
@@ -49,182 +47,131 @@ export default function HeroSection() {
 
   ];
 
-  /* ===================================================== */
-  /* UI */
-  /* ===================================================== */
-
   return (
 
-    <section className="bg-slate-100 px-4 md:px-6 pb-14">
+    <section className="relative px-3 md:px-5 pt-3 pb-16 bg-[#ececec]">
 
-      {/* ===================================================== */}
-      {/* HERO CONTAINER */}
-      {/* ===================================================== */}
+      {/* HERO WRAPPER */}
 
-      <div className="relative overflow-hidden rounded-[42px] max-w-[1600px] mx-auto shadow-xl min-h-[640px]">
+      <div className="relative overflow-hidden rounded-[42px] min-h-[92vh] max-w-[1600px] mx-auto shadow-2xl">
 
-        {/* ===================================================== */}
         {/* BACKGROUND IMAGE */}
-        {/* ===================================================== */}
 
         <img
           src={heroBg}
-          alt="Hero Background"
+          alt="TravelGenie Hero"
           className="absolute inset-0 w-full h-full object-cover"
         />
 
         {/* LIGHT OVERLAY */}
 
-        <div className="absolute inset-0 bg-white/10" />
+        <div className="absolute inset-0 bg-black/25" />
 
-        {/* ===================================================== */}
         {/* CONTENT */}
-        {/* ===================================================== */}
 
-        <div className="relative z-10 px-6 md:px-10 lg:px-16">
+        <div className="relative z-10 flex min-h-[84vh] flex-col justify-between px-6 md:px-10 lg:px-16 py-12">
 
-          {/* ===================================================== */}
-          {/* HERO CONTENT */}
-          {/* ===================================================== */}
+          {/* TOP CONTENT */}
 
-          <div className="grid lg:grid-cols-2 gap-12 items-center pt-20 md:pt-24 pb-20">
-
-            {/* ===================================================== */}
-            {/* LEFT CONTENT */}
-            {/* ===================================================== */}
+         <div className="grid lg:grid-cols-2 gap-12 items-center pt-4 md:pt-8">
+            {/* LEFT SIDE */}
 
             <motion.div
               initial={{
                 opacity: 0,
-                y: 30,
+                y: 40,
               }}
               animate={{
                 opacity: 1,
                 y: 0,
               }}
               transition={{
-                duration: 0.7,
+                duration: 0.8,
               }}
-              className="max-w-2xl"
+              className="max-w-4xl"
             >
 
               {/* BADGE */}
 
-              
-
+             
               {/* TITLE */}
 
-              <h1 className="mt-8 text-5xl md:text-7xl font-black leading-[1.02] text-slate-900">
+<h1 className="mt-8 leading-[0.92] tracking-[-0.05em]">
 
-                Discover Mountains.
+  <span className="block text-[48px] md:text-[68px] xl:text-[88px] font-black text-white">
 
-                <span className="block text-emerald-900">
+    Explore The
 
-                  Create Memories.
+  </span>
 
-                </span>
+  <span className="block italic font-serif font-normal text-orange-400 text-[58px] md:text-[82px] xl:text-[105px]">
 
-              </h1>
+    Sahyadri
 
+  </span>
+
+  <span className="block text-[48px] md:text-[68px] xl:text-[88px] font-black text-white">
+
+    Like Never
+
+  </span>
+
+  <span className="block text-[48px] md:text-[68px] xl:text-[88px] font-black text-white">
+
+    Before.
+
+  </span>
+
+</h1>
               {/* DESCRIPTION */}
 
-              <p className="mt-7 text-lg md:text-xl text-slate-700 leading-relaxed max-w-xl">
+              <p className="mt-8 text-lg md:text-xl leading-relaxed text-white/90 max-w-2xl">
 
-                Platform to discover,
-                plan and book treks and group tours
-                across India.
+                Platform to discover, plan and book
+                Maharashtra treks, camping trips,
+                waterfalls, forts and weekend adventures.
 
               </p>
 
               {/* BUTTONS */}
 
-              <div className="flex flex-wrap gap-5 mt-10">
+              <div className="flex flex-wrap gap-5 mt-12">
 
-                <Button
-                  size="lg"
-                  icon={<FaArrowRight />}
+                <button
                   onClick={() =>
                     navigate(
                       "/dashboard/packages"
                     )
                   }
+                  className="inline-flex items-center gap-3 rounded-2xl bg-orange-500 px-8 py-4 text-sm font-semibold text-white shadow-xl transition-all duration-300 hover:scale-[1.02] hover:bg-orange-600"
                 >
+
+                  <FaArrowRight />
 
                   Explore Treks
 
-                </Button>
+                </button>
 
-                <Button
-                  size="lg"
-                  variant="secondary"
+                <button
                   onClick={() =>
                     navigate(
                       "/dashboard/ai-planner"
                     )
                   }
+                  className="rounded-2xl bg-[#08112b] px-8 py-4 text-sm font-semibold text-white shadow-xl transition-all duration-300 hover:bg-[#0f1c44]"
                 >
 
                   Plan with Sara
 
-                </Button>
+                </button>
 
               </div>
 
             </motion.div>
 
-            {/* ===================================================== */}
-            {/* RIGHT SIDE SPACE */}
-            {/* ===================================================== */}
-
-            <div className="hidden lg:block" />
-
           </div>
 
-          {/* ===================================================== */}
-          {/* FEATURES */}
-          {/* ===================================================== */}
-
-          <motion.div
-            initial={{
-              opacity: 0,
-              y: 20,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            transition={{
-              delay: 0.2,
-              duration: 0.7,
-            }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-5 pb-12"
-          >
-
-            {features.map((item) => (
-
-              <div
-                key={item.title}
-                className="flex items-center gap-4 rounded-2xl bg-white/92 px-5 py-4 shadow-lg backdrop-blur-sm"
-              >
-
-                <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg shrink-0">
-
-                  {item.icon}
-
-                </div>
-
-                <h3 className="font-bold text-slate-800 text-sm md:text-base">
-
-                  {item.title}
-
-                </h3>
-
-              </div>
-
-            ))}
-
-          </motion.div>
-
+         
         </div>
 
       </div>

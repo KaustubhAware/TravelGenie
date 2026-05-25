@@ -21,6 +21,8 @@ import { auth } from "../../firebase";
 
 import logo from "../../assets/logo.svg";
 
+import registerImage from "../../assets/register.svg";
+
 export default function Register() {
 
   const [email, setEmail] =
@@ -32,239 +34,199 @@ export default function Register() {
   const [loading, setLoading] =
     useState(false);
 
-  const navigate = useNavigate();
+  const navigate =
+    useNavigate();
 
-  const location = useLocation();
+  const location =
+    useLocation();
 
   const from =
     location.state?.from?.pathname ||
     "/dashboard";
 
-  // =====================================================
-  // REGISTER
-  // =====================================================
+  /* ===================================================== */
+  /* REGISTER */
+  /* ===================================================== */
 
   const handleRegister = async () => {
 
-  if (!email || !password) {
+    if (!email || !password) {
 
-    alert("Please fill all fields");
+      alert("Please fill all fields");
 
-    return;
-  }
+      return;
 
-  if (password.length < 6) {
-
-    alert(
-      "Password must be at least 6 characters"
-    );
-
-    return;
-  }
-
-  setLoading(true);
-
-  try {
-
-    // =====================================
-    // FIREBASE REGISTER
-    // =====================================
-
-    const userCredential =
-      await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-
-    // =====================================
-    // GET FIREBASE TOKEN
-    // =====================================
-
-    const token =
-      await userCredential.user.getIdToken();
-
-    // =====================================
-    // SAVE TOKEN
-    // =====================================
-
-    localStorage.setItem(
-      "token",
-      token
-    );
-
-    // =====================================
-    // SAVE USER TO DATABASE
-    // =====================================
-
-    const response = await fetch(
-      "http://127.0.0.1:8000/api/admin/save-user",
-      {
-        method: "POST",
-
-        headers: {
-          "Content-Type":
-            "application/json",
-
-          Authorization:
-            `Bearer ${token}`,
-        },
-      }
-    );
-
-    // =====================================
-    // HANDLE BACKEND ERROR
-    // =====================================
-
-    if (!response.ok) {
-
-      throw new Error(
-        "Failed to save user"
-      );
     }
 
-    // =====================================
-    // NAVIGATE
-    // =====================================
-
-    navigate(from, {
-      replace: true,
-    });
-
-  } catch (err) {
-
-    console.error(err);
-
-    if (
-      err.code ===
-      "auth/email-already-in-use"
-    ) {
+    if (password.length < 6) {
 
       alert(
-        "Email already registered"
+        "Password must be at least 6 characters"
       );
 
-    } else if (
-      err.code ===
-      "auth/invalid-email"
-    ) {
+      return;
 
-      alert("Invalid email");
-
-    } else if (
-      err.code ===
-      "auth/weak-password"
-    ) {
-
-      alert("Weak password");
-
-    } else {
-
-      alert("Something went wrong");
     }
 
-  } finally {
+    setLoading(true);
 
-    setLoading(false);
-  }
-};
+    try {
+
+      const userCredential =
+        await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+
+      const token =
+        await userCredential.user.getIdToken();
+
+      localStorage.setItem(
+        "token",
+        token
+      );
+
+      navigate(from, {
+        replace: true,
+      });
+
+    } catch (err) {
+
+      console.error(err);
+
+      alert("Registration failed");
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
+
   return (
 
-    <div className="h-screen overflow-hidden bg-gradient-to-br from-[#eef5ff] to-[#f8fbff] flex items-center justify-center px-6 py-4">
+    <div className="min-h-screen bg-[#ececec] flex items-center justify-center px-5 py-8">
 
-      {/* MAIN CARD */}
+      <div className="w-full max-w-7xl bg-white rounded-[40px] shadow-[0_20px_60px_rgba(0,0,0,0.06)] overflow-hidden grid lg:grid-cols-2">
 
-      <div className="w-full max-w-6xl h-[92vh] bg-white rounded-[40px] shadow-[0_20px_60px_rgba(0,0,0,0.08)] grid lg:grid-cols-2 p-5 gap-5 overflow-hidden">
+        {/* ===================================================== */}
+        {/* LEFT */}
+        {/* ===================================================== */}
 
-        {/* ================================================= */}
-        {/* LEFT SIDE FORM */}
-        {/* ================================================= */}
-
-        <div className="flex items-center justify-center px-8 py-8 lg:px-16 overflow-y-auto">
+        <div className="flex items-center justify-center px-8 md:px-14 py-14">
 
           <div className="w-full max-w-md">
 
-            {/* MOBILE LOGO */}
+            {/* MOBILE BRAND */}
 
-            <div className="lg:hidden flex justify-center mb-8">
+            <div className="lg:hidden flex items-center justify-center gap-2 mb-10">
 
               <img
                 src={logo}
                 alt="logo"
-                className="w-16 h-16"
+                className="w-12 h-12"
               />
+
+              <h2
+                className="text-[32px]"
+                style={{
+                  fontFamily: "'Lobster Two', cursive",
+                }}
+              >
+
+                <span className="text-[#08112b]">
+
+                  Travel
+
+                </span>
+
+                <span className="text-orange-500">
+
+                  Genie
+
+                </span>
+
+              </h2>
 
             </div>
 
             {/* TITLE */}
 
-            <div className="mb-10">
+            <div>
 
-              <h1 className="text-4xl font-bold text-gray-900">
+              <h2 className="text-4xl font-black text-[#08112b]">
 
                 Create Account
 
-              </h1>
+              </h2>
 
-              <p className="text-gray-500 mt-3 text-lg">
+              <p className="mt-3 text-slate-500">
 
-                Start your AI travel journey
+                Start your trekking journey
 
               </p>
 
             </div>
 
-            {/* EMAIL */}
+            {/* FORM */}
 
-            <div className="mb-6">
+            <div className="mt-10 space-y-6">
 
-              <label className="block text-sm font-semibold text-gray-700 mb-3">
+              {/* EMAIL */}
 
-                Email Address
+              <div>
 
-              </label>
+                <label className="text-sm font-semibold text-slate-700">
 
-              <div className="relative">
+                  Email Address
 
-                <FaEnvelope className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" />
+                </label>
 
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) =>
-                    setEmail(e.target.value)
-                  }
-                  className="w-full bg-[#f8fbff] border border-gray-200 pl-14 pr-5 py-4 rounded-2xl outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition"
-                />
+                <div className="relative mt-3">
+
+                  <FaEnvelope className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" />
+
+                  <input
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) =>
+                      setEmail(e.target.value)
+                    }
+                    className="w-full bg-[#f6f6f6] border border-slate-200 rounded-2xl py-4 pl-14 pr-5 outline-none focus:border-orange-400 transition"
+                  />
+
+                </div>
 
               </div>
 
-            </div>
+              {/* PASSWORD */}
 
-            {/* PASSWORD */}
+              <div>
 
-            <div className="mb-4">
+                <label className="text-sm font-semibold text-slate-700">
 
-              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  Password
 
-                Password
+                </label>
 
-              </label>
+                <div className="relative mt-3">
 
-              <div className="relative">
+                  <FaLock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" />
 
-                <FaLock className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="password"
+                    placeholder="Create password"
+                    value={password}
+                    onChange={(e) =>
+                      setPassword(e.target.value)
+                    }
+                    className="w-full bg-[#f6f6f6] border border-slate-200 rounded-2xl py-4 pl-14 pr-5 outline-none focus:border-orange-400 transition"
+                  />
 
-                <input
-                  type="password"
-                  placeholder="Create password"
-                  value={password}
-                  onChange={(e) =>
-                    setPassword(e.target.value)
-                  }
-                  className="w-full bg-[#f8fbff] border border-gray-200 pl-14 pr-5 py-4 rounded-2xl outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition"
-                />
+                </div>
 
               </div>
 
@@ -272,10 +234,10 @@ export default function Register() {
 
             {/* INFO */}
 
-            <p className="text-sm text-gray-500 mb-8">
+            <p className="mt-5 text-sm text-slate-500">
 
               Password should contain at least
-              6 characters
+              6 characters.
 
             </p>
 
@@ -284,29 +246,29 @@ export default function Register() {
             <button
               onClick={handleRegister}
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:opacity-95 text-white py-4 rounded-2xl font-semibold text-lg shadow-lg transition duration-300 flex items-center justify-center gap-3"
+              className="w-full mt-8 bg-[#08112b] hover:bg-[#12204a] text-white rounded-2xl py-4 font-semibold transition-all duration-300 flex items-center justify-center gap-3"
             >
 
-              {loading ? (
-                "Creating Account..."
-              ) : (
-                <>
-                  Register
-                  <FaArrowRight />
-                </>
-              )}
+              {loading
+                ? "Creating Account..."
+                : (
+                  <>
+                    Create Account
+                    <FaArrowRight />
+                  </>
+                )}
 
             </button>
 
-            {/* LOGIN */}
+            {/* FOOTER */}
 
-            <p className="text-center text-gray-500 mt-8">
+            <p className="text-center text-slate-500 mt-8">
 
               Already have an account?{" "}
 
               <Link
                 to="/login"
-                className="text-blue-600 font-semibold hover:text-blue-700 transition"
+                className="font-semibold text-orange-500 hover:text-orange-600"
               >
 
                 Login
@@ -319,91 +281,81 @@ export default function Register() {
 
         </div>
 
-        {/* ================================================= */}
-        {/* RIGHT SIDE IMAGE */}
-        {/* ================================================= */}
+        {/* ===================================================== */}
+        {/* RIGHT */}
+        {/* ===================================================== */}
 
-        <div className="relative hidden lg:block rounded-[32px] overflow-hidden h-full">
+        <div className="hidden lg:flex flex-col justify-between bg-[#f8f8f8] p-14 relative overflow-hidden">
 
-          <img
-  src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1600&auto=format&fit=crop"
-  alt="travel"
-  className="w-full h-full object-cover"
-/>
+          {/* BRAND */}
 
-          {/* OVERLAY */}
+          <div className="flex items-center gap-2">
 
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-
-          {/* CONTENT */}
-
-          <div className="absolute bottom-10 left-10 right-10 text-white">
-
-            <div className="flex items-center gap-3 mb-6">
+            <div className="w-14 h-14 rounded-3xl bg-white flex items-center justify-center border border-slate-200 shadow-sm">
 
               <img
                 src={logo}
                 alt="logo"
-                className="w-14 h-14 bg-white rounded-2xl p-2"
+                className="w-9 h-9"
               />
-
-              <h1 className="text-3xl font-bold">
-
-                TravelGenie
-
-              </h1>
 
             </div>
 
-            <h2 className="text-5xl font-bold leading-tight mb-5">
+            <div>
 
-              Smart Travel Planning Starts Here
+              <h2
+                className="text-[34px] leading-none"
+                style={{
+                  fontFamily: "'Lobster Two', cursive",
+                  fontWeight: 700,
+                }}
+              >
 
-            </h2>
+                <span className="text-[#08112b]">
 
-            <p className="text-lg text-gray-200 leading-relaxed max-w-md">
+                  Travel
 
-              AI-powered trip planning,
-              destination discovery,
-              itinerary management and
-              intelligent travel assistance.
+                </span>
 
-            </p>
+                <span className="text-orange-500">
 
-            {/* FEATURE CARD */}
+                  Genie
 
-            <div className="mt-8 bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-5 max-w-md">
+                </span>
 
-              <div className="flex items-center gap-4">
+              </h2>
 
-                <div className="w-14 h-14 rounded-2xl bg-white text-blue-600 flex items-center justify-center text-xl">
-
-                  <FaUserPlus />
-
-                </div>
-
-                <div>
-
-                  <h3 className="font-semibold text-lg">
-
-                    Join TravelGenie
-
-                  </h3>
-
-                  <p className="text-sm text-gray-200 mt-1">
-
-                    Create your account and
-                    start exploring smarter travel
-
-                  </p>
-
-                </div>
-
-              </div>
+              
 
             </div>
 
           </div>
+
+          {/* CONTENT */}
+
+          <div className="mt-10">
+
+            <h1 className="text-6xl font-black leading-[1] tracking-[-0.05em] text-[#08112b]">
+
+              Start Your Journey.
+
+            </h1>
+
+          </div>
+
+          {/* IMAGE */}
+
+          <div className="flex items-center justify-center mt-10">
+
+            <img
+              src={registerImage}
+              alt="register"
+              className="w-full max-w-xl object-contain"
+            />
+
+          </div>
+
+          
 
         </div>
 

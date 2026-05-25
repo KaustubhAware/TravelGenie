@@ -1,12 +1,8 @@
-import {
-  FaStar,
-} from "react-icons/fa";
+import { FaStar } from "react-icons/fa";
+
+import { motion } from "framer-motion";
 
 import PageContainer from "../../components/ui/PageContainer";
-
-import SectionHeader from "../../components/ui/SectionHeader";
-
-import Card from "../../components/ui/Card";
 
 export default function TestimonialsSection() {
 
@@ -19,11 +15,11 @@ export default function TestimonialsSection() {
     {
       id: 1,
       name: "Aarav Sharma",
-      role: "Adventure Traveler",
+      role: "Weekend Trekker",
       image:
         "https://randomuser.me/api/portraits/men/32.jpg",
       review:
-        "TravelGenie completely changed how I plan trekking trips. The AI itinerary recommendations were surprisingly accurate and saved a lot of time.",
+        "TravelGenie completely transformed how I discover trekking experiences in Maharashtra. The AI planning is genuinely useful.",
     },
 
     {
@@ -33,7 +29,7 @@ export default function TestimonialsSection() {
       image:
         "https://randomuser.me/api/portraits/women/44.jpg",
       review:
-        "The booking workflow and curated trek suggestions made the experience feel extremely professional and easy to manage.",
+        "The booking flow, schedules, and curated monsoon treks make the entire experience feel premium and professional.",
     },
 
     {
@@ -43,18 +39,14 @@ export default function TestimonialsSection() {
       image:
         "https://randomuser.me/api/portraits/men/76.jpg",
       review:
-        "As a trek operator, managing clients and bookings through one platform is incredibly useful. The admin workflow is very clean.",
+        "Managing departures, occupancy, and customer bookings from one dashboard is incredibly powerful for operators.",
     },
 
   ];
 
-  /* ===================================================== */
-  /* UI */
-  /* ===================================================== */
-
   return (
 
-    <section className="py-28 bg-white">
+    <section className="relative py-16 bg-[#ececec] overflow-hidden">
 
       <PageContainer>
 
@@ -62,28 +54,88 @@ export default function TestimonialsSection() {
         {/* HEADER */}
         {/* ===================================================== */}
 
-        <SectionHeader
-          badge="Testimonials"
-          title="What Travelers Are Saying"
-          description="Thousands of travelers and adventure enthusiasts trust TravelGenie for smarter trip planning and seamless booking experiences."
-        />
+        <motion.div
+          initial={{
+            opacity: 0,
+            y: 30,
+          }}
+          whileInView={{
+            opacity: 1,
+            y: 0,
+          }}
+          transition={{
+            duration: 0.6,
+          }}
+          viewport={{
+            once: true,
+          }}
+          className="text-center max-w-3xl mx-auto"
+        >
+
+          
+
+          {/* TITLE */}
+
+          <h2 className="mt-7 text-4xl md:text-6xl font-black leading-tight text-[#08112b]">
+
+            Trusted By
+
+            <span className="block italic font-serif font-normal text-orange-500">
+
+              Adventure Travelers
+
+            </span>
+
+          </h2>
+
+          {/* DESCRIPTION */}
+
+          <p className="mt-6 text-lg text-slate-600 leading-relaxed">
+
+            Thousands of trekkers, campers,
+            and travel enthusiasts trust
+            TravelGenie for premium Maharashtra
+            adventure experiences.
+
+          </p>
+
+        </motion.div>
 
         {/* ===================================================== */}
         {/* GRID */}
         {/* ===================================================== */}
 
-        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8 mt-16">
+        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8 mt-20">
 
-          {testimonials.map((item) => (
+          {testimonials.map((item, index) => (
 
-            <Card
+            <motion.div
               key={item.id}
-              className="h-full"
+              initial={{
+                opacity: 0,
+                y: 30,
+              }}
+              whileInView={{
+                opacity: 1,
+                y: 0,
+              }}
+              transition={{
+                duration: 0.5,
+                delay: index * 0.1,
+              }}
+              viewport={{
+                once: true,
+              }}
+              className="relative overflow-hidden rounded-[32px] bg-white p-8 shadow-2xl transition-all duration-500 hover:-translate-y-2"
             >
+
+              {/* SOFT GLOW */}
+
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent" />
 
               {/* STARS */}
 
-              <div className="flex items-center gap-2 text-yellow-400">
+              <div className="relative z-10 flex items-center gap-2 text-orange-500">
 
                 {[...Array(5)].map((_, index) => (
 
@@ -95,7 +147,7 @@ export default function TestimonialsSection() {
 
               {/* REVIEW */}
 
-              <p className="mt-6 text-slate-600 leading-relaxed">
+              <p className="relative z-10 mt-6 leading-relaxed text-slate-600">
 
                 "{item.review}"
 
@@ -103,23 +155,23 @@ export default function TestimonialsSection() {
 
               {/* USER */}
 
-              <div className="flex items-center gap-4 mt-8">
+              <div className="relative z-10 flex items-center gap-4 mt-8">
 
                 <img
                   src={item.image}
                   alt={item.name}
-                  className="w-14 h-14 rounded-2xl object-cover"
+                  className="w-14 h-14 rounded-2xl object-cover border border-slate-200"
                 />
 
                 <div>
 
-                  <h3 className="font-black text-slate-900">
+                  <h3 className="font-bold text-[#08112b]">
 
                     {item.name}
 
                   </h3>
 
-                  <p className="text-sm text-slate-500 mt-1">
+                  <p className="mt-1 text-sm text-slate-500">
 
                     {item.role}
 
@@ -129,7 +181,7 @@ export default function TestimonialsSection() {
 
               </div>
 
-            </Card>
+            </motion.div>
 
           ))}
 

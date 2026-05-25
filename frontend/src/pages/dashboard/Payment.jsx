@@ -80,93 +80,201 @@ export default function Payment() {
 
   const handlePayment = async () => {
 
-    const user = auth.currentUser;
+  const user = auth.currentUser;
 
-    if (!user) {
+  if (!user) {
 
-      toast.error(
-        "Please login first"
-      );
+    toast.error("Please login first");
 
-      navigate("/login");
+    navigate("/login");
 
-      return;
+    return;
 
-    }
+  }
 
-    setLoading(true);
+  setLoading(true);
 
-    try {
+  try {
 
-      const token =
-        await user.getIdToken();
+    const token =
+      await user.getIdToken();
 
-      const res = await fetch(
-        `${API_BASE}/update-payment`,
-        {
-          method: "POST",
+    // =====================================================
+    // CREATE ORDER
+    // =====================================================
 
-          headers: {
-            "Content-Type":
-              "application/json",
+    const orderRes = await fetch(
 
-            Authorization:
-              `Bearer ${token}`,
-          },
+      `${API_BASE}/create-order`,
 
-          body: JSON.stringify({
-            booking_id:
-              data.booking_id,
-          }),
-        }
-      );
+      {
+        method: "POST",
 
-      const result =
-        await res.json();
+        headers: {
+          "Content-Type":
+            "application/json",
 
-      if (
-        !res.ok ||
-        result.error
-      ) {
+          Authorization:
+            `Bearer ${token}`,
+        },
 
-        throw new Error(
-          result.error ||
-          "Payment failed"
-        );
+        body: JSON.stringify({
+
+          booking_id:
+            data.booking_id,
+
+          amount:
+            data.cost ||
+            data.total_cost ||
+            data.budget ||
+            0,
+
+        }),
 
       }
+    );
 
-      toast.success(
-        "Payment successful!"
+    const orderData =
+      await orderRes.json();
+
+    if (!orderRes.ok) {
+
+      throw new Error(
+        orderData.detail ||
+        "Order creation failed"
       );
-
-      navigate(
-        "/dashboard/booking-success",
-        {
-          state: {
-            ...data,
-            paymentSuccess: true,
-          },
-        }
-      );
-
-    } catch (err) {
-
-      console.error(err);
-
-      toast.error(
-        err.message ||
-        "Payment failed"
-      );
-
-    } finally {
-
-      setLoading(false);
 
     }
 
-  };
+    // =====================================================
+    // RAZORPAY OPTIONS
+    // =====================================================
 
+    const options = {
+
+      key:
+        import.meta.env
+          .VITE_RAZORPAY_KEY_ID,
+
+      amount:
+        orderData.order.amount,
+
+      currency: "INR",
+
+      name: "TravelGenie",
+
+      description:
+        "Trek Booking Payment",
+
+      order_id:
+        orderData.order.id,
+
+      handler:
+        async function (
+          response
+        ) {
+
+          // =====================================================
+          // VERIFY PAYMENT
+          // =====================================================
+
+          const verifyRes =
+            await fetch(
+
+              `${API_BASE}/verify-payment`,
+
+              {
+
+                method: "POST",
+
+                headers: {
+
+                  "Content-Type":
+                    "application/json",
+
+                  Authorization:
+                    `Bearer ${token}`,
+
+                },
+
+                body: JSON.stringify({
+
+                  booking_id:
+                    data.booking_id,
+
+                  razorpay_order_id:
+                    response.razorpay_order_id,
+
+                  razorpay_payment_id:
+                    response.razorpay_payment_id,
+
+                  razorpay_signature:
+                    response.razorpay_signature,
+
+                }),
+
+              }
+
+            );
+
+          const verifyData =
+            await verifyRes.json();
+
+          if (!verifyRes.ok) {
+
+            throw new Error(
+              verifyData.detail
+            );
+
+          }
+
+          toast.success(
+            "Payment successful!"
+          );
+
+          navigate(
+            "/dashboard/booking-success",
+            {
+              state: {
+                ...data,
+                paymentSuccess: true,
+              },
+            }
+          );
+
+        },
+
+      theme: {
+
+        color: "#f97316",
+
+      },
+
+    };
+
+    const razorpay =
+      new window.Razorpay(
+        options
+      );
+
+    razorpay.open();
+
+  } catch (err) {
+
+    console.error(err);
+
+    toast.error(
+      err.message ||
+      "Payment failed"
+    );
+
+  } finally {
+
+    setLoading(false);
+
+  }
+
+};
   // =====================================================
   // UI
   // =====================================================

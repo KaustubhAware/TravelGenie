@@ -153,21 +153,17 @@ const NavbarApp = () => {
 
     };
 
-  /* ===================================================== */
-  /* UI */
-  /* ===================================================== */
-
   return (
 
-    <nav className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur-xl shadow-sm">
+    <nav className="sticky top-0 z-50 border-b border-slate-200 bg-[#ececec]/80 backdrop-blur-xl">
 
       <div className="max-w-[1600px] mx-auto px-4 md:px-6 xl:px-8">
 
         {/* ===================================================== */}
-        {/* MAIN NAV */}
+        {/* MAIN */}
         {/* ===================================================== */}
 
-        <div className="h-[74px] flex items-center justify-between gap-5">
+        <div className="h-[78px] flex items-center justify-between gap-5">
 
           {/* ===================================================== */}
           {/* LEFT */}
@@ -184,38 +180,57 @@ const NavbarApp = () => {
                   DASHBOARD_ROUTES.root
                 )
               }
-              className="flex items-center gap-3 shrink-0"
+              className="flex items-center gap-2 shrink-0"
             >
 
-              <div className="w-11 h-11 rounded-2xl bg-orange-500 flex items-center justify-center shadow-sm overflow-hidden">
+              {/* ICON */}
+
+              <div className="w-14 h-14 rounded-3xl bg-white flex items-center justify-center border border-slate-200 shadow-sm overflow-hidden">
 
                 <img
                   src={logo}
                   alt="TravelGenie"
-                  className="w-6 h-6 object-contain brightness-0 invert"
+                  className="w-9 h-9 object-contain"
                 />
 
               </div>
 
+              {/* TEXT */}
+
               <div>
 
-                <h2 className="text-lg font-black text-slate-900 leading-none">
+                <h2
+                  className="text-[32px] leading-none"
+                  style={{
+                    fontFamily:
+                      "'Lobster Two', cursive",
+                    fontWeight: 700,
+                  }}
+                >
 
-                  TravelGenie
+                  <span className="text-[#08112b]">
+
+                    Travel
+
+                  </span>
+
+                  <span className="text-orange-500">
+
+                    Genie
+
+                  </span>
 
                 </h2>
 
-                <p className="text-[11px] uppercase tracking-[0.22em] text-slate-400 mt-1">
-
-                  AI Trek Platform
-
-                </p>
+                
 
               </div>
 
             </button>
 
+            {/* ===================================================== */}
             {/* DESKTOP NAV */}
+            {/* ===================================================== */}
 
             <div className="hidden xl:flex items-center gap-2">
 
@@ -232,12 +247,12 @@ const NavbarApp = () => {
                     onClick={() =>
                       go(link.path)
                     }
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ${
+                    className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 ${
                       isActive(link.path)
 
                         ? "bg-orange-500 text-white shadow-sm"
 
-                        : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                        : "text-slate-600 hover:bg-white hover:text-[#08112b]"
                     }`}
                   >
 
@@ -270,7 +285,7 @@ const NavbarApp = () => {
                   PUBLIC_ROUTES.treks
                 )
               }
-              className="hidden md:flex items-center gap-2 bg-slate-900 hover:bg-black transition text-white px-5 py-3 rounded-xl font-semibold shadow-sm"
+              className="hidden md:flex items-center gap-2 bg-[#08112b] hover:bg-[#101c45] transition text-white px-6 py-3 rounded-2xl font-semibold shadow-sm"
             >
 
               <FaMountain />
@@ -284,7 +299,7 @@ const NavbarApp = () => {
             <button
               type="button"
               onClick={handleLogout}
-              className="hidden md:flex items-center gap-2 border border-slate-200 bg-white hover:bg-slate-50 transition px-5 py-3 rounded-xl text-slate-700 font-semibold"
+              className="hidden md:flex items-center gap-2 bg-white border border-slate-200 hover:border-orange-200 hover:text-orange-500 transition-all duration-300 px-5 py-3 rounded-2xl text-slate-700 font-semibold shadow-sm"
             >
 
               <FaSignOutAlt />
@@ -293,7 +308,7 @@ const NavbarApp = () => {
 
             </button>
 
-            {/* MOBILE TOGGLE */}
+            {/* MOBILE */}
 
             <button
               type="button"
@@ -302,8 +317,7 @@ const NavbarApp = () => {
                   (value) => !value
                 )
               }
-              className="xl:hidden w-11 h-11 rounded-xl border border-slate-200 bg-white flex items-center justify-center text-slate-700"
-              aria-label="Toggle menu"
+              className="xl:hidden w-12 h-12 rounded-2xl border border-slate-200 bg-white flex items-center justify-center text-slate-700 shadow-sm"
             >
 
               {open
@@ -322,7 +336,7 @@ const NavbarApp = () => {
 
         {open && (
 
-          <div className="xl:hidden border-t border-slate-200 py-4 space-y-2">
+          <div className="xl:hidden border-t border-slate-200 py-5 space-y-2">
 
             {links.map((link) => {
 
@@ -337,12 +351,12 @@ const NavbarApp = () => {
                   onClick={() =>
                     go(link.path)
                   }
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-semibold transition ${
+                  className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl text-left font-semibold transition-all duration-300 ${
                     isActive(link.path)
 
                       ? "bg-orange-500 text-white"
 
-                      : "bg-slate-50 text-slate-700 hover:bg-slate-100"
+                      : "bg-white text-slate-700 hover:bg-slate-100"
                   }`}
                 >
 
@@ -356,9 +370,9 @@ const NavbarApp = () => {
 
             })}
 
-            {/* MOBILE ACTIONS */}
+            {/* ACTIONS */}
 
-            <div className="grid gap-2 pt-3">
+            <div className="grid gap-3 pt-4">
 
               <button
                 type="button"
@@ -367,7 +381,7 @@ const NavbarApp = () => {
                     PUBLIC_ROUTES.treks
                   )
                 }
-                className="flex items-center justify-center gap-2 bg-slate-900 text-white px-4 py-3 rounded-xl font-semibold"
+                className="flex items-center justify-center gap-2 bg-[#08112b] text-white px-5 py-4 rounded-2xl font-semibold"
               >
 
                 <FaMountain />
@@ -379,7 +393,7 @@ const NavbarApp = () => {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="flex items-center justify-center gap-2 bg-red-500 text-white px-4 py-3 rounded-xl font-semibold"
+                className="flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 px-5 py-4 rounded-2xl font-semibold"
               >
 
                 <FaSignOutAlt />

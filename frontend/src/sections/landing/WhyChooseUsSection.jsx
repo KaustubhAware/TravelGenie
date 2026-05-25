@@ -7,11 +7,9 @@ import {
   FaClock,
 } from "react-icons/fa";
 
+import { motion } from "framer-motion";
+
 import PageContainer from "../../components/ui/PageContainer";
-
-import SectionHeader from "../../components/ui/SectionHeader";
-
-import Card from "../../components/ui/Card";
 
 export default function WhyChooseUsSection() {
 
@@ -23,55 +21,51 @@ export default function WhyChooseUsSection() {
 
     {
       icon: <FaRobot />,
-      title: "AI Trip Planning",
+      title: "AI Trek Planning",
       description:
-        "Smart AI-powered itinerary generation based on your budget, travel style, and trekking experience.",
+        "Smart AI-powered itinerary generation tailored for Maharashtra trekking experiences and weekend adventures.",
     },
 
     {
       icon: <FaMountain />,
-      title: "Curated Adventures",
+      title: "Curated Sahyadri Routes",
       description:
-        "Explore handpicked trekking experiences, camping trips, forts, waterfalls, and mountain expeditions.",
+        "Explore carefully selected forts, monsoon trails, waterfalls, and camping experiences across Maharashtra.",
     },
 
     {
       icon: <FaShieldAlt />,
-      title: "Trusted Operators",
+      title: "Verified Trek Leaders",
       description:
-        "Verified trekking guides and travel organizers ensuring safe and professional adventure experiences.",
+        "Travel with trusted organizers and experienced trek captains focused on safety and professionalism.",
     },
 
     {
       icon: <FaUsers />,
-      title: "Group Experiences",
+      title: "Community Experiences",
       description:
-        "Perfect for solo travelers, friends, student groups, and corporate adventure outings.",
+        "Join small-group treks, student adventures, and weekend expeditions with like-minded travelers.",
     },
 
     {
       icon: <FaChartLine />,
-      title: "Smart Booking System",
+      title: "Smart Operations",
       description:
-        "Track bookings, approvals, payments, and travel details through a streamlined dashboard experience.",
+        "Track bookings, departures, occupancy, schedules, and customer engagement in one platform.",
     },
 
     {
       icon: <FaClock />,
       title: "Fast Planning",
       description:
-        "Save hours of planning with instant recommendations and optimized trek discovery workflows.",
+        "Save hours of research with instant AI recommendations and streamlined booking workflows.",
     },
 
   ];
 
-  /* ===================================================== */
-  /* UI */
-  /* ===================================================== */
-
   return (
 
-    <section className="py-28 bg-white">
+    <section className="relative py-16 bg-[#ececec] overflow-hidden">
 
       <PageContainer>
 
@@ -79,48 +73,109 @@ export default function WhyChooseUsSection() {
         {/* HEADER */}
         {/* ===================================================== */}
 
-        <SectionHeader
-          badge="Why TravelGenie"
-          title="Built For Modern Adventure Travelers"
-          description="TravelGenie combines AI-powered planning with real trekking operations to create smarter travel experiences."
-        />
+        <motion.div
+          initial={{
+            opacity: 0,
+            y: 30,
+          }}
+          whileInView={{
+            opacity: 1,
+            y: 0,
+          }}
+          transition={{
+            duration: 0.6,
+          }}
+          viewport={{
+            once: true,
+          }}
+          className="text-center max-w-3xl mx-auto"
+        >
+
+          
+          {/* TITLE */}
+
+          <h2 className="mt-7 text-4xl md:text-6xl font-black leading-tight text-[#08112b]">
+
+            Built For Modern
+
+            <span className="block italic font-serif font-normal text-orange-500">
+
+              Adventure Travelers
+
+            </span>
+
+          </h2>
+
+          {/* DESCRIPTION */}
+
+          <p className="mt-6 text-lg text-slate-600 leading-relaxed">
+
+            TravelGenie combines AI-powered planning,
+            real trek operations, and premium travel
+            workflows to create unforgettable
+            Maharashtra trekking experiences.
+
+          </p>
+
+        </motion.div>
 
         {/* ===================================================== */}
         {/* GRID */}
         {/* ===================================================== */}
 
-        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8 mt-16">
+        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8 mt-20">
 
-          {features.map((feature) => (
+          {features.map((feature, index) => (
 
-            <Card
+            <motion.div
               key={feature.title}
-              className="group"
+              initial={{
+                opacity: 0,
+                y: 30,
+              }}
+              whileInView={{
+                opacity: 1,
+                y: 0,
+              }}
+              transition={{
+                duration: 0.5,
+                delay: index * 0.1,
+              }}
+              viewport={{
+                once: true,
+              }}
+              className="group relative overflow-hidden rounded-[32px] bg-white p-8 shadow-2xl transition-all duration-500 hover:-translate-y-2"
             >
+
+              {/* SOFT GLOW */}
+
+              <div className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 bg-gradient-to-br from-orange-500/5 to-transparent" />
 
               {/* ICON */}
 
-              <div className="w-16 h-16 rounded-3xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-2xl transition-all duration-300 group-hover:scale-110">
+              <div className="relative z-10 flex h-16 w-16 items-center justify-center rounded-3xl bg-orange-50 text-2xl text-orange-500">
 
                 {feature.icon}
 
               </div>
 
-              {/* CONTENT */}
+              {/* TITLE */}
 
-              <h3 className="mt-8 text-2xl font-black text-slate-900">
+              <h3 className="relative z-10 mt-8 text-2xl font-black text-[#08112b]">
 
                 {feature.title}
 
               </h3>
 
-              <p className="mt-5 text-slate-500 leading-relaxed">
+              {/* DESCRIPTION */}
+
+              <p className="relative z-10 mt-5 leading-relaxed text-slate-600">
 
                 {feature.description}
 
               </p>
 
-            </Card>
+            </motion.div>
 
           ))}
 

@@ -15,6 +15,8 @@ from dotenv import load_dotenv
 from app.config import get_settings
 from app.responses import error_response, success_response
 
+from app.routes.payment import router as payment_router
+
 # =====================================================
 # LOAD ENV
 # =====================================================
@@ -279,6 +281,16 @@ app.include_router(
     tags=["Vendors"],
 )
 
+app.include_router(
+
+    payment_router,
+
+    prefix="/api",
+
+    tags=["Payments"]
+
+)
+
 # =====================================================
 # ROOT
 # =====================================================
@@ -311,3 +323,4 @@ def health_check():
         status="healthy",
         service="TravelGenie Backend"
     )
+
