@@ -62,11 +62,7 @@ export default function Footer() {
         path: "/dashboard/saved",
       },
 
-      {
-        label: "Payments",
-        path: "/dashboard/payments",
-      },
-
+     
     ],
 
     Company: [

@@ -425,31 +425,284 @@ export default function BookingDetails() {
 
               <div className="flex flex-wrap gap-3">
 
-                {canPay && (
+               {canPay && (
 
-                  <button
-                    onClick={() =>
+  <button
+    onClick={async () => {
 
-                      navigate(
-                        "/dashboard/payments",
-                        {
-                          state: {
-                            ...booking,
-                            cost:
-                              booking.total_cost,
-                          },
-                        }
-                      )
+      try {
+
+        const token =
+          await user.getIdToken();
+
+        /* ======================================== */
+        /* CREATE ORDER */
+        /* ======================================== */
+
+        const orderRes =
+          await fetch(
+
+           `${API_BASE}/create-order`,
+
+            {
+
+              method: "POST",
+
+              headers: {
+
+                "Content-Type":
+                  "application/json",
+
+                Authorization:
+                  `Bearer ${token}`,
+
+              },
+
+              body: JSON.stringify({
+
+                amount:
+                  booking.total_cost,
+
+                booking_id:
+                  booking.booking_id,
+
+              }),
+
+            }
+
+          );
+
+        const orderData =
+          await orderRes.json();
+
+        console.log(
+          "ORDER DATA",
+          orderData
+        );
+
+        if (!orderRes.ok) {
+
+          alert(
+            orderData.detail ||
+            "Unable to create payment order"
+          );
+
+          return;
+
+        }
+
+        /* ======================================== */
+        /* RAZORPAY */
+        /* ======================================== */
+
+        const options = {
+
+          key:
+            import.meta.env
+              .VITE_RAZORPAY_KEY_ID,
+
+          amount:
+            orderData.order.amount,
+
+          currency:
+            orderData.order.currency,
+
+          name:
+            "TravelGenie",
+
+          description:
+            booking.package_title,
+
+          order_id:
+            orderData.order.id,
+
+          theme: {
+
+            color:
+              "#f97316",
+
+          },
+
+          prefill: {
+
+            name:
+              booking.name ||
+
+              "Traveler",
+
+            email:
+              booking.email ||
+
+              "",
+
+            contact:
+              booking.phone ||
+
+              "",
+
+          },
+
+          handler:
+            async function (
+              response
+            ) {
+
+              console.log(
+                "RAZORPAY RESPONSE",
+                response
+              );
+
+              try {
+
+                const verifyPayload = {
+
+                  booking_id:
+                    booking.booking_id,
+
+                  razorpay_order_id:
+                    response.razorpay_order_id,
+
+                  razorpay_payment_id:
+                    response.razorpay_payment_id,
+
+                  razorpay_signature:
+                    response.razorpay_signature,
+
+                };
+
+                console.log(
+                  "VERIFY PAYLOAD",
+                  verifyPayload
+                );
+
+                const verifyRes =
+                  await fetch(
+
+                   `${API_BASE}/verify-payment`,
+
+                    {
+
+                      method:
+                        "POST",
+
+                      headers: {
+
+                        "Content-Type":
+                          "application/json",
+
+                        Authorization:
+                          `Bearer ${token}`,
+
+                      },
+
+                      body:
+                        JSON.stringify(
+                          verifyPayload
+                        ),
 
                     }
-                    className="bg-orange-500 hover:bg-orange-600 transition text-white px-6 py-3 rounded-xl font-semibold"
-                  >
 
-                    Pay Now
+                  );
 
-                  </button>
+                const verifyData =
+                  await verifyRes.json();
 
-                )}
+                console.log(
+                  "VERIFY RESPONSE",
+                  verifyData
+                );
+
+                if (
+                  verifyData.success
+                ) {
+
+                  navigate(
+
+                    "/dashboard/booking-success",
+
+                    {
+
+                      state: {
+
+                        booking,
+
+                        payment_id:
+                          response.razorpay_payment_id,
+
+                      },
+
+                    }
+
+                  );
+
+                } else {
+
+                  alert(
+                    verifyData.message ||
+                    "Payment verification failed"
+                  );
+
+                }
+
+              } catch (err) {
+
+                console.error(
+                  "VERIFY ERROR",
+                  err
+                );
+
+                alert(
+                  "Payment verification failed"
+                );
+
+              }
+
+            },
+
+          modal: {
+
+            ondismiss:
+              function () {
+
+                console.log(
+                  "Payment popup closed"
+                );
+
+              },
+
+          },
+
+        };
+
+        const razorpay =
+          new window.Razorpay(
+            options
+          );
+
+        razorpay.open();
+
+      } catch (err) {
+
+        console.error(
+          "PAYMENT ERROR",
+          err
+        );
+
+        alert(
+          "Unable to start payment"
+        );
+
+      }
+
+    }}
+    className="bg-orange-500 hover:bg-orange-600 transition text-white px-6 py-3 rounded-xl font-semibold"
+  >
+
+    Pay Now
+
+  </button>
+
+)}
 
                 {canInvoice && (
 

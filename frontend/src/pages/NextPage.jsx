@@ -22,14 +22,10 @@ import {
 
 import {
   FaArrowRight,
-  FaMountain,
-  FaWallet,
-  FaCalendarAlt,
   FaRobot,
-  FaUsers,
+  FaWallet,
+  FaMountain,
 } from "react-icons/fa";
-
-import LoadingScreen from "../components/ai/LoadingScreen";
 
 const AITripResult = lazy(() =>
   import("../components/ai/AITripResult")
@@ -75,7 +71,7 @@ export default function NextPage() {
     useState(false);
 
   /* ===================================================== */
-  /* CHANGE */
+  /* HANDLE CHANGE */
   /* ===================================================== */
 
   const handleChange =
@@ -93,6 +89,28 @@ export default function NextPage() {
     };
 
   /* ===================================================== */
+  /* QUICK TAGS */
+  /* ===================================================== */
+
+  const addPreference =
+    (value) => {
+
+      setForm({
+
+        ...form,
+
+        preferences:
+          form.preferences
+
+            ? `${form.preferences}, ${value}`
+
+            : value,
+
+      });
+
+    };
+
+  /* ===================================================== */
   /* GENERATE */
   /* ===================================================== */
 
@@ -102,7 +120,7 @@ export default function NextPage() {
       if (!form.destination) {
 
         toast.error(
-          "Please enter a destination"
+          "Please enter destination"
         );
 
         return;
@@ -167,11 +185,8 @@ export default function NextPage() {
         if (!res.ok) {
 
           throw new Error(
-
             data.error ||
-
-            "Failed"
-
+              "Failed"
           );
 
         }
@@ -233,9 +248,9 @@ export default function NextPage() {
           "Trip generated!"
         );
 
-      } catch (error) {
+      } catch (err) {
 
-        console.error(error);
+        console.error(err);
 
         toast.error(
           "Failed to generate trip"
@@ -332,19 +347,14 @@ export default function NextPage() {
         if (!res.ok) {
 
           throw new Error(
-
             data.detail ||
-
-            "Save failed"
-
+              "Save failed"
           );
 
         }
 
         toast.success(
-
           "Trip saved successfully!"
-
         );
 
       } catch (err) {
@@ -367,135 +377,78 @@ export default function NextPage() {
 
   return (
 
-    <div className="min-h-screen bg-slate-50">
+    <div className="bg-[#f8f8f8]">
 
-      {/* ===================================================== */}
-      {/* PAGE CONTAINER */}
-      {/* ===================================================== */}
-
-      <div className="max-w-[1600px] mx-auto px-4 md:px-6 xl:px-8 py-8">
-
-        {/* ===================================================== */}
-        {/* HERO */}
-        {/* ===================================================== */}
-
-        {!result && !loading && (
-
-          <div className="relative overflow-hidden rounded-3xl border border-slate-200 mb-8">
-
-            {/* IMAGE */}
-
-            <img
-              src="https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=1600&q=80"
-              alt="TravelGenie AI"
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-
-            {/* OVERLAY */}
-
-            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/45 to-black/20" />
-
-            {/* CONTENT */}
-
-            <div className="relative z-10 p-8 md:p-12 lg:p-16">
-
-              <div className="max-w-4xl">
-
-                <p className="uppercase tracking-[0.3em] text-orange-400 text-sm font-semibold mb-5">
-
-                  AI Travel Planner
-
-                </p>
-
-                <h1 className="text-4xl md:text-6xl font-black text-white leading-tight">
-
-                  Create intelligent
-                  trekking itineraries
-                  in seconds
-
-                </h1>
-
-                <p className="text-white/80 mt-6 text-lg leading-relaxed max-w-3xl">
-
-                  Generate smart travel plans,
-                  weather insights,
-                  hotel recommendations,
-                  budgets,
-                  and day-wise experiences
-                  powered by AI.
-
-                </p>
-
-                {/* FEATURES */}
-
-                <div className="flex flex-wrap gap-5 mt-8">
-
-                  <Feature
-                    icon={<FaRobot />}
-                    text="AI Powered"
-                  />
-
-                  <Feature
-                    icon={<FaMountain />}
-                    text="Adventure Ready"
-                  />
-
-                  <Feature
-                    icon={<FaWallet />}
-                    text="Budget Optimized"
-                  />
-
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        )}
+      <div className="mx-auto max-w-[1500px] px-4 py-3 md:px-5">
 
         {/* ===================================================== */}
         {/* MAIN GRID */}
         {/* ===================================================== */}
 
-        <div className="grid grid-cols-1 xl:grid-cols-[380px_1fr] gap-6 items-start">
+        <div className="grid gap-5 xl:grid-cols-[330px_1fr]">
 
           {/* ===================================================== */}
-          {/* LEFT SIDEBAR */}
+          {/* LEFT FORM */}
           {/* ===================================================== */}
 
-          <div className="xl:sticky xl:top-24">
+          <div className="xl:sticky xl:top-16">
 
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
 
-              {/* HEADER */}
+              {/* TITLE */}
 
-              <div className="p-6 border-b border-slate-200">
+              <div>
 
-                <h2 className="text-2xl font-black text-slate-900">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-500">
+
+                  AI Planner
+
+                </p>
+
+                <h2 className="mt-2 text-2xl font-black text-slate-900">
 
                   Plan Your Trip
 
                 </h2>
 
-                <p className="text-slate-500 mt-2 text-sm">
+                <p className="mt-1 text-sm text-slate-500">
 
-                  Enter travel details to generate your AI itinerary.
+                  Generate smart AI itineraries.
 
                 </p>
 
               </div>
 
+              {/* FEATURES */}
+
+              <div className="mt-5 flex flex-wrap gap-2">
+
+                <Feature
+                  icon={<FaRobot />}
+                  text="AI Powered"
+                />
+
+                <Feature
+                  icon={<FaMountain />}
+                  text="Treks"
+                />
+
+                <Feature
+                  icon={<FaWallet />}
+                  text="Budget"
+                />
+
+              </div>
+
               {/* FORM */}
 
-              <div className="p-6 space-y-5">
+              <div className="mt-6 space-y-4">
 
                 {/* DESTINATION */}
 
                 <div>
 
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  <label className="mb-2 block text-sm font-semibold text-slate-700">
 
                     Destination
 
@@ -503,10 +456,10 @@ export default function NextPage() {
 
                   <input
                     name="destination"
-                    placeholder="Where do you want to go?"
                     value={form.destination}
                     onChange={handleChange}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-5 py-3 outline-none focus:border-orange-500 focus:bg-white transition"
+                    placeholder="Lonavala, Rajmachi..."
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:bg-white"
                   />
 
                 </div>
@@ -515,29 +468,20 @@ export default function NextPage() {
 
                 <div>
 
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  <label className="mb-2 block text-sm font-semibold text-slate-700">
 
                     Budget
 
                   </label>
 
-                  <div className="relative">
-
-                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 font-medium">
-
-                      ₹
-
-                    </span>
-
-                    <input
-                      name="budget"
-                      type="number"
-                      value={form.budget}
-                      onChange={handleChange}
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-5 py-3 outline-none focus:border-orange-500 focus:bg-white transition"
-                    />
-
-                  </div>
+                  <input
+                    type="number"
+                    name="budget"
+                    value={form.budget}
+                    onChange={handleChange}
+                    placeholder="5000"
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:bg-white"
+                  />
 
                 </div>
 
@@ -545,18 +489,19 @@ export default function NextPage() {
 
                 <div>
 
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  <label className="mb-2 block text-sm font-semibold text-slate-700">
 
-                    Number of Days
+                    Days
 
                   </label>
 
                   <input
-                    name="days"
                     type="number"
+                    name="days"
                     value={form.days}
                     onChange={handleChange}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-5 py-3 outline-none focus:border-orange-500 focus:bg-white transition"
+                    placeholder="2"
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:bg-white"
                   />
 
                 </div>
@@ -565,7 +510,7 @@ export default function NextPage() {
 
                 <div>
 
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  <label className="mb-2 block text-sm font-semibold text-slate-700">
 
                     Travelers
 
@@ -575,42 +520,34 @@ export default function NextPage() {
                     name="travelers"
                     value={form.travelers}
                     onChange={handleChange}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-5 py-3 outline-none focus:border-orange-500 focus:bg-white transition"
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:bg-white"
                   >
 
                     <option>
-
                       Solo
-
                     </option>
 
                     <option>
-
-                      Friends
-
-                    </option>
-
-                    <option>
-
-                      Family
-
-                    </option>
-
-                    <option>
-
                       Couple
+                    </option>
 
+                    <option>
+                      Friends
+                    </option>
+
+                    <option>
+                      Family
                     </option>
 
                   </select>
 
                 </div>
 
-                {/* TRIP TYPE */}
+                {/* TYPE */}
 
                 <div>
 
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  <label className="mb-2 block text-sm font-semibold text-slate-700">
 
                     Trip Type
 
@@ -620,64 +557,88 @@ export default function NextPage() {
                     name="trip_type"
                     value={form.trip_type}
                     onChange={handleChange}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-5 py-3 outline-none focus:border-orange-500 focus:bg-white transition"
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:bg-white"
                   >
 
                     <option>
-
                       Adventure
-
                     </option>
 
                     <option>
-
                       Trekking
-
                     </option>
 
                     <option>
+                      Camping
+                    </option>
 
+                    <option>
                       Luxury
-
-                    </option>
-
-                    <option>
-
-                      Budget
-
                     </option>
 
                   </select>
 
                 </div>
 
-                {/* PREFERENCES */}
+                {/* PREF */}
 
                 <div>
 
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  <label className="mb-2 block text-sm font-semibold text-slate-700">
 
                     Preferences
 
                   </label>
 
                   <textarea
+                    rows="3"
                     name="preferences"
-                    rows="5"
                     value={form.preferences}
                     onChange={handleChange}
-                    placeholder="Mountains, camping, waterfalls..."
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-5 py-3 resize-none outline-none focus:border-orange-500 focus:bg-white transition"
+                    placeholder="Waterfalls, camping, photography..."
+                    className="w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:bg-white"
                   />
+
+                  {/* TAGS */}
+
+                  <div className="mt-3 flex flex-wrap gap-2">
+
+                    {[
+                      "Night Trek",
+                      "Camping",
+                      "Waterfalls",
+                      "Photography",
+                      "Weekend",
+                      "Luxury",
+                    ].map((item) => (
+
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() =>
+                          addPreference(
+                            item
+                          )
+                        }
+                        className="rounded-full bg-orange-50 px-3 py-2 text-xs font-medium text-orange-600 transition hover:bg-orange-100"
+                      >
+
+                        {item}
+
+                      </button>
+
+                    ))}
+
+                  </div>
 
                 </div>
 
-                {/* BUTTON */}
+                {/* BTN */}
 
                 <button
                   onClick={handleSubmit}
                   disabled={loading}
-                  className="w-full bg-orange-500 hover:bg-orange-600 transition text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-3 shadow-sm"
+                  className="flex w-full items-center justify-center gap-3 rounded-2xl bg-orange-500 py-3.5 text-sm font-semibold text-white transition hover:bg-orange-600"
                 >
 
                   {loading
@@ -685,9 +646,7 @@ export default function NextPage() {
                     : "Generate AI Trip"}
 
                   {!loading && (
-
                     <FaArrowRight />
-
                   )}
 
                 </button>
@@ -702,23 +661,23 @@ export default function NextPage() {
           {/* RIGHT PANEL */}
           {/* ===================================================== */}
 
-          <div className="min-w-0">
+          <div>
 
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden min-h-[700px]">
+            <div className="rounded-3xl border border-slate-200 bg-white shadow-sm">
 
-              <div className="p-5 md:p-6">
+              <div className="p-5">
 
                 {/* LOADING */}
 
                 {loading && (
 
-                  <div className="flex flex-col items-center justify-center min-h-[600px]">
+                  <div className="flex min-h-[450px] flex-col items-center justify-center">
 
-                    <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                    <div className="h-12 w-12 animate-spin rounded-full border-4 border-orange-500 border-t-transparent" />
 
-                    <p className="text-slate-500 mt-8 text-lg">
+                    <p className="mt-5 text-sm text-slate-500">
 
-                      Generating your AI itinerary...
+                      Generating AI itinerary...
 
                     </p>
 
@@ -733,9 +692,9 @@ export default function NextPage() {
                   <Suspense
                     fallback={
 
-                      <div className="h-[400px] flex items-center justify-center text-slate-500">
+                      <div className="flex h-[450px] items-center justify-center text-slate-500">
 
-                        Preparing AI workspace...
+                        Loading result...
 
                       </div>
 
@@ -758,33 +717,54 @@ export default function NextPage() {
 
                 {!result && !loading && (
 
-                  <div className="min-h-[600px] flex items-center justify-center text-center px-6">
+                  <div className="flex min-h-[480px] items-center justify-center">
 
-                    <div className="max-w-2xl">
+                    <div className="max-w-lg text-center">
 
-                      <div className="w-20 h-20 rounded-3xl bg-orange-50 flex items-center justify-center mx-auto mb-7">
+                      <img
+                        src="/maharashtra-map.png"
+                        alt="Map"
+                        className="mx-auto h-[180px] object-contain"
+                      />
 
-                        <FaRobot className="text-3xl text-orange-500" />
-
-                      </div>
-
-                      <h2 className="text-4xl font-black text-slate-900">
+                      <h2 className="mt-5 text-2xl font-black text-slate-900">
 
                         Your AI itinerary
-                        will appear here
+                        appears here
 
                       </h2>
 
-                      <p className="mt-5 text-slate-500 leading-relaxed text-lg">
+                      <p className="mt-3 text-sm leading-relaxed text-slate-500">
 
-                        Generate complete trekking plans,
+                        Generate trekking plans,
                         budgets,
                         hotels,
-                        restaurants,
                         weather insights,
-                        and booking-ready travel experiences.
+                        and smart AI travel experiences.
 
                       </p>
+
+                      {/* SUGGESTIONS */}
+
+                      <div className="mt-6 flex flex-wrap justify-center gap-3">
+
+                        <Suggestion
+                          text="Rajmachi Trek"
+                        />
+
+                        <Suggestion
+                          text="Lonavala Camping"
+                        />
+
+                        <Suggestion
+                          text="Pawna Lake"
+                        />
+
+                        <Suggestion
+                          text="Night Trek"
+                        />
+
+                      </div>
 
                     </div>
 
@@ -819,19 +799,31 @@ function Feature({
 
   return (
 
-    <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-3 text-white">
+    <div className="flex items-center gap-2 rounded-full bg-orange-50 px-3 py-2 text-xs font-medium text-orange-600">
 
-      <div className="text-orange-400">
+      {icon}
 
-        {icon}
+      {text}
 
-      </div>
+    </div>
 
-      <span className="font-medium">
+  );
 
-        {text}
+}
 
-      </span>
+/* ===================================================== */
+/* SUGGESTION */
+/* ===================================================== */
+
+function Suggestion({
+  text,
+}) {
+
+  return (
+
+    <div className="rounded-full bg-orange-50 px-4 py-2 text-sm font-medium text-orange-600">
+
+      {text}
 
     </div>
 

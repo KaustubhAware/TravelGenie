@@ -18,7 +18,7 @@ export const DASHBOARD_ROUTES = {
   aiPlanner: "/dashboard/ai-planner",
   aiChat: "/dashboard/ai-chat",
   vendor: "/dashboard/vendor",
-  payments: "/dashboard/payments",
+  
   profile: "/dashboard/profile",
   booking: "/dashboard/booking",
   bookingSuccess: "/dashboard/booking-success",

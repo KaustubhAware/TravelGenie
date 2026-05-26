@@ -5,6 +5,7 @@ import DashboardLayout from "../layouts/DashboardLayout";
 import UserProtectedRoute from "./guards/UserProtectedRoute";
 
 import RouteLoader from "../components/RouteLoader";
+
 import ErrorBoundary from "../components/ErrorBoundary";
 
 /* ===================================================== */
@@ -29,10 +30,6 @@ const MyBookings = lazy(() =>
 
 const SavedTrips = lazy(() =>
   import("../pages/dashboard/SavedTrips")
-);
-
-const Payment = lazy(() =>
-  import("../pages/dashboard/Payment")
 );
 
 /* ===================================================== */
@@ -67,8 +64,8 @@ const NextPage = lazy(() =>
   import("../pages/NextPage")
 );
 
-const AIChatAssistant = lazy(() =>
-  import("../pages/dashboard/AIChatAssistant")
+const SaraAIPlanner = lazy(() =>
+  import("../pages/dashboard/SaraAIPlanner")
 );
 
 const VendorDashboard = lazy(() =>
@@ -198,8 +195,8 @@ const dashboardRoutes = [
         path: "ai-chat",
 
         element: withSuspense(
-          <AIChatAssistant />,
-          "Loading AI assistant..."
+          <SaraAIPlanner />,
+          "Loading Sara..."
         ),
       },
 
@@ -209,19 +206,6 @@ const dashboardRoutes = [
         element: withSuspense(
           <VendorDashboard />,
           "Loading vendor dashboard..."
-        ),
-      },
-
-      /* ===================================================== */
-      /* PAYMENTS */
-      /* ===================================================== */
-
-      {
-        path: "payments",
-
-        element: withSuspense(
-          <Payment />,
-          "Loading payments..."
         ),
       },
 

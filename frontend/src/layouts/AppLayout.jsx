@@ -1,36 +1,41 @@
-/* ===================================================== */
-/* APP LAYOUT */
-/* ===================================================== */
-
 import { Outlet } from "react-router-dom";
-import NavbarApp from "../components/NavbarApp";
+
+import DashboardSidebar from "../components/layout/DashboardSidebar";
+
+import DashboardTopbar from "../components/layout/DashboardTopbar";
 
 const AppLayout = () => {
+
   return (
-    <div className="min-h-screen bg-[#F7F8F5]">
 
-      {/* ===================================================== */}
-      {/* APP NAVBAR */}
-      {/* ===================================================== */}
+    <div className="flex h-screen overflow-hidden bg-[#F7F8F5]">
 
-      <NavbarApp />
+      {/* SIDEBAR */}
 
-      {/* ===================================================== */}
-      {/* MAIN CONTENT */}
-      {/* ===================================================== */}
+      <DashboardSidebar />
 
-      <main className="px-4 py-6 md:px-6 lg:px-8">
+      {/* MAIN */}
 
-        <div className="mx-auto max-w-7xl">
+      <div className="flex flex-1 flex-col overflow-hidden">
+
+        {/* TOPBAR */}
+
+        <DashboardTopbar />
+
+        {/* PAGE */}
+
+        <main className="flex-1 overflow-y-auto p-6">
 
           <Outlet />
 
-        </div>
+        </main>
 
-      </main>
+      </div>
 
     </div>
+
   );
+
 };
 
 export default AppLayout;

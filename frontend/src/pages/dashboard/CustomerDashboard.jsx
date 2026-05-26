@@ -1,277 +1,142 @@
-/* ===================================================== */
-/* CUSTOMER DASHBOARD */
-/* ===================================================== */
-
-import { useNavigate } from "react-router-dom";
+import {
+  useEffect,
+  useState,
+} from "react";
 
 import {
+  useNavigate,
+} from "react-router-dom";
+
+import {
+  FaMapMarkerAlt,
+  FaCalendarAlt,
   FaBookmark,
   FaRobot,
-  FaRoute,
-  FaUserCircle,
-  FaMapMarkedAlt,
-  FaMountain,
-  FaHotel,
-  FaPlaneDeparture,
   FaArrowRight,
-  FaStar,
-  FaCompass,
-  FaCalendarAlt,
 } from "react-icons/fa";
+
+import {
+  dashboardService,
+} from "../../services/dashboardService";
 
 import {
   DASHBOARD_ROUTES,
 } from "../../constants/routesPath";
 
-/* ===================================================== */
-/* QUICK MODULES */
-/* ===================================================== */
-
-const modules = [
-
-  {
-    title: "My Bookings",
-    text:
-      "Track trek approvals, payment status, and complete expedition lifecycle.",
-    icon: FaRoute,
-    path: DASHBOARD_ROUTES.bookings,
-    color: "bg-orange-50 text-orange-500",
-  },
-
-  {
-    title: "Saved Trips",
-    text:
-      "Access AI-generated itineraries and shortlisted destinations.",
-    icon: FaBookmark,
-    path: DASHBOARD_ROUTES.saved,
-    color: "bg-blue-50 text-blue-500",
-  },
-
-  {
-    title: "AI Planner",
-    text:
-      "Generate intelligent trekking itineraries with AI assistance.",
-    icon: FaRobot,
-    path: DASHBOARD_ROUTES.aiPlanner,
-    color: "bg-emerald-50 text-emerald-500",
-  },
-
-  {
-    title: "AI Chat Assistant",
-    text:
-      "Ask natural language questions about trips, budgets, and destinations.",
-    icon: FaRobot,
-    path: DASHBOARD_ROUTES.aiChat,
-    color: "bg-cyan-50 text-cyan-600",
-  },
-
-  {
-    title: "Vendor Portal",
-    text:
-      "Register your travel agency and manage marketplace packages.",
-    icon: FaCompass,
-    path: DASHBOARD_ROUTES.vendor,
-    color: "bg-amber-50 text-amber-600",
-  },
-
-  {
-    title: "Profile",
-    text:
-      "Manage traveler details, preferences, and account settings.",
-    icon: FaUserCircle,
-    path: DASHBOARD_ROUTES.profile,
-    color: "bg-purple-50 text-purple-500",
-  },
-
-];
-
-/* ===================================================== */
-/* SERVICES */
-/* ===================================================== */
-
-const services = [
-
-  {
-    title: "AI Planner",
-    icon: FaRobot,
-  },
-
-  {
-    title: "Treks",
-    icon: FaMountain,
-  },
-
-  {
-    title: "Hotels",
-    icon: FaHotel,
-  },
-
-  {
-    title: "Transport",
-    icon: FaPlaneDeparture,
-  },
-
-  {
-    title: "Destinations",
-    icon: FaMapMarkedAlt,
-  },
-
-];
-
-/* ===================================================== */
-/* DESTINATIONS */
-/* ===================================================== */
-
-const destinations = [
-
-  {
-    name: "Kashmir",
-    price: "₹14,999",
-    image:
-      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80",
-  },
-
-  {
-    name: "Ladakh",
-    price: "₹24,999",
-    image:
-      "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=1200&q=80",
-  },
-
-  {
-    name: "Himachal",
-    price: "₹18,499",
-    image:
-      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
-  },
-
-];
-
-/* ===================================================== */
-/* TREK PACKAGES */
-/* ===================================================== */
-
-const packages = [
-
-  {
-    title: "Kedarnath Trek",
-    days: "5D / 4N",
-    difficulty: "Moderate",
-    price: "₹14,999",
-    rating: "4.7",
-    image:
-      "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80",
-  },
-
-  {
-    title: "Ladakh Expedition",
-    days: "7D / 6N",
-    difficulty: "Difficult",
-    price: "₹24,999",
-    rating: "4.9",
-    image:
-      "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1200&q=80",
-  },
-
-  {
-    title: "Himachal Backpacking",
-    days: "6D / 5N",
-    difficulty: "Easy",
-    price: "₹18,999",
-    rating: "4.6",
-    image:
-      "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=80",
-  },
-
-];
-
-/* ===================================================== */
-/* COMPONENT */
-/* ===================================================== */
-
-const CustomerDashboard = () => {
+export default function CustomerDashboard() {
 
   const navigate =
     useNavigate();
 
+  const [packages, setPackages] =
+    useState([]);
+
+  const [bookings, setBookings] =
+    useState([]);
+
+  /* ===================================================== */
+  /* FETCH */
+  /* ===================================================== */
+
+  useEffect(() => {
+
+    fetchData();
+
+  }, []);
+
+  const fetchData =
+    async () => {
+
+      try {
+
+        const [
+          packageRes,
+          bookingRes,
+        ] = await Promise.all([
+
+          dashboardService.getTrendingPackages(),
+
+          dashboardService.getUserBookings(),
+
+        ]);
+
+        setPackages(
+          packageRes.data || []
+        );
+
+        setBookings(
+          bookingRes.data || []
+        );
+
+      } catch (err) {
+
+        console.error(err);
+
+      }
+
+    };
+
   return (
 
-    <div className="space-y-8">
+    <div className="space-y-5">
 
       {/* ===================================================== */}
-      {/* HERO */}
+      {/* TOP CARD */}
       {/* ===================================================== */}
 
-      <section className="relative overflow-hidden rounded-3xl border border-slate-200 bg-black min-h-[520px]">
+      <section className="rounded-3xl border border-slate-200 bg-white p-6">
 
-        {/* IMAGE */}
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
 
-        <img
-          src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1800&q=80"
-          alt="TravelGenie"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
+          {/* LEFT */}
 
-        {/* OVERLAY */}
+          <div>
 
-        <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/50 to-black/20" />
+            <p className="text-sm font-semibold text-orange-500">
 
-        {/* CONTENT */}
-
-        <div className="relative z-10 p-8 md:p-12 lg:p-16 h-full flex flex-col justify-between">
-
-          {/* TOP */}
-
-          <div className="max-w-4xl">
-
-            <p className="uppercase tracking-[0.3em] text-orange-400 text-sm font-semibold mb-5">
-
-              Customer Dashboard
+              Maharashtra AI Travel
 
             </p>
 
-            <h1 className="text-4xl md:text-6xl font-black text-white leading-tight">
+            <h1 className="mt-2 text-4xl font-black leading-tight text-slate-900">
 
-              Explore your next
-              trekking adventure
+              Explore smarter
+              adventures with AI
 
             </h1>
 
-            <p className="mt-6 text-lg leading-relaxed text-white/80 max-w-3xl">
+            <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-500">
 
-              Manage bookings,
-              discover destinations,
-              generate AI itineraries,
-              and organize your complete trekking journey.
+              Discover curated Maharashtra treks,
+              AI itineraries, camping experiences,
+              and adventure getaways.
 
             </p>
 
             {/* BUTTONS */}
 
-            <div className="flex flex-wrap gap-4 mt-8">
+            <div className="mt-5 flex flex-wrap gap-3">
 
               <button
                 onClick={() =>
                   navigate(
-                    DASHBOARD_ROUTES.aiPlanner
+                    DASHBOARD_ROUTES.aiChat
                   )
                 }
-                className="bg-orange-500 hover:bg-orange-600 transition text-white px-6 py-4 rounded-xl font-semibold flex items-center gap-3 shadow-sm"
+                className="rounded-2xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-orange-600"
               >
 
-                Start AI Planning
-
-                <FaArrowRight />
+                Start AI Planner
 
               </button>
 
               <button
                 onClick={() =>
                   navigate(
-                    "/dashboard/packages"
+                    DASHBOARD_ROUTES.packages
                   )
                 }
-                className="bg-white/10 hover:bg-white/20 border border-white/10 backdrop-blur-sm transition text-white px-6 py-4 rounded-xl font-semibold"
+                className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
 
                 Explore Treks
@@ -282,88 +147,15 @@ const CustomerDashboard = () => {
 
           </div>
 
-          {/* SEARCH BAR */}
+          {/* RIGHT */}
 
-          <div className="mt-12 bg-white rounded-2xl p-4 shadow-2xl grid lg:grid-cols-[1.5fr_1fr_1fr_220px] gap-4">
+          <div className="relative flex justify-center">
 
-            {/* DESTINATION */}
-
-            <div>
-
-              <p className="text-sm font-semibold text-slate-500 mb-2">
-
-                Destination
-
-              </p>
-
-              <input
-                type="text"
-                placeholder="Search destinations"
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 bg-slate-50 outline-none focus:border-orange-500 focus:bg-white transition"
-              />
-
-            </div>
-
-            {/* DATE */}
-
-            <div>
-
-              <p className="text-sm font-semibold text-slate-500 mb-2">
-
-                Travel Date
-
-              </p>
-
-              <input
-                type="date"
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 bg-slate-50 outline-none focus:border-orange-500 focus:bg-white transition"
-              />
-
-            </div>
-
-            {/* DURATION */}
-
-            <div>
-
-              <p className="text-sm font-semibold text-slate-500 mb-2">
-
-                Duration
-
-              </p>
-
-              <select className="w-full rounded-xl border border-slate-200 px-4 py-3 bg-slate-50 outline-none focus:border-orange-500 focus:bg-white transition">
-
-                <option>
-
-                  3 - 5 Days
-
-                </option>
-
-                <option>
-
-                  5 - 7 Days
-
-                </option>
-
-                <option>
-
-                  7 - 10 Days
-
-                </option>
-
-              </select>
-
-            </div>
-
-            {/* BUTTON */}
-
-            <button className="bg-slate-900 hover:bg-black transition text-white rounded-xl font-semibold flex items-center justify-center gap-3">
-
-              <FaCompass />
-
-              Search Treks
-
-            </button>
+            <img
+              src="/maharashtra-map.png"
+              alt="Maharashtra"
+              className="h-[220px] object-contain"
+            />
 
           </div>
 
@@ -372,104 +164,173 @@ const CustomerDashboard = () => {
       </section>
 
       {/* ===================================================== */}
-      {/* SERVICES */}
+      {/* QUICK STATS */}
       {/* ===================================================== */}
 
-      <section className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-5">
+      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
 
-        {services.map((service) => (
+        {/* BOOKINGS */}
 
-          <div
-            key={service.title}
-            className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center shadow-sm hover:shadow-md transition-all duration-300"
-          >
+        <div className="rounded-3xl border border-slate-200 bg-white p-5">
 
-            <div className="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center">
+          <div className="flex items-center justify-between">
 
-              <service.icon className="text-2xl text-orange-500" />
+            <div>
+
+              <p className="text-sm text-slate-500">
+
+                Bookings
+
+              </p>
+
+              <h2 className="mt-2 text-3xl font-black text-slate-900">
+
+                {bookings.length}
+
+              </h2>
 
             </div>
 
-            <p className="mt-4 font-semibold text-slate-900">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-100 text-orange-500">
 
-              {service.title}
+              <FaCalendarAlt />
 
-            </p>
+            </div>
 
           </div>
 
-        ))}
+        </div>
 
-      </section>
+        {/* SAVED */}
 
-      {/* ===================================================== */}
-      {/* MODULES */}
-      {/* ===================================================== */}
+        <div className="rounded-3xl border border-slate-200 bg-white p-5">
 
-      <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+          <div className="flex items-center justify-between">
 
-        {modules.map((module) => (
+            <div>
 
-          <button
-            key={module.title}
-            type="button"
-            onClick={() =>
-              navigate(module.path)
-            }
-            className="bg-white border border-slate-200 rounded-2xl p-7 text-left shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
-          >
+              <p className="text-sm text-slate-500">
 
-            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${module.color}`}>
+                Saved Trips
 
-              <module.icon className="text-2xl" />
+              </p>
+
+              <h2 className="mt-2 text-3xl font-black text-slate-900">
+
+                8
+
+              </h2>
 
             </div>
 
-            <h2 className="mt-6 text-2xl font-black text-slate-900">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-100 text-orange-500">
 
-              {module.title}
+              <FaBookmark />
 
-            </h2>
+            </div>
 
-            <p className="mt-4 text-slate-500 leading-relaxed">
+          </div>
 
-              {module.text}
+        </div>
 
-            </p>
+        {/* AI */}
 
-          </button>
+        <div className="rounded-3xl border border-slate-200 bg-white p-5">
 
-        ))}
+          <div className="flex items-center justify-between">
+
+            <div>
+
+              <p className="text-sm text-slate-500">
+
+                AI Plans
+
+              </p>
+
+              <h2 className="mt-2 text-3xl font-black text-slate-900">
+
+                14
+
+              </h2>
+
+            </div>
+
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-100 text-orange-500">
+
+              <FaRobot />
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* WEATHER */}
+
+        <div className="rounded-3xl border border-slate-200 bg-white p-5">
+
+          <div className="flex items-center justify-between">
+
+            <div>
+
+              <p className="text-sm text-slate-500">
+
+                Weather
+
+              </p>
+
+              <h2 className="mt-2 text-3xl font-black text-slate-900">
+
+                22°C
+
+              </h2>
+
+            </div>
+
+            <div className="text-4xl">
+
+              ☀️
+
+            </div>
+
+          </div>
+
+        </div>
 
       </section>
 
       {/* ===================================================== */}
-      {/* POPULAR DESTINATIONS */}
+      {/* TREKS */}
       {/* ===================================================== */}
 
-      <section>
+      <section className="rounded-3xl border border-slate-200 bg-white p-6">
 
-        {/* HEADER */}
-
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-7">
+        <div className="mb-5 flex items-center justify-between">
 
           <div>
 
-            <p className="uppercase tracking-[0.25em] text-orange-500 text-sm font-semibold">
+            <h2 className="text-2xl font-black text-slate-900">
 
-              Destinations
-
-            </p>
-
-            <h2 className="text-4xl font-black text-slate-900 mt-3">
-
-              Popular Adventures
+              Trending Treks
 
             </h2>
 
+            <p className="mt-1 text-sm text-slate-500">
+
+              Popular destinations this week
+
+            </p>
+
           </div>
 
-          <button className="text-orange-500 font-semibold flex items-center gap-2">
+          <button
+            onClick={() =>
+              navigate(
+                DASHBOARD_ROUTES.packages
+              )
+            }
+            className="flex items-center gap-2 text-sm font-semibold text-orange-500"
+          >
 
             View All
 
@@ -481,182 +342,83 @@ const CustomerDashboard = () => {
 
         {/* GRID */}
 
-        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
 
-          {destinations.map((item) => (
+          {packages
+            ?.slice(0, 3)
+            ?.map((item) => (
 
-            <div
-              key={item.name}
-              className="group overflow-hidden rounded-3xl bg-white border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-500"
-            >
+              <div
+                key={item.id}
+                className="overflow-hidden rounded-3xl border border-slate-200 bg-white transition hover:-translate-y-1 hover:shadow-lg"
+              >
 
-              {/* IMAGE */}
-
-              <div className="relative h-[280px] overflow-hidden">
+                {/* IMAGE */}
 
                 <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition duration-700"
+                  src={
+                    item.image_url
+                  }
+                  alt={item.title}
+                  className="h-44 w-full object-cover"
                 />
 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                {/* CONTENT */}
 
-                <div className="absolute bottom-0 left-0 right-0 p-6">
+                <div className="p-5">
 
-                  <h3 className="text-3xl font-black text-white">
+                  <h3 className="text-xl font-bold text-slate-900">
 
-                    {item.name}
+                    {item.title}
 
                   </h3>
 
-                  <p className="text-white/80 mt-2">
+                  <div className="mt-3 flex items-center gap-2 text-sm text-slate-500">
 
-                    Starting from {item.price}
+                    <FaMapMarkerAlt />
 
-                  </p>
-
-                </div>
-
-              </div>
-
-            </div>
-
-          ))}
-
-        </div>
-
-      </section>
-
-      {/* ===================================================== */}
-      {/* PACKAGES */}
-      {/* ===================================================== */}
-
-      <section>
-
-        {/* HEADER */}
-
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-7">
-
-          <div>
-
-            <p className="uppercase tracking-[0.25em] text-orange-500 text-sm font-semibold">
-
-              Trek Packages
-
-            </p>
-
-            <h2 className="text-4xl font-black text-slate-900 mt-3">
-
-              Trending Expeditions
-
-            </h2>
-
-          </div>
-
-          <button
-            onClick={() =>
-              navigate("/dashboard/packages")
-            }
-            className="text-orange-500 font-semibold flex items-center gap-2"
-          >
-
-            Explore More
-
-            <FaArrowRight />
-
-          </button>
-
-        </div>
-
-        {/* GRID */}
-
-        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-
-          {packages.map((item) => (
-
-            <div
-              key={item.title}
-              className="overflow-hidden rounded-3xl bg-white border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-500"
-            >
-
-              {/* IMAGE */}
-
-              <div className="relative h-[260px]">
-
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  className="w-full h-full object-cover"
-                />
-
-                <div className="absolute top-5 right-5 bg-white rounded-xl px-3 py-2 flex items-center gap-2 shadow-sm">
-
-                  <FaStar className="text-orange-400" />
-
-                  <span className="font-semibold text-slate-900">
-
-                    {item.rating}
-
-                  </span>
-
-                </div>
-
-              </div>
-
-              {/* CONTENT */}
-
-              <div className="p-6">
-
-                <div className="flex items-start justify-between gap-4">
-
-                  <div>
-
-                    <h3 className="text-2xl font-black text-slate-900">
-
-                      {item.title}
-
-                    </h3>
-
-                    <p className="text-slate-500 mt-2">
-
-                      {item.days} • {item.difficulty}
-
-                    </p>
+                    {item.location}
 
                   </div>
 
-                  <div className="text-right">
+                  <div className="mt-5 flex items-center justify-between">
 
-                    <p className="text-sm text-slate-500">
+                    <div>
 
-                      Starting From
+                      <p className="text-xs text-slate-500">
 
-                    </p>
+                        Starting From
 
-                    <h4 className="text-2xl font-black text-orange-500 mt-1">
+                      </p>
 
-                      {item.price}
+                      <h4 className="text-2xl font-black text-orange-500">
 
-                    </h4>
+                        ₹{item.price}
+
+                      </h4>
+
+                    </div>
+
+                    <button
+                      onClick={() =>
+                        navigate(
+                          `/dashboard/packages/${item.slug}`
+                        )
+                      }
+                      className="rounded-2xl bg-orange-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-600"
+                    >
+
+                      View
+
+                    </button>
 
                   </div>
 
                 </div>
 
-                {/* BUTTON */}
-
-                <button className="w-full mt-6 bg-slate-900 hover:bg-black transition text-white py-4 rounded-xl font-semibold">
-
-                  View Package
-
-                </button>
-
               </div>
 
-            </div>
-
-          ))}
+            ))}
 
         </div>
 
@@ -666,6 +428,4 @@ const CustomerDashboard = () => {
 
   );
 
-};
-
-export default CustomerDashboard;
+}
