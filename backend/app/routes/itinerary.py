@@ -1,6 +1,8 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from app.db import get_connection
-from app.firebase_auth import verify_firebase_token
+import json
+
+from app.auth.jwt_handler import get_current_user
 
 router = APIRouter()
 
@@ -9,7 +11,7 @@ router = APIRouter()
 # ============ GET DB USER ID ================
 # ============================================
 
-def get_db_user_id(firebase_uid):
+def get_db_user_id(user_id):
 
     conn = get_connection()
 
@@ -21,9 +23,9 @@ def get_db_user_id(firebase_uid):
             """
             SELECT id
             FROM users
-            WHERE firebase_uid = %s
+            WHERE id = %s
             """,
-            (firebase_uid,)
+            (user_id,)
         )
 
         user = cursor.fetchone()
@@ -47,13 +49,13 @@ def get_db_user_id(firebase_uid):
 @router.post("/save-itinerary")
 def save_itinerary(
     data: dict,
-    user=Depends(verify_firebase_token)
+    user=Depends(get_current_user)
 ):
 
-    firebase_uid = user["uid"]
+    user_id = user["uid"]
 
     db_user_id = get_db_user_id(
-        firebase_uid
+        user_id
     )
 
     conn = get_connection()
@@ -62,9 +64,14 @@ def save_itinerary(
 
     try:
 
+        if not db_user_id:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        itinerary_json = json.dumps(data.get("itinerary", []))
+
         cursor.execute(
             """
-            INSERT INTO saved_itineraries
+            INSERT INTO trips
             (
                 user_id,
                 destination,
@@ -83,6 +90,7 @@ def save_itinerary(
                 %s,
                 %s
             )
+            RETURNING id
             """,
             (
                 db_user_id,
@@ -90,15 +98,43 @@ def save_itinerary(
                 data.get("budget"),
                 data.get("days"),
                 data.get("preferences"),
-                data.get("itinerary")
+                itinerary_json
             )
+        )
+
+        trip_id = cursor.fetchone()[0]
+
+        cursor.execute(
+            """
+            INSERT INTO saved_itineraries (
+                user_id,
+                trip_id,
+                destination,
+                budget,
+                days,
+                preferences,
+                itinerary,
+                metadata,
+                created_at,
+                updated_at
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s::jsonb, %s::jsonb, NOW(), NOW())
+            """,
+            (
+                db_user_id,
+                trip_id,
+                data.get("destination"),
+                data.get("budget"),
+                data.get("days"),
+                data.get("preferences"),
+                itinerary_json,
+                json.dumps({"source": "save-itinerary"}),
+            ),
         )
 
         conn.commit()
 
-        return {
-            "message": "Itinerary saved"
-        }
+        return {"message": "Trip saved"}
 
     finally:
 
@@ -113,13 +149,13 @@ def save_itinerary(
 
 @router.get("/my-itineraries")
 def get_itineraries(
-    user=Depends(verify_firebase_token)
+    user=Depends(get_current_user)
 ):
 
-    firebase_uid = user["uid"]
+    user_id = user["uid"]
 
     db_user_id = get_db_user_id(
-        firebase_uid
+        user_id
     )
 
     conn = get_connection()
@@ -127,6 +163,9 @@ def get_itineraries(
     cursor = conn.cursor()
 
     try:
+
+        if not db_user_id:
+            raise HTTPException(status_code=404, detail="User not found")
 
         cursor.execute(
             """
@@ -139,7 +178,7 @@ def get_itineraries(
                 itinerary,
                 created_at
 
-            FROM saved_itineraries
+            FROM trips
 
             WHERE user_id = %s
 

@@ -48,11 +48,17 @@ export default function AITripResult({
     estimated_cost = 0,
     sentiment = "Neutral",
     budget_breakdown = {},
+    trip_summary = {},
     travel_tips = [],
+    packing_list = [],
+    safety_notes = [],
     hotel_recommendations = [],
     restaurant_recommendations = [],
     weather = {},
     crowd_insights = [],
+    transport_recommendations = [],
+    nearby_attractions = [],
+    best_season = "",
   } = result;
 
   /* ===================================================== */
@@ -61,16 +67,42 @@ export default function AITripResult({
 
   return (
 
-    <div
-      id="trip-pdf"
-      className="space-y-8 pb-10"
-    >
+    <div id="trip-pdf" className="space-y-5 pb-6">
 
       {/* ===================================================== */}
       {/* TOP CARDS */}
       {/* ===================================================== */}
 
-      <div className="grid xl:grid-cols-3 gap-5">
+      {Object.keys(trip_summary || {}).length > 0 && (
+        <section className="rounded-3xl border border-orange-100 bg-orange-50/60 p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-orange-600">
+            Trip Summary
+          </p>
+          <div className="mt-3 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-end">
+            <div>
+              <h2 className="text-2xl font-black text-slate-900">
+                {trip_summary.destination || form.destination}
+              </h2>
+              {trip_summary.summary && (
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+                  {trip_summary.summary}
+                </p>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-2 text-xs font-semibold text-slate-700">
+              {[trip_summary.duration, trip_summary.travelers, trip_summary.trip_type]
+                .filter(Boolean)
+                .map((item) => (
+                  <span key={item} className="rounded-full bg-white px-3 py-2 shadow-sm">
+                    {item}
+                  </span>
+                ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      <div className="grid xl:grid-cols-3 gap-4">
 
         <div className="xl:col-span-2">
 
@@ -80,7 +112,7 @@ export default function AITripResult({
 
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-[28px] p-6 shadow-sm">
+        <div className="bg-white border border-gray-200 rounded-3xl p-5 shadow-sm">
 
           <p className="text-sm text-gray-500 mb-2">
 
@@ -88,7 +120,7 @@ export default function AITripResult({
 
           </p>
 
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-gray-900">
 
             {sentiment}
 
@@ -128,6 +160,7 @@ export default function AITripResult({
           destination={form.destination}
           hotels={hotel_recommendations}
           restaurants={restaurant_recommendations}
+          nearbyAttractions={nearby_attractions}
         />
 
       </Suspense>
@@ -180,7 +213,7 @@ export default function AITripResult({
 
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-6">
+          <div className="grid lg:grid-cols-2 gap-4">
 
             {hotel_recommendations.map(
 
@@ -225,7 +258,7 @@ export default function AITripResult({
 
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-6">
+          <div className="grid lg:grid-cols-2 gap-4">
 
             {restaurant_recommendations.map(
 
@@ -365,6 +398,38 @@ export default function AITripResult({
       {/* TRAVEL TIPS */}
       {/* ===================================================== */}
 
+      {(packing_list.length > 0 || safety_notes.length > 0) && (
+        <section className="grid gap-4 lg:grid-cols-2">
+          {packing_list.length > 0 && (
+            <ChecklistCard title="Packing Checklist" items={packing_list} />
+          )}
+          {safety_notes.length > 0 && (
+            <ChecklistCard title="Safety Notes" items={safety_notes} tone="safety" />
+          )}
+        </section>
+      )}
+
+      {(nearby_attractions.length > 0 || transport_recommendations.length > 0 || best_season) && (
+        <section className="grid gap-4 lg:grid-cols-3">
+          {best_season && (
+            <InfoListCard title="Best Season" items={[best_season]} />
+          )}
+          {nearby_attractions.length > 0 && (
+            <InfoListCard title="Nearby Attractions" items={nearby_attractions} />
+          )}
+          {transport_recommendations.length > 0 && (
+            <InfoListCard
+              title="Transport"
+              items={transport_recommendations.map((item) =>
+                typeof item === "string"
+                  ? item
+                  : `${item.mode || "Route"}: ${item.route || item.notes || ""}`.trim()
+              )}
+            />
+          )}
+        </section>
+      )}
+
       {travel_tips.length > 0 && (
 
         <TravelTipsCard
@@ -377,13 +442,13 @@ export default function AITripResult({
       {/* ACTIONS */}
       {/* ===================================================== */}
 
-      <div className="grid md:grid-cols-3 gap-4 pt-2">
+      <div className="grid md:grid-cols-3 gap-3 pt-1">
 
         {/* PDF */}
 
         <button
           onClick={downloadTripPDF}
-          className="h-14 rounded-2xl border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold transition"
+          className="h-12 rounded-2xl border border-orange-200 bg-orange-50 hover:bg-orange-100 text-orange-700 font-semibold transition"
         >
 
           Download PDF
@@ -395,7 +460,7 @@ export default function AITripResult({
         <button
           onClick={saveTrip}
           disabled={saving}
-          className="h-14 rounded-2xl border border-gray-300 bg-white hover:bg-gray-100 text-gray-800 font-semibold transition"
+          className="h-12 rounded-2xl border border-gray-300 bg-white hover:bg-gray-100 text-gray-800 font-semibold transition"
         >
 
           {saving ? "Saving..." : "Save Trip"}
@@ -419,7 +484,7 @@ export default function AITripResult({
             })
 
           }
-          className="h-14 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-semibold shadow-md hover:shadow-xl transition"
+          className="h-12 rounded-2xl bg-orange-500 text-white font-semibold shadow-md hover:bg-orange-600 transition"
 
         >
 
@@ -433,4 +498,42 @@ export default function AITripResult({
 
   );
 
+}
+
+function ChecklistCard({ title, items, tone = "default" }) {
+  const accent =
+    tone === "safety"
+      ? "border-red-100 bg-red-50 text-red-700"
+      : "border-orange-100 bg-orange-50 text-orange-700";
+
+  return (
+    <div className="rounded-3xl border border-gray-200 bg-white p-5 shadow-sm">
+      <h2 className="text-xl font-bold text-gray-900">{title}</h2>
+      <div className="mt-4 space-y-3">
+        {items.map((item, index) => (
+          <div key={`${item}-${index}`} className="flex gap-3 text-sm text-slate-600">
+            <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-xs font-bold ${accent}`}>
+              {index + 1}
+            </span>
+            <span className="leading-6">{item}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function InfoListCard({ title, items }) {
+  return (
+    <div className="rounded-3xl border border-gray-200 bg-white p-5 shadow-sm">
+      <h2 className="text-lg font-bold text-gray-900">{title}</h2>
+      <div className="mt-4 space-y-3">
+        {items.filter(Boolean).map((item, index) => (
+          <div key={`${title}-${index}`} className="text-sm leading-6 text-slate-600">
+            {item}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }

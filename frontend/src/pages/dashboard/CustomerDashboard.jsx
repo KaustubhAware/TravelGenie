@@ -34,6 +34,9 @@ export default function CustomerDashboard() {
   const [bookings, setBookings] =
     useState([]);
 
+  const [savedTrips, setSavedTrips] =
+    useState([]);
+
   /* ===================================================== */
   /* FETCH */
   /* ===================================================== */
@@ -52,11 +55,14 @@ export default function CustomerDashboard() {
         const [
           packageRes,
           bookingRes,
+          tripRes,
         ] = await Promise.all([
 
           dashboardService.getTrendingPackages(),
 
           dashboardService.getUserBookings(),
+
+          dashboardService.getSavedTrips(),
 
         ]);
 
@@ -66,6 +72,10 @@ export default function CustomerDashboard() {
 
         setBookings(
           bookingRes.data || []
+        );
+
+        setSavedTrips(
+          tripRes.data || []
         );
 
       } catch (err) {
@@ -211,13 +221,17 @@ export default function CustomerDashboard() {
 
               <p className="text-sm text-slate-500">
 
-                Saved Trips
+                Confirmed
 
               </p>
 
               <h2 className="mt-2 text-3xl font-black text-slate-900">
 
-                8
+                {
+                  bookings.filter((item) =>
+                    ["paid", "completed", "confirmed"].includes(item.status)
+                  ).length
+                }
 
               </h2>
 
@@ -249,7 +263,7 @@ export default function CustomerDashboard() {
 
               <h2 className="mt-2 text-3xl font-black text-slate-900">
 
-                14
+                {savedTrips.length}
 
               </h2>
 
@@ -275,21 +289,25 @@ export default function CustomerDashboard() {
 
               <p className="text-sm text-slate-500">
 
-                Weather
+                Pending
 
               </p>
 
               <h2 className="mt-2 text-3xl font-black text-slate-900">
 
-                22°C
+                {
+                  bookings.filter((item) =>
+                    ["pending", "under_review", "payment_pending"].includes(item.status)
+                  ).length
+                }
 
               </h2>
 
             </div>
 
-            <div className="text-4xl">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-100 text-orange-500">
 
-              ☀️
+              <FaBookmark />
 
             </div>
 
@@ -357,7 +375,7 @@ export default function CustomerDashboard() {
 
                 <img
                   src={
-                    item.image_url
+                    item.featured_image || item.image
                   }
                   alt={item.title}
                   className="h-44 w-full object-cover"

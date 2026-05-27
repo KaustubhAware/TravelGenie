@@ -9,8 +9,8 @@ TravelGenie addresses customer trip planning, travel agency booking operations, 
 - Modular frontend pages, layouts, components, and services
 - Modular FastAPI routers
 - PostgreSQL normalized schema
-- Firebase customer authentication
-- JWT admin/agent access
+- JWT + PostgreSQL authentication for customer, vendor, admin, and agent access
+- Razorpay order creation and payment verification
 
 ## Implementation
 
@@ -34,21 +34,21 @@ Implementation is divided into modules:
   - Generate AI trip
   - Submit booking request
   - Review/approve booking
-  - Simulate payment
+  - Create Razorpay order and verify payment callback
   - Download invoice
   - View analytics
 
 ## Risk Management
 
 - External AI failures: show fallback errors
-- Firebase key exposure: use environment and ignored service account files
+- JWT secret exposure: store keys only in deployment secrets
+- Razorpay/Gemini credential exposure: store keys only in deployment secrets
 - Database migration drift: maintain `schema.sql`
 - Bundle size: route-level lazy loading
 
 ## Future Scope
 
-- Real payment gateway
 - Email/SMS notifications
-- File upload validation and cloud storage
+- Durable cloud object storage for uploaded package/profile media
 - Real-time agent/customer chat
 - Automated test suite

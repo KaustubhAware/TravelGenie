@@ -8,12 +8,6 @@ import {
   useState,
 } from "react";
 
-import {
-  onAuthStateChanged,
-} from "firebase/auth";
-
-import { auth } from "../../firebase";
-
 import RouteLoader from "../../components/RouteLoader";
 
 import {
@@ -30,38 +24,11 @@ export default function UserProtectedRoute({
     useLocation();
 
   useEffect(() => {
-    const unsubscribe =
-      onAuthStateChanged(
-        auth,
-        async (user) => {
-          if (!user) {
-            setAuthState("guest");
-            return;
-          }
-
-          try {
-            const token =
-              await user.getIdToken();
-
-            if (token) {
-              localStorage.setItem(
-                "token",
-                token
-              );
-            }
-          } catch {
-            // Keep existing token
-          }
-
-          setAuthState(
-            hasAuthToken()
-              ? "authenticated"
-              : "guest"
-          );
-        }
-      );
-
-    return () => unsubscribe();
+    setAuthState(
+      hasAuthToken()
+        ? "authenticated"
+        : "guest"
+    );
   }, []);
 
   if (authState === "loading") {

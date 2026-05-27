@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
 
 import { useEffect } from "react";
-import { auth } from "../../firebase";
+import { hasAuthToken } from "../../utils/authToken";
 
 import {
   FaCheckCircle,
@@ -22,7 +22,7 @@ export default function BookingSuccess() {
 
   useEffect(() => {
 
-    const user = auth.currentUser;
+    const user = hasAuthToken();
 
     // 🔐 LOGIN CHECK
 
@@ -349,11 +349,11 @@ export default function BookingSuccess() {
                     </button>
 
                     <button
-                      onClick={() => navigate("/dashboard/saved")}
+                      onClick={() => navigate("/dashboard/bookings")}
                       className="w-full border border-gray-300 hover:bg-gray-100 text-gray-800 py-4 rounded-2xl font-semibold transition duration-300 flex items-center justify-center gap-3"
                     >
 
-                      View Saved Trips
+                      View Bookings
 
                       <FaArrowRight />
 

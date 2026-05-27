@@ -1,8 +1,12 @@
+import logging
+
 import razorpay
+from fastapi import HTTPException
 
 from app.config import get_settings
 
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
 # =====================================================
 # RAZORPAY CLIENT
@@ -29,6 +33,12 @@ def create_razorpay_order(
     razorpay expects paise
     """
 
+    if not settings.RAZORPAY_KEY_ID or not settings.RAZORPAY_KEY_SECRET:
+        raise HTTPException(
+            status_code=503,
+            detail="Razorpay test keys are not configured",
+        )
+
     order_data = {
 
         "amount": int(amount * 100),
@@ -41,9 +51,18 @@ def create_razorpay_order(
 
     }
 
-    order = razorpay_client.order.create(
-        data=order_data
-    )
+    try:
+        order = razorpay_client.order.create(
+            data=order_data
+        )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.warning("Razorpay order creation failed: %s", exc)
+        raise HTTPException(
+            status_code=502,
+            detail="Razorpay order creation failed. Please retry shortly.",
+        ) from exc
 
     return order
 
@@ -56,6 +75,12 @@ def verify_payment_signature(
     razorpay_payment_id,
     razorpay_signature,
 ):
+
+    if not settings.RAZORPAY_KEY_ID or not settings.RAZORPAY_KEY_SECRET:
+        raise HTTPException(
+            status_code=503,
+            detail="Razorpay test keys are not configured",
+        )
 
     try:
 

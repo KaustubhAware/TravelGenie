@@ -13,7 +13,7 @@ export default function HotelRecommendationCard({
 
   return (
 
-    <div className="bg-white border border-gray-200 rounded-[28px] overflow-hidden">
+    <div className="bg-white border border-gray-200 rounded-[28px] overflow-hidden shadow-sm">
 
       <img
         src={
@@ -28,11 +28,11 @@ export default function HotelRecommendationCard({
 
         <div className="flex items-center gap-3">
 
-          <FaHotel className="text-blue-600" />
+          <FaHotel className="text-orange-500" />
 
           <h3 className="text-xl font-bold text-gray-900">
 
-            {hotel.name}
+            {hotel.name || "Recommended stay"}
 
           </h3>
 
@@ -44,7 +44,7 @@ export default function HotelRecommendationCard({
 
           <span className="font-medium">
 
-            {hotel.rating}
+            {hotel.rating || "4.5"}
 
           </span>
 
@@ -52,17 +52,28 @@ export default function HotelRecommendationCard({
 
         <p className="text-gray-600 mt-3">
 
-          {hotel.price_range}
+          {hotel.price_range || hotel.price || "Moderate"}
 
         </p>
 
-        <button
-          className="mt-5 w-full bg-gradient-to-r from-blue-600 to-cyan-500 text-white py-3 rounded-2xl font-semibold"
-        >
+        {hotel.location && (
+          <p className="mt-2 text-sm text-gray-500">
+            {hotel.location}
+          </p>
+        )}
 
-          Book Hotel
-
-        </button>
+        {Array.isArray(hotel.amenities) && hotel.amenities.length > 0 && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {hotel.amenities.slice(0, 4).map((amenity) => (
+              <span
+                key={amenity}
+                className="rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700"
+              >
+                {amenity}
+              </span>
+            ))}
+          </div>
+        )}
 
       </div>
 

@@ -5,19 +5,10 @@ import {
   useLocation,
 } from "react-router-dom";
 
-import {
-  signOut,
-} from "firebase/auth";
-
-import {
-  auth,
-} from "../firebase";
-
 import logo from "../assets/logo.svg";
 
 import {
   FaBars,
-  FaBookmark,
   FaCalendarCheck,
   FaCompass,
   FaRobot,
@@ -55,12 +46,6 @@ const links = [
     path: DASHBOARD_ROUTES.bookings,
     label: "Bookings",
     icon: FaCalendarCheck,
-  },
-
-  {
-    path: DASHBOARD_ROUTES.saved,
-    label: "Saved Trips",
-    icon: FaBookmark,
   },
 
   {
@@ -125,8 +110,6 @@ const NavbarApp = () => {
         localStorage.removeItem(
           "token"
         );
-
-        await signOut(auth);
 
         navigate(
           PUBLIC_ROUTES.home

@@ -9,7 +9,7 @@ import {
 } from "react-icons/fa";
 
 import { vendorService } from "../../services/vendorService";
-import { useFirebaseAuth } from "../../hooks/useFirebaseAuth";
+import { useJwtAuth } from "../../hooks/useJwtAuth";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
@@ -27,7 +27,7 @@ const MH_DESTINATIONS = [
 ];
 
 export default function VendorDashboard() {
-  const { user, authReady } = useFirebaseAuth();
+  const { user, authReady } = useJwtAuth();
   const [profile, setProfile] = useState(null);
   const [packages, setPackages] = useState([]);
   const [bookings, setBookings] = useState([]);

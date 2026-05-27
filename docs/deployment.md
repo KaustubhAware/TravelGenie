@@ -14,7 +14,7 @@
 2. Build command: `pip install -r requirements.txt`.
 3. Start command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
 4. Add environment variables from `backend/.env.example`.
-5. Upload Firebase service account securely or provide `FIREBASE_KEY_PATH`.
+5. Configure PostgreSQL, JWT, Gemini, Razorpay, CORS, and upload directory environment variables.
 
 ## PostgreSQL Cloud
 
@@ -29,9 +29,12 @@ psql <your_connection_url> -f backend/schema.sql
 ## Production Checklist
 
 - `ENVIRONMENT=production`
+- Strong `JWT_SECRET_KEY`
 - Strong `ADMIN_SECRET_KEY`
 - Strong admin password
 - Correct `CORS_ORIGINS`
-- Firebase key stored outside Git
+- `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET`
+- `GEMINI_API_KEY` or service-specific Gemini keys
 - Database credentials stored in platform secrets
 - Frontend API URL points to backend deployment
+- Upload path is writable on the backend host, or replaced with durable object storage before scaling horizontally

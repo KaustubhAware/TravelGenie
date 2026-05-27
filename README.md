@@ -11,12 +11,13 @@ TravelGenie is built using a modern, decoupled client-server architecture:
 
 ```mermaid
 graph TD
-    Client[React + Vite Frontend] -->|Auth Token| Firebase[Firebase Auth Service]
+    Client[React + Vite Frontend] -->|JWT Bearer Token| API[FastAPI Backend]
     Client -->|API Requests| API[FastAPI Backend]
     API -->|Read/Write SQL| DB[(PostgreSQL Database)]
     API -->|Generative AI Prompt| Gemini[Gemini 1.5 Flash AI]
+    API -->|Payment Orders + Verification| Razorpay[Razorpay]
     API -->|Model Prediction| ML[Python Scikit-Learn Engines]
-    Admin[Admin/Agent Client] -->|JWT Auth| API
+    Admin[Admin/Vendor Client] -->|JWT Auth| API
 ```
 
 ### 📂 Directory Structures & Core Components
@@ -34,7 +35,7 @@ graph TD
 │   │   │   └── sentiment.py               # Keyword sentiment extraction
 │   │   ├── routes/             # FastAPI Route Routers
 │   │   │   ├── admin.py                   # Analytics, Client lists, Logs
-│   │   │   ├── auth.py                    # Admin JWT Login, Firebase Sync
+│   │   │   ├── auth.py                    # Admin JWT Login
 │   │   │   ├── booking.py                 # Core Booking Lifecycle
 │   │   │   ├── packages.py                # Package CRUD & Slug management
 │   │   │   ├── trips.py                   # AI Generation & Trip Saves
@@ -58,7 +59,7 @@ graph TD
 │   │   │   └── public/                    # Landing Home, Booking Forms, confirmation
 │   │   ├── routes/             # Protected guard systems & Lazy-loaded routes
 │   │   ├── services/           # Axios HTTP request wrappers for Backend APIs
-│   │   ├── firebase.js         # Firebase Client SDK initializer
+│   │   ├── hooks/useJwtAuth.js # JWT auth compatibility hook
 │   │   └── App.jsx             # React entry point
 │   ├── package.json            # Node dependency registry
 │   └── tailwind.config.js      # Styling design system rules
@@ -78,7 +79,7 @@ graph TD
 ### 2. 🧳 Customer Portal & Bookings
 * **Trekking & Tour Catalog**: Browse structured pre-built tour packages with visual image galleries, inclusions, exclusions, difficulty levels, duration, altitude guides, and seasonal pricing.
 * **Dynamic Booking Form**: Request customized trips directly from AI results or book predefined catalog treks.
-* **Payment Simulation**: Pay for approved trip requests through a simulated portal. Once paid, the booking transitions to the `paid` status.
+* **Razorpay Payment Flow**: Pay for approved trip requests through Razorpay order creation and verified payment callbacks. Once paid, the booking transitions to the `paid` status.
 * **Expedition Records**: Customer dashboard showing all bookings, saved itineraries, payment timelines, and completed trip packages.
 * **PDF Invoice & Itinerary Export**: Export beautiful document layouts of invoices and custom travel plans directly from the web browser.
 
@@ -123,44 +124,40 @@ graph TD
    cd ..\backend
    psql -U postgres -d travelgenie -f schema.sql
    ```
-6. Create `backend/.env` with DB, admin, Firebase, and Gemini values:
+6. Create `backend/.env` with DB, JWT, admin, Gemini, and Razorpay values:
    ```properties
    DB_HOST=localhost
    DB_NAME=travelgenie
    DB_USER=postgres
    DB_PASSWORD=your_postgres_password
    DB_PORT=5432
+   JWT_SECRET_KEY=generate_a_random_customer_jwt_key
    GEMINI_API_KEY=your_gemini_api_key_here
    GEMINI_MODEL=gemini-1.5-flash
    ADMIN_SECRET_KEY=generate_a_random_jwt_key
    ADMIN_USERNAME=admin
    ADMIN_PASSWORD=secure_admin_password
-   FIREBASE_KEY_PATH=firebase_key.json
+   RAZORPAY_KEY_ID=your_razorpay_key_id
+   RAZORPAY_KEY_SECRET=your_razorpay_key_secret
    ```
 7. Create `frontend/.env`:
    ```properties
    VITE_API_BASE_URL=http://localhost:8000/api
-   VITE_FIREBASE_API_KEY=your_firebase_api_key
-   VITE_FIREBASE_AUTH_DOMAIN=your_firebase_auth_domain
-   VITE_FIREBASE_PROJECT_ID=your_firebase_project_id
-   VITE_FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket
-   VITE_FIREBASE_MESSAGING_SENDER_ID=your_firebase_messaging_sender_id
-   VITE_FIREBASE_APP_ID=your_firebase_app_id
+   VITE_RAZORPAY_KEY_ID=your_razorpay_key_id
    ```
-8. Add `backend/firebase_key.json`.
-9. Start backend:
+8. Start backend:
    ```powershell
    cd backend
    .\venv\Scripts\activate
    python -m uvicorn app.main:app --reload
    ```
-10. Start frontend:
+9. Start frontend:
    ```powershell
    cd frontend
    npm run dev
    ```
 
-Protected local files: `.env`, `firebase_key.json`, `node_modules`, `venv`, `dist`, and `__pycache__` are ignored by git.
+Protected local files: `.env`, `node_modules`, `venv`, `dist`, and `__pycache__` are ignored by git.
 
 ## 🛠️ Local Setup Instructions
 
@@ -183,11 +180,13 @@ Protected local files: `.env`, `firebase_key.json`, `node_modules`, `venv`, `dis
    DB_USER=postgres
    DB_PASSWORD=your_postgres_password
    DB_PORT=5432
+   JWT_SECRET_KEY=generate_a_random_customer_jwt_key
    GEMINI_API_KEY=your_gemini_api_key_here
    ADMIN_SECRET_KEY=generate_a_random_jwt_key
    ADMIN_USERNAME=admin
    ADMIN_PASSWORD=secure_admin_password
-   FIREBASE_KEY_PATH=firebase_key.json
+   RAZORPAY_KEY_ID=your_razorpay_key_id
+   RAZORPAY_KEY_SECRET=your_razorpay_key_secret
    ```
 4. **Initialize Database Tables**:
    Ensure PostgreSQL is running locally, create a database named `travelgenie`, and run:
@@ -213,12 +212,7 @@ Protected local files: `.env`, `firebase_key.json`, `node_modules`, `venv`, `dis
    Create a `.env` file in the frontend folder:
    ```properties
    VITE_API_BASE_URL=http://localhost:8000/api
-   VITE_FIREBASE_API_KEY=your_firebase_api_key
-   VITE_FIREBASE_AUTH_DOMAIN=your_firebase_auth_domain
-   VITE_FIREBASE_PROJECT_ID=your_firebase_project_id
-   VITE_FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket
-   VITE_FIREBASE_MESSAGING_SENDER_ID=your_firebase_messaging_sender_id
-   VITE_FIREBASE_APP_ID=your_firebase_app_id
+   VITE_RAZORPAY_KEY_ID=your_razorpay_key_id
    ```
 4. **Launch Vite Dev Server**:
    ```powershell
@@ -232,20 +226,16 @@ Protected local files: `.env`, `firebase_key.json`, `node_modules`, `venv`, `dis
 
 While TravelGenie features a robust interface and comprehensive flows, a deep-dive analysis of the codebase reveals several critical anti-patterns, performance bottlenecks, and architectural limitations:
 
-### 1. Connection-Per-Request DB Overhead
-In `backend/app/db.py`, the `get_connection()` method initiates a fresh TCP/IP handshake to the PostgreSQL server on **every single database query**, manually closing it in a `finally` block. 
-* **Impact**: Under moderate load, database port exhaustion will occur, and API response latency will surge due to constant connection handshake overhead.
-* **Solution**: Implement a connection pooler using `psycopg2.pool.SimpleConnectionPool` or upgrade to an ORM like SQL Alchemy with built-in connection management.
+### 1. Database Connection Pooling
+`backend/app/db.py` now uses a `ThreadedConnectionPool` and returns request connections to the pool on close.
+* **Production note**: Keep pool sizing aligned with Render/Railway PostgreSQL connection limits.
 
 ### 2. Schema Safety
 Runtime schema mutation has been removed from request paths. Startup now uses `information_schema.columns` to report missing columns and relies on `schema.sql` as the database source of truth.
 * **Remaining production recommendation**: Introduce Alembic or another versioned migration tool before multi-environment deployment.
 
-### 3. Duplicate Schema Inconsistencies
-There is a naming disconnect between `backend/schema.sql` and the dynamically injected columns in `auth.py`:
-* `schema.sql` defines the user's name as `full_name VARCHAR(160)`.
-* Older builds dynamically patched user columns at runtime. Current code keeps those checks non-mutating and expects `schema.sql` to be applied.
-This creates double columns (`full_name` and `name` in the database) containing duplicate or mismatched information. The role column also defaults to `'customer'` in the SQL schema but defaults to `'user'` in the dynamic python router script.
+### 3. Schema Consistency
+`backend/schema.sql` is the authoritative schema. Runtime schema mutation has been removed from request paths, while production migrations keep existing databases aligned.
 
 ### 4. ML Cost Prediction Logic Flaw (Alphabetical Bias)
 In `cost_model.py`, a `LinearRegression` model is trained using a label-encoded `City` column as the single feature ($X$ variable):
@@ -262,13 +252,8 @@ y = df["Cost"]
 * The travel sentiment module (`sentiment.py`) does not use NLP classifiers or models. It searches text strings for hardcoded word lists (e.g., searching for "beach" or "nightlife" to flag a trip as "Positive").
 * Recommendation system fallbacks in `recommendation.py` contain hardcoded arrays of popular locations (like Manali Temple paths or Goa beaches) when a keyword search is failed.
 
-### 6. Admin JWT Authentication Security Bypass
-The JWT administration routes authenticate credentials directly against raw environment variables:
-```python
-if data.username != ADMIN_USER["username"] or data.password != ADMIN_USER["password"]:
-    raise HTTPException(...)
-```
-Although `schema.sql` creates an `admins` table with a `password_hash` column, this database table is completely bypassed. This forces administrators to share a single set of environment-level plaintext credentials instead of maintaining independent secure hashed accounts inside the database.
+### 6. Admin JWT Authentication
+Admin login uses bcrypt-hashed credentials stored in the `admins` table, with environment credentials acting as a development recovery path that refreshes the stored hash.
 
 ---
 
@@ -277,11 +262,11 @@ Although `schema.sql` creates an `admins` table with a `password_hash` column, t
 To take TravelGenie from a local simulation to a production-ready SaaS product, the following updates are recommended:
 
 * [ ] **Migrate to Alembic**: Introduce version-controlled schema migrations to ensure seamless, repeatable database modifications without executing dynamic DDL queries.
-* [ ] **Integrate Real Payment Gateways**: Connect Razorpay, Stripe, or PayPal webhooks to capture actual customer transactions instead of mocking a payment status change.
+* [ ] **Add Razorpay Webhooks**: Extend the current Razorpay order/signature flow with webhook-based reconciliation for production dispute and settlement tracking.
 * [ ] **Upgrade ML Architectures**:
   - Replace the regression estimator with a Random Forest or Gradient Boosting model utilizing true parameters (seasonality indices, traveler volume, hotel tier).
   - Adopt NLTK VADER or a lightweight HuggingFace transformer model to perform genuine semantic analysis of client preferences.
-* [ ] **Secure Multi-User Admin Auth**: Write administrative staff records to the `admins` table. Verify credentials using `bcrypt` or `argon2` password hashing instead of comparing request strings to hardcoded environment files.
+* [ ] **Expand Multi-User Admin Auth**: Add admin user management screens and optional staff-level permissions on top of the existing bcrypt-backed admin table.
 * [ ] **Cloud Media Hosting**: Integrate AWS S3 or Cloudinary APIs to upload, optimize, and serve tour package images and customer invoices.
 * [ ] **Automated Testing Suite**: Introduce unit testing for FastAPI endpoints (using `pytest` and `httpx`) and end-to-end frontend pipeline checks (using Playwright).
 * [ ] **Live Customer-Agent WebSockets Chat**: Allow customers to chat in real-time with their assigned agency representative using WebSocket channels.

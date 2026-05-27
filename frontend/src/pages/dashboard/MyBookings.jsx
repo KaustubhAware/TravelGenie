@@ -6,10 +6,6 @@ import {
 
 import { useNavigate } from "react-router-dom";
 
-import { onAuthStateChanged } from "firebase/auth";
-
-import { auth } from "../../firebase";
-
 import { exportInvoicePDF } from "../../utils/exportPDF";
 
 import { bookingService } from "../../services/bookingService";
@@ -115,10 +111,8 @@ export default function MyBookings() {
   useEffect(() => {
     let isMounted = true;
 
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (!isMounted) return;
-
-      if (!user) {
+    const loadBookings = async () => {
+      if (!hasAuthToken()) {
         setBookings([]);
         setLoading(false);
         return;
@@ -126,16 +120,6 @@ export default function MyBookings() {
 
       try {
         setLoading(true);
-
-        const token = await user.getIdToken();
-        if (token) {
-          localStorage.setItem("token", token);
-        }
-
-        if (!hasAuthToken()) {
-          setLoading(false);
-          return;
-        }
 
         const data = await bookingService.getMyBookings();
 
@@ -151,11 +135,12 @@ export default function MyBookings() {
           setLoading(false);
         }
       }
-    });
+    };
+
+    loadBookings();
 
     return () => {
       isMounted = false;
-      unsubscribe();
     };
   }, []);
 

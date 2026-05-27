@@ -817,7 +817,7 @@ export default function DashboardPackages() {
 
                         <FaStar />
 
-                        {pkg.rating || 4.8}
+                        {pkg.rating || "New"}
 
                       </div>
 

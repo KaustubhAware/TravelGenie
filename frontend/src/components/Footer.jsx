@@ -58,8 +58,8 @@ export default function Footer() {
       },
 
       {
-        label: "Saved Trips",
-        path: "/dashboard/saved",
+        label: "AI Planner",
+        path: "/dashboard/ai-planner",
       },
 
      

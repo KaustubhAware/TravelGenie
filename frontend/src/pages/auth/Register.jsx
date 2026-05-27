@@ -1,10 +1,6 @@
 import { useState } from "react";
 
 import {
-  createUserWithEmailAndPassword,
-} from "firebase/auth";
-
-import {
   useNavigate,
   useLocation,
   Link,
@@ -17,7 +13,7 @@ import {
   FaUserPlus,
 } from "react-icons/fa";
 
-import { auth } from "../../firebase";
+import { apiRequest } from "../../services/httpClient";
 
 import logo from "../../assets/logo.svg";
 
@@ -72,19 +68,15 @@ export default function Register() {
 
     try {
 
-      const userCredential =
-        await createUserWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
-
-      const token =
-        await userCredential.user.getIdToken();
+      const data = await apiRequest("/auth/register", {
+        method: "POST",
+        auth: false,
+        body: JSON.stringify({ email, password }),
+      });
 
       localStorage.setItem(
         "token",
-        token
+        data.access_token || data.data?.access_token
       );
 
       navigate(from, {
@@ -95,7 +87,7 @@ export default function Register() {
 
       console.error(err);
 
-      alert("Registration failed");
+      alert(err.message || "Registration failed");
 
     } finally {
 

@@ -89,6 +89,16 @@ class Settings:
         "5432"
     )
 
+    DATABASE_URL = os.getenv(
+        "DATABASE_URL",
+        ""
+    )
+
+    JWT_SECRET_KEY = os.getenv(
+        "JWT_SECRET_KEY",
+        os.getenv("ADMIN_SECRET_KEY", "MYSECRET123")
+    )
+
     # =====================================================
     # ADMIN
     # =====================================================
@@ -138,21 +148,17 @@ class Settings:
     )
 
     # =====================================================
-    # FIREBASE
-    # =====================================================
-
-    FIREBASE_KEY_PATH = os.getenv(
-        "FIREBASE_KEY_PATH",
-        ""
-    )
-
-    # =====================================================
     # CLOUDINARY
     # =====================================================
 
     CLOUDINARY_URL = os.getenv(
         "CLOUDINARY_URL",
         ""
+    )
+
+    UPLOAD_DIR = os.getenv(
+        "UPLOAD_DIR",
+        str(Path(__file__).resolve().parents[1] / "uploads")
     )
 
     # =====================================================
@@ -187,23 +193,6 @@ class Settings:
 
         ]
 
-    @property
-    def firebase_key_path(self):
-
-        if self.FIREBASE_KEY_PATH:
-
-            return Path(
-                self.FIREBASE_KEY_PATH
-            )
-
-        return (
-            Path(__file__)
-            .resolve()
-            .parent
-            .parent
-            / "firebase_key.json"
-        )
-
     # =====================================================
     # VALIDATION
     # =====================================================
@@ -218,6 +207,9 @@ class Settings:
 
                 "ADMIN_SECRET_KEY":
                     self.ADMIN_SECRET_KEY,
+
+                "JWT_SECRET_KEY":
+                    self.JWT_SECRET_KEY,
 
                 "DB_PASSWORD":
                     self.DB_PASSWORD,

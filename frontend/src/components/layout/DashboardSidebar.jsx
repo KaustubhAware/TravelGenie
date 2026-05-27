@@ -2,7 +2,6 @@ import {
   LayoutDashboard,
   Mountain,
   CalendarDays,
-  Bookmark,
   Sparkles,
   User,
   LogOut,
@@ -17,11 +16,6 @@ import {
 import {
   useState,
 } from "react";
-
-import {
-  getAuth,
-  signOut,
-} from "firebase/auth";
 
 import logo from "../../assets/logo.svg";
 
@@ -44,12 +38,6 @@ const navItems = [
     label: "Bookings",
     icon: CalendarDays,
     path: "/dashboard/bookings",
-  },
-
-  {
-    label: "Saved Trips",
-    icon: Bookmark,
-    path: "/dashboard/saved",
   },
 
   {
@@ -89,12 +77,8 @@ export default function DashboardSidebar() {
 
       try {
 
-        const auth =
-          getAuth();
-
-        await signOut(auth);
-
-        localStorage.clear();
+        localStorage.removeItem("token");
+        localStorage.removeItem("adminToken");
 
         navigate("/login");
 

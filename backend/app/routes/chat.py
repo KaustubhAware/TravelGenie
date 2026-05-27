@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 
 from app.db import get_connection, get_cursor
-from app.firebase_auth import verify_firebase_token
+from app.auth.jwt_handler import get_current_user
 from app.ml.chat_assistant import generate_chat_reply, sanitize_prompt
 from app.responses import success_response
 
@@ -54,7 +54,7 @@ def _fetch_active_packages(cursor):
 @router.post("/chat")
 def travel_chat(
     data: ChatRequest,
-    user=Depends(verify_firebase_token),
+    user=Depends(get_current_user),
 ):
     message = sanitize_prompt(data.message)
     history = [

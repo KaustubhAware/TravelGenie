@@ -1,4 +1,4 @@
-import api from "./api";
+import { apiRequest } from "./httpClient";
 
 export const dashboardService = {
 
@@ -8,9 +8,14 @@ export const dashboardService = {
 
   async getTrendingPackages() {
 
-    return api.get(
-      "/packages"
+    const response = await apiRequest(
+      "/packages",
+      { auth: false }
     );
+
+    return {
+      data: response.packages || response.data?.packages || []
+    };
 
   },
 
@@ -20,9 +25,25 @@ export const dashboardService = {
 
   async getUserBookings() {
 
-    return api.get(
-      "/bookings/my-bookings"
+    const response = await apiRequest(
+      "/my-bookings"
     );
+
+    return {
+      data: response.bookings || response.data?.bookings || []
+    };
+
+  },
+
+  async getSavedTrips() {
+
+    const response = await apiRequest(
+      "/my-itineraries"
+    );
+
+    return {
+      data: response.trips || response.data?.trips || []
+    };
 
   },
 

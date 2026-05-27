@@ -15,12 +15,10 @@ import {
 } from "react-hot-toast";
 
 import {
-  auth,
-} from "../../firebase";
-
-import {
   API_BASE,
+  apiRequest,
 } from "../../services/httpClient";
+import { hasAuthToken } from "../../utils/authToken";
 
 import {
   validateBookingForm,
@@ -208,7 +206,7 @@ export default function Booking() {
       }
 
       const user =
-        auth.currentUser;
+        hasAuthToken();
 
       if (!user) {
 
@@ -225,9 +223,6 @@ export default function Booking() {
       setLoading(true);
 
       try {
-
-        const token =
-          await user.getIdToken();
 
         const payload = {
 
@@ -274,52 +269,10 @@ export default function Booking() {
 
         };
 
-        const res =
-          await fetch(
-
-            `${API_BASE}/save-booking`,
-
-            {
-
-              method: "POST",
-
-              headers: {
-
-                "Content-Type":
-                  "application/json",
-
-                Authorization:
-                  `Bearer ${token}`,
-
-              },
-
-              body: JSON.stringify(
-                payload
-              ),
-
-            }
-
-          );
-
-        const data =
-          await res.json();
-
-        if (
-          !res.ok ||
-          data.error
-        ) {
-
-          throw new Error(
-
-            data.error ||
-
-            data.detail ||
-
-            "Booking failed"
-
-          );
-
-        }
+        const data = await apiRequest("/save-booking", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
 
         toast.success(
           "Booking submitted successfully"

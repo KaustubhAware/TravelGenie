@@ -34,6 +34,7 @@ import {
 
 import ReviewSection from "../../components/reviews/ReviewSection";
 import { packageService } from "../../services/packageService";
+import TravelMap from "../../components/ai/TravelMap";
 
 export default function DashboardPackageDetail() {
 
@@ -202,21 +203,32 @@ export default function DashboardPackageDetail() {
       ].filter(Boolean).slice(0, 8);
     }, [pkg]);
 
-  const trekHighlights = [
-    ["Sunrise point", FaStar],
-    ["Waterfalls", FaWater],
-    ["Camping", FaCampground],
-    ["Historic forts", FaMountain],
-    ["Night trek option", FaClock],
-  ];
+  const trekHighlights =
+    useMemo(() => {
+      if (Array.isArray(pkg?.highlights) && pkg.highlights.length > 0) {
+        return pkg.highlights.map((item) => [item, FaStar]);
+      }
 
-  const nearbyAttractions = [
-    "Base village viewpoints",
-    "Sahyadri ridge walk",
-    "Historic fort ruins",
-    "Seasonal waterfalls",
-    "Local Maharashtrian food stop",
-  ];
+      const highlights = [
+        pkg?.difficulty && [`${pkg.difficulty} difficulty`, FaMountain],
+        pkg?.best_season && [`Best in ${pkg.best_season}`, FaStar],
+        pkg?.duration && [`${pkg.duration} duration`, FaClock],
+        pkg?.altitude && [`${pkg.altitude} altitude`, FaMountain],
+        pkg?.category && [pkg.category, FaCampground],
+      ].filter(Boolean);
+
+      return highlights.length
+        ? highlights
+        : [["Curated Maharashtra trek", FaShieldAlt]];
+    }, [pkg]);
+
+  const nearbyAttractions =
+    useMemo(() => {
+      if (Array.isArray(pkg?.nearby_attractions)) {
+        return pkg.nearby_attractions;
+      }
+      return [];
+    }, [pkg]);
 
   const downloadTrekGuide =
     async () => {
@@ -234,9 +246,10 @@ export default function DashboardPackageDetail() {
     };
 
   const weatherInsight =
-    String(pkg?.best_season || "").toLowerCase().includes("monsoon")
+    pkg?.weather_details?.advice ||
+    (String(pkg?.best_season || "").toLowerCase().includes("monsoon")
       ? "Monsoon batches can have heavy rain, slippery rock patches, and low visibility. Trek leaders may alter summit timing for safety."
-      : "Best conditions are usually post-monsoon and winter, with cooler mornings and clearer Sahyadri views.";
+      : "Best conditions are usually post-monsoon and winter, with cooler mornings and clearer Sahyadri views.");
 
   /* ===================================================== */
   /* LOADING */
@@ -477,7 +490,7 @@ export default function DashboardPackageDetail() {
 
                 <InfoPill
                   icon={<FaStar />}
-                  text={`${pkg.rating || 4.8} Rating`}
+                  text={pkg.rating ? `${pkg.rating} Rating` : "New trek"}
                 />
 
               </div>
@@ -708,15 +721,13 @@ export default function DashboardPackageDetail() {
 
                   </h3>
 
-                  <div className="rounded-2xl overflow-hidden border border-slate-200 h-[300px]">
-
-                    <img
-                      src="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=1200&auto=format&fit=crop"
-                      alt="map"
-                      className="w-full h-full object-cover"
-                    />
-
-                  </div>
+                  <TravelMap
+                    destination={pkg.title}
+                    location={pkg.location}
+                    pickupPoints={pkg.pickup_points || []}
+                    nearbyAttractions={nearbyAttractions}
+                    heightClass="h-[300px]"
+                  />
 
                 </div>
 
@@ -933,10 +944,7 @@ export default function DashboardPackageDetail() {
                   Gallery
                 </h2>
                 <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {(galleryImages.length ? galleryImages : [
-                    "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
-                    "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80",
-                  ]).map((image) => (
+                  {galleryImages.map((image) => (
                     <button
                       key={image}
                       type="button"
@@ -950,6 +958,11 @@ export default function DashboardPackageDetail() {
                     </button>
                   ))}
                 </div>
+                {galleryImages.length === 0 && (
+                  <div className="rounded-2xl border border-dashed border-slate-200 p-10 text-center text-slate-500">
+                    Gallery images will appear after the vendor uploads them.
+                  </div>
+                )}
               </div>
             )}
 
@@ -959,8 +972,8 @@ export default function DashboardPackageDetail() {
                   Safety & Weather
                 </h2>
                 <div className="grid md:grid-cols-3 gap-5">
-                  <SafetyCard icon={<FaShieldAlt />} title="Fitness Required" text={pkg.fitness_required || "Basic endurance for sustained uphill walking."} />
-                  <SafetyCard icon={<FaExclamationTriangle />} title="Medical Warning" text="Share asthma, vertigo, cardiac, injury, or medication details before departure." />
+                  <SafetyCard icon={<FaShieldAlt />} title="Fitness Required" text={pkg.fitness_required || "Check vendor fitness guidance before booking."} />
+                  <SafetyCard icon={<FaExclamationTriangle />} title="Safety Notes" text={(pkg.safety_notes || []).join(" ") || "Safety notes are shared by the trek operator before departure."} />
                   <SafetyCard icon={<FaWater />} title="Weather Caution" text={weatherInsight} />
                 </div>
               </div>
@@ -987,6 +1000,11 @@ export default function DashboardPackageDetail() {
                     </div>
                   ))}
                 </div>
+                {nearbyAttractions.length === 0 && (
+                  <div className="rounded-2xl border border-dashed border-slate-200 p-10 text-center text-slate-500">
+                    Nearby attractions are being updated by the operator.
+                  </div>
+                )}
               </div>
             )}
 

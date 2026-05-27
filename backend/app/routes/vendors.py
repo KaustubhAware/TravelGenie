@@ -7,8 +7,8 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 from slugify import slugify
 
 from app.db import get_connection, get_cursor
-from app.firebase_auth import verify_firebase_token
-from app.routes.auth import get_current_user
+from app.auth.jwt_handler import get_current_user
+from app.routes.auth import get_current_user as get_current_admin
 from app.responses import success_response
 
 logger = logging.getLogger(__name__)
@@ -129,10 +129,10 @@ class VendorBatchCreate(BaseModel):
     )
 
 
-def _get_user_id(cursor, firebase_uid):
+def _get_user_id(cursor, user_id):
     cursor.execute(
-        "SELECT id FROM users WHERE firebase_uid = %s",
-        (firebase_uid,),
+        "SELECT id FROM users WHERE id = %s",
+        (user_id,),
     )
     row = cursor.fetchone()
     if not row:
@@ -164,7 +164,7 @@ def _get_vendor_for_user(cursor, user_id):
 @router.post("/vendors/register")
 def register_vendor(
     data: VendorRegister,
-    user=Depends(verify_firebase_token),
+    user=Depends(get_current_user),
 ):
     conn = get_connection()
     cursor = get_cursor(conn)
@@ -223,7 +223,7 @@ def register_vendor(
 
 
 @router.get("/vendors/me")
-def get_my_vendor(user=Depends(verify_firebase_token)):
+def get_my_vendor(user=Depends(get_current_user)):
     conn = get_connection()
     cursor = get_cursor(conn)
 
@@ -256,7 +256,7 @@ def get_my_vendor(user=Depends(verify_firebase_token)):
 @router.put("/vendors/me")
 def update_my_vendor(
     data: VendorProfileUpdate,
-    user=Depends(verify_firebase_token),
+    user=Depends(get_current_user),
 ):
     conn = get_connection()
     cursor = get_cursor(conn)
@@ -297,7 +297,7 @@ def update_my_vendor(
 
 
 @router.get("/vendors/analytics")
-def vendor_analytics(user=Depends(verify_firebase_token)):
+def vendor_analytics(user=Depends(get_current_user)):
     conn = get_connection()
     cursor = get_cursor(conn)
 
@@ -416,7 +416,7 @@ def vendor_analytics(user=Depends(verify_firebase_token)):
 
 
 @router.get("/vendors/bookings")
-def vendor_bookings(user=Depends(verify_firebase_token)):
+def vendor_bookings(user=Depends(get_current_user)):
     conn = get_connection()
     cursor = get_cursor(conn)
 
@@ -461,7 +461,7 @@ def vendor_bookings(user=Depends(verify_firebase_token)):
 
 
 @router.get("/vendors/packages")
-def list_vendor_packages(user=Depends(verify_firebase_token)):
+def list_vendor_packages(user=Depends(get_current_user)):
     conn = get_connection()
     cursor = get_cursor(conn)
 
@@ -498,7 +498,7 @@ def list_vendor_packages(user=Depends(verify_firebase_token)):
 @router.post("/vendors/packages")
 def create_vendor_package(
     data: VendorPackageCreate,
-    user=Depends(verify_firebase_token),
+    user=Depends(get_current_user),
 ):
     conn = get_connection()
     cursor = get_cursor(conn)
@@ -588,7 +588,7 @@ def create_vendor_package(
 
 
 @router.get("/vendors/batches")
-def list_vendor_batches(user=Depends(verify_firebase_token)):
+def list_vendor_batches(user=Depends(get_current_user)):
     conn = get_connection()
     cursor = get_cursor(conn)
     try:
@@ -634,7 +634,7 @@ def list_vendor_batches(user=Depends(verify_firebase_token)):
 
 
 @router.post("/vendors/batches")
-def create_vendor_batch(data: VendorBatchCreate, user=Depends(verify_firebase_token)):
+def create_vendor_batch(data: VendorBatchCreate, user=Depends(get_current_user)):
     conn = get_connection()
     cursor = get_cursor(conn)
     try:
@@ -718,7 +718,7 @@ def marketplace_vendors():
 
 
 @router.get("/admin/vendors")
-def admin_list_vendors(admin=Depends(get_current_user)):
+def admin_list_vendors(admin=Depends(get_current_admin)):
     conn = get_connection()
     cursor = get_cursor(conn)
 
@@ -745,7 +745,7 @@ def admin_list_vendors(admin=Depends(get_current_user)):
 def verify_vendor(
     vendor_id: int,
     data: VendorVerify,
-    admin=Depends(get_current_user),
+    admin=Depends(get_current_admin),
 ):
     conn = get_connection()
     cursor = get_cursor(conn)

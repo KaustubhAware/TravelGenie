@@ -1,34 +1,71 @@
+from pathlib import Path
+
 import pandas as pd
 
-from sklearn.feature_extraction.text import CountVectorizer
-
-from sklearn.metrics.pairwise import cosine_similarity
+try:
+    from sklearn.feature_extraction.text import CountVectorizer
+    from sklearn.metrics.pairwise import cosine_similarity
+except ImportError:
+    CountVectorizer = None
+    cosine_similarity = None
 
 # =====================================================
 # LOAD DATASET
 # =====================================================
 
-data = pd.read_csv("app/ml/cleaned_data.csv")
+DATASET_PATH = Path(__file__).resolve().with_name("cleaned_data.csv")
+FALLBACK_PLACES = [
+    {
+        "place": "Rajmachi Fort",
+        "type": "fort trek",
+        "region": "Lonavala Maharashtra",
+    },
+    {
+        "place": "Kalsubai Peak",
+        "type": "peak trek",
+        "region": "Igatpuri Maharashtra",
+    },
+    {
+        "place": "Pawna Lake",
+        "type": "camping lake",
+        "region": "Pune Maharashtra",
+    },
+    {
+        "place": "Alibaug Beach",
+        "type": "beach camping",
+        "region": "Konkan Maharashtra",
+    },
+    {
+        "place": "Sinhagad Fort",
+        "type": "fort trek",
+        "region": "Pune Maharashtra",
+    },
+]
+
+if DATASET_PATH.exists():
+    data = pd.read_csv(DATASET_PATH)
+else:
+    data = pd.DataFrame(FALLBACK_PLACES)
 
 # =====================================================
 # CREATE FEATURES
 # =====================================================
 
-data["features"] = data["type"] + " " + data["region"]
+data["features"] = data["type"].fillna("") + " " + data["region"].fillna("")
 
 # =====================================================
 # VECTORIZE
 # =====================================================
 
-cv = CountVectorizer()
+cv = CountVectorizer() if CountVectorizer else None
 
-vectors = cv.fit_transform(data["features"])
+vectors = cv.fit_transform(data["features"]) if cv else None
 
 # =====================================================
 # SIMILARITY
 # =====================================================
 
-similarity = cosine_similarity(vectors)
+similarity = cosine_similarity(vectors) if cosine_similarity and vectors is not None else None
 
 # =====================================================
 # RECOMMEND FUNCTION
@@ -46,7 +83,7 @@ def recommend(query):
         data["place"].str.lower() == query
     ].index
 
-    if len(index) > 0:
+    if len(index) > 0 and similarity is not None:
 
         index = index[0]
 

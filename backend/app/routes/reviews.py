@@ -5,8 +5,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from app.db import get_connection, get_cursor
-from app.firebase_auth import verify_firebase_token
-from app.routes.auth import get_current_user
+from app.auth.jwt_handler import get_current_user
+from app.routes.auth import get_current_user as get_current_admin
 from app.responses import success_response
 
 logger = logging.getLogger(__name__)
@@ -34,10 +34,10 @@ class ModerationRequest(BaseModel):
     is_featured: Optional[bool] = None
 
 
-def _get_user_id(cursor, firebase_uid):
+def _get_user_id(cursor, user_id):
     cursor.execute(
-        "SELECT id FROM users WHERE firebase_uid = %s",
-        (firebase_uid,),
+        "SELECT id FROM users WHERE id = %s",
+        (user_id,),
     )
     row = cursor.fetchone()
     if not row:
@@ -109,7 +109,7 @@ def list_reviews(
 @router.post("/reviews")
 def create_review(
     data: ReviewCreate,
-    user=Depends(verify_firebase_token),
+    user=Depends(get_current_user),
 ):
     conn = get_connection()
     cursor = get_cursor(conn)
@@ -160,7 +160,7 @@ def create_review(
 def update_review(
     review_id: int,
     data: ReviewUpdate,
-    user=Depends(verify_firebase_token),
+    user=Depends(get_current_user),
 ):
     conn = get_connection()
     cursor = get_cursor(conn)
@@ -203,7 +203,7 @@ def update_review(
 @router.delete("/reviews/{review_id}")
 def delete_review(
     review_id: int,
-    user=Depends(verify_firebase_token),
+    user=Depends(get_current_user),
 ):
     conn = get_connection()
     cursor = get_cursor(conn)
@@ -234,7 +234,7 @@ def delete_review(
 
 
 @router.get("/admin/reviews/analytics")
-def admin_review_analytics(admin=Depends(get_current_user)):
+def admin_review_analytics(admin=Depends(get_current_admin)):
     conn = get_connection()
     cursor = get_cursor(conn)
 
@@ -262,7 +262,7 @@ def admin_review_analytics(admin=Depends(get_current_user)):
 
 
 @router.get("/admin/reviews")
-def admin_list_reviews(admin=Depends(get_current_user)):
+def admin_list_reviews(admin=Depends(get_current_admin)):
     conn = get_connection()
     cursor = get_cursor(conn)
 
@@ -294,7 +294,7 @@ def admin_list_reviews(admin=Depends(get_current_user)):
 def moderate_review(
     review_id: int,
     data: ModerationRequest,
-    admin=Depends(get_current_user),
+    admin=Depends(get_current_admin),
 ):
     conn = get_connection()
     cursor = get_cursor(conn)

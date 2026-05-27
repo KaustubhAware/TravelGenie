@@ -1,8 +1,12 @@
 import os
 import sys
 import random
+import json
 
-from datetime import datetime, timedelta
+from datetime import (
+    datetime,
+    timedelta,
+)
 
 # =====================================================
 # FIX PYTHON PATH
@@ -26,6 +30,10 @@ from psycopg2.extras import Json
 
 from app.config import get_settings
 
+from app.auth.password_utils import (
+    hash_password,
+)
+
 # =====================================================
 # SETTINGS
 # =====================================================
@@ -36,85 +44,162 @@ settings = get_settings()
 # DATABASE CONNECTION
 # =====================================================
 
-conn = psycopg2.connect(
-    host=settings.DB_HOST,
-    database=settings.DB_NAME,
-    user=settings.DB_USER,
-    password=settings.DB_PASSWORD,
-    port=settings.DB_PORT,
-)
+if settings.DATABASE_URL:
+
+    conn = psycopg2.connect(
+        settings.DATABASE_URL
+    )
+
+else:
+
+    conn = psycopg2.connect(
+        host=settings.DB_HOST,
+        database=settings.DB_NAME,
+        user=settings.DB_USER,
+        password=settings.DB_PASSWORD,
+        port=settings.DB_PORT,
+    )
 
 cursor = conn.cursor()
 
-print("=" * 60)
-print("SEEDING MAHARASHTRA TREK ECOSYSTEM")
-print("=" * 60)
+# =====================================================
+# START
+# =====================================================
+
+print("=" * 70)
+print("SEEDING TRAVELGENIE MAHARASHTRA ECOSYSTEM")
+print("=" * 70)
+
+# =====================================================
+# ADMIN USER
+# =====================================================
+
+print("CREATING ADMIN USER...")
+
+cursor.execute(
+    """
+    INSERT INTO users (
+        email,
+        password_hash,
+        full_name,
+        phone,
+        city,
+        country,
+        role,
+        profile_completed,
+        is_deleted,
+        created_at,
+        updated_at
+    )
+    VALUES (
+        %s,%s,%s,%s,%s,%s,%s,%s,%s,
+        NOW(),
+        NOW()
+    )
+    ON CONFLICT (email)
+    DO NOTHING
+    """,
+    (
+        "admin@travelgenie.com",
+        hash_password("Admin123"),
+        "TravelGenie Admin",
+        "9999999999",
+        "Pune",
+        "India",
+        "admin",
+        True,
+        False,
+    ),
+)
+
+cursor.execute(
+    """
+    INSERT INTO admins (
+        username,
+        password_hash,
+        full_name,
+        created_at
+    )
+    VALUES (%s,%s,%s,NOW())
+    ON CONFLICT (username)
+    DO UPDATE SET password_hash = EXCLUDED.password_hash
+    """,
+    (
+        settings.ADMIN_USERNAME,
+        hash_password(settings.ADMIN_PASSWORD),
+        "TravelGenie Administrator",
+    ),
+)
 
 # =====================================================
 # DEMO USERS
 # =====================================================
 
-demo_user_ids = []
-
 print("SEEDING DEMO USERS...")
+
+demo_user_ids = []
 
 for idx in range(1, 11):
 
     cursor.execute(
         """
         INSERT INTO users (
-            firebase_uid,
             email,
+            password_hash,
             full_name,
             phone,
             city,
             country,
             preferences,
             profile_completed,
-            name,
-            favorite_destinations,
             role,
+            favorite_destinations,
             updated_at,
             is_deleted,
             created_at
         )
         VALUES (
             %s,%s,%s,%s,%s,%s,%s,%s,
-            %s,%s,%s,NOW(),%s,NOW()
+            %s,%s,NOW(),%s,NOW()
         )
         RETURNING id
         """,
         (
-            f"demo_firebase_uid_{idx}",
             f"demo{idx}@travelgenie.in",
+            hash_password("Demo123"),
             f"Demo User {idx}",
             f"99999999{idx:02d}",
             "Pune",
             "India",
-            Json({
+            json.dumps({
                 "trekking": True,
                 "camping": True,
                 "monsoon": True,
             }),
             True,
-            f"Demo User {idx}",
-            Json([
+            "customer",
+            json.dumps([
                 "Rajmachi",
                 "Kalsubai",
                 "Harishchandragad",
             ]),
-            "customer",
             False,
         ),
     )
 
-    user_id = cursor.fetchone()[0]
+    result = cursor.fetchone()
 
-    demo_user_ids.append(user_id)
+    if result:
+
+        demo_user_ids.append(
+            result[0]
+        )
 
 # =====================================================
 # VENDORS
 # =====================================================
+
+print("SEEDING VENDORS...")
 
 vendors = [
     {
@@ -147,21 +232,9 @@ vendors = [
         "description": "Affordable weekend treks from Pune and Mumbai.",
         "rating": 4.7,
     },
-    {
-        "name": "Trek Maharashtra",
-        "owner_name": "Omkar Deshmukh",
-        "description": "Fort treks and monsoon adventures in Maharashtra.",
-        "rating": 4.8,
-    },
 ]
 
 vendor_ids = []
-
-# =====================================================
-# SEED VENDORS
-# =====================================================
-
-print("SEEDING VENDORS...")
 
 for idx, vendor in enumerate(vendors):
 
@@ -194,11 +267,11 @@ for idx, vendor in enumerate(vendors):
             None,
             vendor["name"],
             vendor["owner_name"],
-            f"contact{idx + 1}@travelgenie.in",
+            f"vendor{idx + 1}@travelgenie.in",
             f"98765432{idx + 1:02d}",
             vendor["description"],
             "approved",
-            "vendor-logo.png",
+            "https://images.unsplash.com/photo-1527631746610-bca00a040d60",
             True,
             False,
             vendor["rating"],
@@ -207,13 +280,19 @@ for idx, vendor in enumerate(vendors):
         ),
     )
 
-    vendor_id = cursor.fetchone()[0]
+    result = cursor.fetchone()
 
-    vendor_ids.append(vendor_id)
+    if result:
+
+        vendor_ids.append(
+            result[0]
+        )
 
 # =====================================================
 # PACKAGES
 # =====================================================
+
+print("SEEDING PACKAGES...")
 
 packages = [
     {
@@ -225,6 +304,7 @@ packages = [
         "best_season": "Monsoon",
         "altitude": "2710 ft",
         "category": "Monsoon Trek",
+        "image": "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
     },
     {
         "title": "Kalsubai Sunrise Trek",
@@ -235,9 +315,10 @@ packages = [
         "best_season": "Winter",
         "altitude": "5400 ft",
         "category": "Peak Trek",
+        "image": "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b",
     },
     {
-        "title": "Harishchandragad Kokankada Trek",
+        "title": "Harishchandragad Trek",
         "location": "Ahmednagar, Maharashtra",
         "difficulty": "Hard",
         "price": 2999,
@@ -245,6 +326,7 @@ packages = [
         "best_season": "Monsoon",
         "altitude": "4670 ft",
         "category": "Fort Trek",
+        "image": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
     },
     {
         "title": "Lohagad Fort Trek",
@@ -255,46 +337,7 @@ packages = [
         "best_season": "Monsoon",
         "altitude": "3389 ft",
         "category": "Beginner Trek",
-    },
-    {
-        "title": "Visapur Waterfall Trek",
-        "location": "Malavli, Maharashtra",
-        "difficulty": "Moderate",
-        "price": 1799,
-        "duration": "1 Day",
-        "best_season": "Monsoon",
-        "altitude": "3556 ft",
-        "category": "Waterfall Trek",
-    },
-    {
-        "title": "Andharban Jungle Trek",
-        "location": "Tamhini Ghat, Maharashtra",
-        "difficulty": "Moderate",
-        "price": 2199,
-        "duration": "1 Day",
-        "best_season": "Monsoon",
-        "altitude": "2160 ft",
-        "category": "Forest Trek",
-    },
-    {
-        "title": "Devkund Waterfall Trek",
-        "location": "Bhira, Maharashtra",
-        "difficulty": "Easy",
-        "price": 1599,
-        "duration": "1 Day",
-        "best_season": "Monsoon",
-        "altitude": "2700 ft",
-        "category": "Waterfall Trek",
-    },
-    {
-        "title": "Sandhan Valley Trek",
-        "location": "Bhandardara, Maharashtra",
-        "difficulty": "Hard",
-        "price": 3499,
-        "duration": "2 Days",
-        "best_season": "Winter",
-        "altitude": "4100 ft",
-        "category": "Adventure Trek",
+        "image": "https://images.unsplash.com/photo-1501785888041-af3ef285b470",
     },
     {
         "title": "Pawna Lake Camping",
@@ -305,30 +348,17 @@ packages = [
         "best_season": "Winter",
         "altitude": "2100 ft",
         "category": "Camping",
-    },
-    {
-        "title": "Bhandardara Fireflies Camping",
-        "location": "Bhandardara, Maharashtra",
-        "difficulty": "Easy",
-        "price": 2499,
-        "duration": "1 Night",
-        "best_season": "Pre-Monsoon",
-        "altitude": "2400 ft",
-        "category": "Camping",
+        "image": "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429",
     },
 ]
 
 package_ids = []
 
-# =====================================================
-# SEED PACKAGES
-# =====================================================
-
-print("SEEDING PACKAGES...")
-
 for package in packages:
 
-    vendor_id = random.choice(vendor_ids)
+    vendor_id = random.choice(
+        vendor_ids
+    )
 
     slug = (
         package["title"]
@@ -346,7 +376,6 @@ for package in packages:
     excluded = [
         "Personal Expenses",
         "Insurance",
-        "Extra Snacks",
     ]
 
     pickup_points = [
@@ -376,6 +405,9 @@ for package in packages:
             full_description,
             included,
             excluded,
+            highlights,
+            weather_details,
+            faq,
             pickup_points,
             featured_image,
             created_at
@@ -383,7 +415,7 @@ for package in packages:
         VALUES (
             %s,%s,%s,%s,%s,%s,%s,%s,%s,
             %s,%s,%s,%s,%s,%s,%s,%s,
-            %s,%s,%s,%s,NOW()
+            %s,%s,%s,%s,%s,%s,%s,NOW()
         )
         RETURNING id
         """,
@@ -397,27 +429,55 @@ for package in packages:
             package["best_season"],
             package["altitude"],
             package["category"],
-            round(random.uniform(4.5, 4.9), 1),
+            round(
+                random.uniform(4.5, 4.9),
+                1,
+            ),
             random.randint(50, 300),
             random.randint(15, 35),
             True,
             "active",
             slug,
-            f"Experience the beauty of {package['title']} in Maharashtra.",
-            f"{package['title']} is one of the most scenic trekking experiences in Maharashtra with breathtaking Sahyadri landscapes.",
-            Json(included),
-            Json(excluded),
+            f"Experience the beauty of {package['title']}.",
+            f"{package['title']} is one of Maharashtra's best trekking experiences.",
+            "\n".join(included),
+            "\n".join(excluded),
+            Json([
+                f"{package['difficulty']} grade Sahyadri trail",
+                f"Best experienced in {package['best_season']}",
+                "Certified trek lead and first-aid support",
+                "Curated pickup from Pune and Mumbai",
+            ]),
+            Json({
+                "best_season": package["best_season"],
+                "advice": "Carry rainwear in monsoon and a warm layer for winter sunrise batches.",
+                "temperature_range": "16-28 C",
+            }),
+            Json([
+                {
+                    "question": "Is this trek beginner friendly?",
+                    "answer": f"This is rated {package['difficulty']}; follow vendor fitness guidance before booking.",
+                },
+                {
+                    "question": "Are pickup points included?",
+                    "answer": "Common Pune and Mumbai pickup points are available batch-wise.",
+                },
+            ]),
             Json(pickup_points),
-            "placeholder-trek.jpg",
+            package["image"],
         ),
     )
 
-    package_id = cursor.fetchone()[0]
+    result = cursor.fetchone()
 
-    package_ids.append(package_id)
+    if result:
+
+        package_ids.append(
+            result[0]
+        )
 
 # =====================================================
-# SEED TRIP BATCHES
+# TRIP BATCHES
 # =====================================================
 
 print("SEEDING TRIP BATCHES...")
@@ -426,7 +486,6 @@ guides = [
     "Aditya Trek Lead",
     "Rohit Adventure Guide",
     "Sanket Trek Captain",
-    "Aman Expedition Lead",
 ]
 
 for package_id in package_ids:
@@ -435,12 +494,14 @@ for package_id in package_ids:
 
         start_date = (
             datetime.now()
-            + timedelta(days=random.randint(5, 90))
+            + timedelta(
+                days=random.randint(5, 90)
+            )
         )
 
         end_date = (
             start_date
-            + timedelta(days=random.randint(1, 3))
+            + timedelta(days=2)
         )
 
         booking_deadline = (
@@ -448,9 +509,14 @@ for package_id in package_ids:
             - timedelta(days=2)
         )
 
-        max_seats = random.choice([20, 25, 30])
+        max_seats = random.choice(
+            [20, 25, 30]
+        )
 
-        booked_seats = random.randint(5, max_seats - 1)
+        booked_seats = random.randint(
+            5,
+            max_seats - 1,
+        )
 
         cursor.execute(
             """
@@ -482,43 +548,159 @@ for package_id in package_ids:
                 booked_seats,
                 "Shivajinagar Pune",
                 random.choice(guides),
-                "active",
+                "open",
             ),
         )
 
 # =====================================================
-# SEED REVIEWS
+# BOOKINGS
+# =====================================================
+
+print("SEEDING BOOKINGS...")
+
+statuses = [
+    "confirmed",
+    "pending",
+    "cancelled",
+]
+
+payment_statuses = [
+    "paid",
+    "pending",
+]
+
+booking_ids = []
+
+for _ in range(20):
+
+    package_id = random.choice(
+        package_ids
+    )
+
+    user_id = random.choice(
+        demo_user_ids
+    )
+
+    total_amount = random.randint(
+        1500,
+        5000,
+    )
+
+    cursor.execute(
+        """
+        INSERT INTO bookings (
+            user_id,
+            package_id,
+            booking_id,
+            destination,
+            name,
+            email,
+            phone,
+            budget,
+            days,
+            status,
+            payment_status,
+            total_amount,
+            persons,
+            package_title,
+            package_image,
+            travelers,
+            booking_date,
+            created_at,
+            updated_at
+        )
+        VALUES (
+            %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,
+            %s,%s,%s,%s,%s,NOW(),NOW(),NOW()
+        )
+        RETURNING booking_id
+        """,
+        (
+            user_id,
+            package_id,
+            f"TG-BOOK-{random.randint(100000,999999)}",
+            "Maharashtra Trek",
+            f"Demo Traveller {user_id}",
+            f"demo{user_id}@travelgenie.in",
+            f"88888888{random.randint(10,99)}",
+            total_amount,
+            random.randint(1, 3),
+            random.choice(statuses),
+            random.choice(
+                payment_statuses
+            ),
+            total_amount,
+            random.randint(1, 5),
+            "Maharashtra Trek Package",
+            "",
+            random.randint(1, 5),
+        ),
+    )
+
+    result = cursor.fetchone()
+
+    if result:
+
+        booking_ids.append(
+            result[0]
+        )
+
+# =====================================================
+# PAYMENT TRANSACTIONS
+# =====================================================
+
+print("SEEDING PAYMENT TRANSACTIONS...")
+
+for booking_id in booking_ids:
+
+    cursor.execute(
+        """
+        INSERT INTO payment_transactions (
+            booking_id,
+            razorpay_order_id,
+            razorpay_payment_id,
+            amount,
+            status,
+            created_at
+        )
+        VALUES (
+            %s,%s,%s,%s,%s,NOW()
+        )
+        """,
+        (
+            booking_id,
+            f"order_{random.randint(10000,99999)}",
+            f"pay_{random.randint(10000,99999)}",
+            random.randint(1500, 5000),
+            "paid",
+        ),
+    )
+
+# =====================================================
+# REVIEWS
 # =====================================================
 
 print("SEEDING REVIEWS...")
 
 review_comments = [
     "Amazing trek management and safety.",
-    "Best monsoon trekking experience.",
-    "Guide was extremely supportive and friendly.",
-    "Food and camping arrangements were excellent.",
-    "Perfect weekend getaway from Pune.",
-    "Highly recommended for beginners.",
-    "The Sahyadri views were breathtaking.",
-    "Well-organized trek and smooth travel experience.",
-    "Loved the camping experience near the lake.",
-    "One of the best trekking communities in Maharashtra.",
+    "Beautiful Sahyadri views.",
+    "Loved the camping experience.",
+    "Perfect weekend getaway.",
+    "Highly recommended trek.",
 ]
 
 for package_id in package_ids:
 
-    for _ in range(10):
+    for _ in range(5):
 
         cursor.execute(
             """
             INSERT INTO reviews (
                 user_id,
                 package_id,
-                trip_id,
-                vendor_id,
                 rating,
                 review_text,
-                image_url,
                 moderation_status,
                 is_featured,
                 is_deleted,
@@ -526,25 +708,146 @@ for package_id in package_ids:
                 updated_at
             )
             VALUES (
-                %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,
+                %s,%s,%s,%s,%s,%s,%s,
                 NOW(),
                 NOW()
             )
             """,
             (
-                random.choice(demo_user_ids),
+                random.choice(
+                    demo_user_ids
+                ),
                 package_id,
-                None,
-                None,
                 random.randint(4, 5),
-                random.choice(review_comments),
-                None,
+                random.choice(
+                    review_comments
+                ),
                 "approved",
-                random.choice([True, False]),
+                random.choice(
+                    [True, False]
+                ),
                 False,
             ),
         )
 
+# =====================================================
+# NOTIFICATIONS
+# =====================================================
+
+print("SEEDING NOTIFICATIONS...")
+
+notifications = [
+    "Your trek booking has been confirmed.",
+    "Payment completed successfully.",
+    "New monsoon trek added near Lonavala.",
+    "AI Planner generated your itinerary.",
+]
+
+for user_id in demo_user_ids:
+
+    for _ in range(3):
+
+        cursor.execute(
+            """
+            INSERT INTO notifications (
+                user_id,
+                title,
+                message,
+                is_read,
+                created_at
+            )
+            VALUES (
+                %s,%s,%s,%s,NOW()
+            )
+            """,
+            (
+                user_id,
+                "TravelGenie Update",
+                random.choice(
+                    notifications
+                ),
+                False,
+            ),
+        )
+
+# =====================================================
+# AI CHAT HISTORY
+# =====================================================
+
+print("SEEDING AI CHAT HISTORY...")
+
+prompts = [
+    "Suggest a monsoon trek near Pune",
+    "Best camping places in Maharashtra",
+    "Plan a 2-day trekking trip",
+    "Best beginner trek near Mumbai",
+    "Affordable camping trip suggestions",
+    "Top Sahyadri trekking destinations",
+    "Best winter treks in Maharashtra",
+    "Easy weekend treks for couples",
+]
+
+responses = [
+    "Rajmachi Trek is highly recommended for monsoon adventures and scenic waterfalls.",
+    "Pawna Lake camping is perfect for weekend camping experiences with bonfire and lakeside views.",
+    "Kalsubai trek is ideal for experienced adventure lovers looking for challenging climbs.",
+    "Lohagad Fort trek is beginner-friendly and offers beautiful panoramic views.",
+    "Harishchandragad offers one of Maharashtra's best trekking experiences with Konkan Kada.",
+    "Tikona Fort trek is great for beginners and short weekend trips.",
+    "Bhandardara camping is ideal for peaceful lakeside experiences.",
+    "Andharban trek is one of the best dense forest treks during monsoon.",
+]
+
+roles = [
+    "user",
+    "assistant",
+]
+
+for user_id in demo_user_ids:
+
+    for _ in range(5):
+
+        selected_prompt = random.choice(
+            prompts
+        )
+
+        selected_response = random.choice(
+            responses
+        )
+
+        selected_role = random.choice(
+            roles
+        )
+
+        combined_content = (
+            f"Prompt: {selected_prompt}\n\n"
+            f"Response: {selected_response}"
+        )
+
+        cursor.execute(
+            """
+            INSERT INTO ai_chat_history (
+                user_id,
+                role,
+                content,
+                prompt,
+                response,
+                created_at
+            )
+            VALUES (
+                %s,%s,%s,%s,%s,NOW()
+            )
+            """,
+            (
+                user_id,
+                selected_role,
+                combined_content,
+                selected_prompt,
+                selected_response,
+            ),
+        )
+
+print("AI CHAT HISTORY SEEDED SUCCESSFULLY")
 # =====================================================
 # COMMIT
 # =====================================================
@@ -552,14 +855,32 @@ for package_id in package_ids:
 conn.commit()
 
 cursor.close()
+
 conn.close()
 
-print("=" * 60)
-print("MAHARASHTRA TREK ECOSYSTEM SEEDED SUCCESSFULLY")
-print("=" * 60)
-print(f"Users Added: {len(demo_user_ids)}")
-print(f"Vendors Added: {len(vendors)}")
-print(f"Packages Added: {len(packages)}")
+# =====================================================
+# DONE
+# =====================================================
+
+print("=" * 70)
+print("TRAVELGENIE ECOSYSTEM SEEDED SUCCESSFULLY")
+print("=" * 70)
+print(f"Demo Users Added: {len(demo_user_ids)}")
+print(f"Vendors Added: {len(vendor_ids)}")
+print(f"Packages Added: {len(package_ids)}")
+print(f"Bookings Added: {len(booking_ids)}")
 print(f"Trip Batches Added: {len(package_ids) * 4}")
-print(f"Reviews Added: {len(package_ids) * 10}")
-print("=" * 60)
+print(f"Reviews Added: {len(package_ids) * 5}")
+print("=" * 70)
+
+print("\nADMIN LOGIN")
+print("-" * 30)
+print("Email: admin@travelgenie.com")
+print("Password: Admin123")
+
+print("\nDEMO USER LOGIN")
+print("-" * 30)
+print("Email: demo1@travelgenie.in")
+print("Password: Demo123")
+
+print("=" * 70)

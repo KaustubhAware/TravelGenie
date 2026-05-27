@@ -20,8 +20,8 @@ export default function BudgetBreakdownCard({
   const items = [
 
     {
-      label: "Hotel",
-      value: breakdown.hotel || 0,
+      label: "Stay",
+      value: breakdown.stay || breakdown.hotel || 0,
       icon: <FaHotel />,
     },
 
@@ -33,13 +33,19 @@ export default function BudgetBreakdownCard({
 
     {
       label: "Transport",
-      value: breakdown.transport || 0,
+      value: breakdown.travel || breakdown.transport || 0,
       icon: <FaBus />,
     },
 
     {
+      label: "Activities",
+      value: breakdown.activities || 0,
+      icon: <FaWallet />,
+    },
+
+    {
       label: "Emergency",
-      value: breakdown.emergency || 0,
+      value: breakdown.misc || breakdown.emergency || 0,
       icon: <FaWallet />,
     },
 
@@ -80,7 +86,7 @@ export default function BudgetBreakdownCard({
 
             {/* ICON */}
 
-            <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
 
               {item.icon}
 

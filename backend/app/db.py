@@ -34,15 +34,22 @@ def _get_pool():
         settings = get_settings()
 
         try:
-            _pool = ThreadedConnectionPool(
-                POOL_MIN_CONN,
-                POOL_MAX_CONN,
-                host=settings.DB_HOST,
-                database=settings.DB_NAME,
-                user=settings.DB_USER,
-                password=settings.DB_PASSWORD,
-                port=settings.DB_PORT,
-            )
+            if settings.DATABASE_URL:
+                _pool = ThreadedConnectionPool(
+                    POOL_MIN_CONN,
+                    POOL_MAX_CONN,
+                    dsn=settings.DATABASE_URL,
+                )
+            else:
+                _pool = ThreadedConnectionPool(
+                    POOL_MIN_CONN,
+                    POOL_MAX_CONN,
+                    host=settings.DB_HOST,
+                    database=settings.DB_NAME,
+                    user=settings.DB_USER,
+                    password=settings.DB_PASSWORD,
+                    port=settings.DB_PORT,
+                )
             logger.info(
                 "PostgreSQL connection pool initialized (min=%s, max=%s)",
                 POOL_MIN_CONN,
@@ -163,8 +170,10 @@ def check_and_init_db():
             "trips",
             "bookings",
             "reviews",
-            "saved_itineraries",
-            "payments",
+            "payment_transactions",
+            "package_images",
+            "ai_chat_history",
+            "notifications",
             "invoices",
             "booking_notes",
             "analytics_events",
@@ -198,19 +207,35 @@ def check_and_init_db():
             logger.info("All required tables are present in the database.")
 
         expected_columns = {
+            "users": {
+                "password_hash", "emergency_contact", "travel_preferences",
+                "profile_image",
+            },
             "packages": {
                 "vendor_id", "slug", "region", "seasonal_price",
                 "short_description", "full_description", "featured_image",
                 "gallery", "category", "difficulty", "group_size",
                 "best_season", "altitude", "trek_distance", "pickup_points",
-                "fitness_required", "travel_type", "featured",
+                "fitness_required", "travel_type", "highlights",
+                "weather_details", "faq", "nearby_attractions",
+                "safety_notes", "transport_info", "map_url", "featured",
                 "availability_calendar", "rating", "total_reviews", "updated_at",
             },
             "bookings": {
                 "agent_id", "package_title", "package_image", "travel_date",
                 "travelers", "trip_batch_id", "special_request", "internal_notes",
                 "assigned_agent", "adjusted_price", "departure_date",
-                "return_date", "notes", "updated_at",
+                "return_date", "notes", "total_amount", "persons",
+                "booking_date", "updated_at",
+            },
+            "payment_transactions": {
+                "currency", "failure_reason", "metadata",
+            },
+            "ai_chat_history": {
+                "prompt", "response", "metadata",
+            },
+            "notifications": {
+                "is_read",
             },
             "vendors": {
                 "rating", "response_time", "verified_badge",

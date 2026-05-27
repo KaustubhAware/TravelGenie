@@ -4,14 +4,11 @@ import {
 } from "lucide-react";
 
 import {
-  getAuth,
-  onAuthStateChanged,
-} from "firebase/auth";
-
-import {
   useEffect,
   useState,
 } from "react";
+
+import { apiRequest } from "../../services/httpClient";
 
 export default function DashboardTopbar() {
 
@@ -27,47 +24,18 @@ export default function DashboardTopbar() {
 
   useEffect(() => {
 
-    const auth =
-      getAuth();
+    apiRequest("/auth/me")
+      .then((res) => {
+        const authUser = res.data?.user || {};
+        const fullName =
+          authUser.full_name ||
+          authUser.email?.split("@")[0] ||
+          "Traveler";
 
-    const unsubscribe =
-      onAuthStateChanged(
-        auth,
-        (user) => {
-
-          if (user) {
-
-            /* ===================================== */
-            /* NAME */
-            /* ===================================== */
-
-            const fullName =
-              user.displayName ||
-              user.email
-                ?.split("@")[0] ||
-              "Traveler";
-
-            setUserName(
-              fullName
-            );
-
-            /* ===================================== */
-            /* LETTER */
-            /* ===================================== */
-
-            setUserLetter(
-              fullName
-                .charAt(0)
-                .toUpperCase()
-            );
-
-          }
-
-        }
-      );
-
-    return () =>
-      unsubscribe();
+        setUserName(fullName);
+        setUserLetter(fullName.charAt(0).toUpperCase());
+      })
+      .catch(() => {});
 
   }, []);
 

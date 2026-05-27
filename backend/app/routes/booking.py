@@ -5,8 +5,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from app.db import get_connection
-from app.firebase_auth import verify_firebase_token
-from app.routes.auth import get_current_user
+from app.auth.jwt_handler import get_current_user
+from app.routes.auth import get_current_user as get_current_admin
 
 logger = logging.getLogger(__name__)
 
@@ -100,13 +100,13 @@ def ensure_booking_workflow_columns(cursor):
 
 def generate_booking_id():
 
-    return f"TG-BOOK-{random.randint(10000,99999)}"
+    return f"TG-BOOK-{random.randint(100000,999999)}"
 
 # =====================================================
 # GET DATABASE USER ID
 # =====================================================
 
-def get_db_user_id(firebase_uid):
+def get_db_user_id(user_id):
 
     conn = get_connection()
 
@@ -118,9 +118,9 @@ def get_db_user_id(firebase_uid):
             """
             SELECT id
             FROM users
-            WHERE firebase_uid = %s
+            WHERE id = %s
             """,
-            (firebase_uid,)
+            (user_id,)
         )
 
         user = cursor.fetchone()
@@ -146,7 +146,7 @@ def get_db_user_id(firebase_uid):
 @router.post("/save-booking")
 def save_booking(
     data: BookingRequest,
-    user=Depends(verify_firebase_token)
+    user=Depends(get_current_user)
 ):
 
     conn = get_connection()
@@ -155,10 +155,10 @@ def save_booking(
 
     try:
 
-        firebase_uid = user["uid"]
+        user_id = user["uid"]
 
         db_user_id = get_db_user_id(
-            firebase_uid
+            user_id
         )
 
         ensure_booking_workflow_columns(cursor)
@@ -261,7 +261,9 @@ def save_booking(
                 email,
                 phone,
                 budget,
+                total_amount,
                 days,
+                persons,
                 status,
                 payment_status,
 
@@ -276,24 +278,8 @@ def save_booking(
 
             VALUES
             (
-                %s,
-                %s,
-                %s,
-                %s,
-                %s,
-                %s,
-                %s,
-                %s,
-                %s,
-                %s,
-                %s,
-
-                %s,
-                %s,
-                %s,
-                %s,
-                %s,
-                %s
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                %s, %s, %s, %s, %s, %s, %s, %s, %s
             )
             """,
             (
@@ -311,7 +297,11 @@ def save_booking(
 
                 package_price,
 
+                package_price,
+
                 data.days,
+
+                data.travelers,
 
                 "pending",
 
@@ -378,7 +368,7 @@ def save_booking(
 @router.post("/update-payment")
 def update_payment(
     data: PaymentRequest,
-    user=Depends(verify_firebase_token)
+    user=Depends(get_current_user)
 ):
 
     conn = get_connection()
@@ -387,10 +377,10 @@ def update_payment(
 
     try:
 
-        firebase_uid = user["uid"]
+        user_id = user["uid"]
 
         db_user_id = get_db_user_id(
-            firebase_uid
+            user_id
         )
 
         ensure_booking_workflow_columns(cursor)
@@ -440,7 +430,7 @@ def update_payment(
 
 @router.get("/my-bookings")
 def get_my_bookings(
-    user=Depends(verify_firebase_token)
+    user=Depends(get_current_user)
 ):
 
     conn = get_connection()
@@ -449,10 +439,10 @@ def get_my_bookings(
 
     try:
 
-        firebase_uid = user["uid"]
+        user_id = user["uid"]
 
         db_user_id = get_db_user_id(
-            firebase_uid
+            user_id
         )
 
         ensure_booking_workflow_columns(cursor)
@@ -589,7 +579,7 @@ def get_my_bookings(
 
 @router.get("/get-bookings")
 def get_bookings(
-    admin=Depends(get_current_user)
+    admin=Depends(get_current_admin)
 ):
 
     conn = get_connection()
@@ -721,7 +711,7 @@ def get_bookings(
 @router.get("/bookings/{booking_id}")
 def get_booking_detail(
     booking_id: str,
-    user=Depends(verify_firebase_token)
+    user=Depends(get_current_user)
 ):
 
     conn = get_connection()
@@ -870,7 +860,7 @@ def get_booking_detail(
 def update_booking_status(
     booking_id: str,
     payload: dict,
-    admin=Depends(get_current_user)
+    admin=Depends(get_current_admin)
 ):
 
     conn = get_connection()

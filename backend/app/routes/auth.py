@@ -1,12 +1,11 @@
 import logging
 
 import bcrypt
-from fastapi import APIRouter, Depends, HTTPException, Header
+from fastapi import APIRouter, HTTPException, Header
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from pydantic import BaseModel
 
-from app.firebase_auth import verify_firebase_token
 from psycopg2.extras import RealDictCursor
 
 from app.db import get_connection
@@ -23,6 +22,7 @@ settings = get_settings()
 SECRET_KEY = settings.ADMIN_SECRET_KEY
 ALGORITHM = "HS256"
 TOKEN_EXPIRE_HOURS = 2
+ROLE_NAMES = {"admin", "vendor", "customer", "agent", "user"}
 
 
 class LoginRequest(BaseModel):
@@ -132,7 +132,11 @@ def login(data: LoginRequest):
             )
 
         payload = {
-            "sub": admin_row["username"],
+            "sub": str(admin_row["id"]),
+            "id": admin_row["id"],
+            "uid": str(admin_row["id"]),
+            "email": admin_row["username"],
+            "username": admin_row["username"],
             "role": "admin",
             "exp": datetime.utcnow()
             + timedelta(hours=TOKEN_EXPIRE_HOURS),
@@ -146,7 +150,16 @@ def login(data: LoginRequest):
 
         return success_response(
             message="Admin login successful",
-            data={"access_token": token},
+            data={
+                "access_token": token,
+                "user": {
+                    "id": admin_row["id"],
+                    "uid": str(admin_row["id"]),
+                    "email": admin_row["username"],
+                    "username": admin_row["username"],
+                    "role": "admin",
+                },
+            },
             access_token=token,
         )
 
@@ -163,10 +176,24 @@ def login(data: LoginRequest):
 
 
 def verify_token(token: str):
+    runtime_settings = get_settings()
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(
+            token,
+            runtime_settings.ADMIN_SECRET_KEY,
+            algorithms=[ALGORITHM],
+        )
         if not payload.get("sub"):
             raise HTTPException(status_code=401, detail="Invalid token")
+
+        user_id = payload.get("id") or payload.get("uid") or payload.get("sub")
+        if str(user_id).lower() in ROLE_NAMES:
+            raise HTTPException(status_code=401, detail="Invalid token identity")
+
+        payload["id"] = user_id
+        payload["uid"] = str(user_id)
+        payload.setdefault("email", payload.get("username", ""))
+        payload.setdefault("role", "admin")
         return payload
     except JWTError:
         raise HTTPException(
@@ -191,77 +218,3 @@ def get_current_user(authorization: str = Header(None)):
 
     return verify_token(parts[1])
 
-
-@router.post("/save-user")
-async def save_user(user=Depends(verify_firebase_token)):
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    try:
-        ensure_user_columns(cursor)
-
-        firebase_uid = user["uid"]
-        email = user.get("email") or ""
-        display_name = (
-            user.get("name")
-            or user.get("displayName")
-            or user.get("display_name")
-            or "Traveler"
-        )
-
-        cursor.execute(
-            """
-            SELECT id FROM users WHERE firebase_uid = %s
-            """,
-            (firebase_uid,),
-        )
-        existing = cursor.fetchone()
-
-        if not existing:
-            cursor.execute(
-                """
-                INSERT INTO users (
-                    firebase_uid, name, full_name, email, role
-                )
-                VALUES (%s, %s, %s, %s, %s)
-                """,
-                (
-                    firebase_uid,
-                    display_name,
-                    display_name,
-                    email,
-                    "customer",
-                ),
-            )
-            conn.commit()
-            logger.info("User saved: %s", firebase_uid)
-        else:
-            cursor.execute(
-                """
-                UPDATE users
-                SET
-                    name = COALESCE(NULLIF(%s, ''), name),
-                    full_name = COALESCE(NULLIF(%s, ''), full_name),
-                    email = COALESCE(NULLIF(%s, ''), email),
-                    updated_at = CURRENT_TIMESTAMP
-                WHERE firebase_uid = %s
-                """,
-                (display_name, display_name, email, firebase_uid),
-            )
-            conn.commit()
-
-        return success_response(
-            message="User saved successfully",
-            data={"firebase_uid": firebase_uid, "email": email},
-        )
-
-    except HTTPException:
-        conn.rollback()
-        raise
-    except Exception as exc:
-        conn.rollback()
-        logger.error("Save user error: %s", exc)
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
-    finally:
-        cursor.close()
-        conn.close()

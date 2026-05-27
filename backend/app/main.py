@@ -6,6 +6,8 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 
 from fastapi.middleware.cors import (
     CORSMiddleware
@@ -16,6 +18,7 @@ from app.config import get_settings
 from app.responses import error_response, success_response
 
 from app.routes.payment import router as payment_router
+from app.auth.auth_routes import router as user_auth_router
 
 # =====================================================
 # LOAD ENV
@@ -42,6 +45,7 @@ from app.routes import (
     chat,
     reviews,
     vendors,
+    uploads,
 )
 
 # =====================================================
@@ -211,6 +215,20 @@ app.include_router(
     tags=["Authentication"]
 )
 
+upload_root = Path(settings.UPLOAD_DIR).resolve()
+upload_root.mkdir(parents=True, exist_ok=True)
+app.mount(
+    "/uploads",
+    StaticFiles(directory=str(upload_root)),
+    name="uploads",
+)
+
+app.include_router(
+    user_auth_router,
+    prefix="/api",
+    tags=["JWT Authentication"],
+)
+
 # =====================================================
 # PROFILE ROUTES
 # =====================================================
@@ -279,6 +297,12 @@ app.include_router(
     vendors.router,
     prefix="/api",
     tags=["Vendors"],
+)
+
+app.include_router(
+    uploads.router,
+    prefix="/api",
+    tags=["Uploads"],
 )
 
 app.include_router(

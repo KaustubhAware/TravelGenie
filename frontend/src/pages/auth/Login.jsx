@@ -1,10 +1,6 @@
 import { useState } from "react";
 
 import {
-  signInWithEmailAndPassword,
-} from "firebase/auth";
-
-import {
   useNavigate,
   useLocation,
   Link,
@@ -16,7 +12,7 @@ import {
   FaArrowRight,
 } from "react-icons/fa";
 
-import { auth } from "../../firebase";
+import { apiRequest } from "../../services/httpClient";
 
 import logo from "../../assets/logo.svg";
 
@@ -57,19 +53,15 @@ export default function Login() {
 
     try {
 
-      const userCredential =
-        await signInWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
-
-      const token =
-        await userCredential.user.getIdToken();
+      const data = await apiRequest("/auth/login", {
+        method: "POST",
+        auth: false,
+        body: JSON.stringify({ email, password }),
+      });
 
       localStorage.setItem(
         "token",
-        token
+        data.access_token || data.data?.access_token
       );
 
       navigate(from, {
@@ -80,7 +72,7 @@ export default function Login() {
 
       console.error(err);
 
-      alert("Login failed");
+      alert(err.message || "Login failed");
 
     } finally {
 

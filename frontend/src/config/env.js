@@ -3,34 +3,13 @@ export const env = {
     import.meta.env.VITE_API_BASE_URL ||
     "http://127.0.0.1:8000/api",
 
-  FIREBASE_API_KEY:
-    import.meta.env.VITE_FIREBASE_API_KEY || "",
-
-  FIREBASE_AUTH_DOMAIN:
-    import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "",
-
-  FIREBASE_PROJECT_ID:
-    import.meta.env.VITE_FIREBASE_PROJECT_ID || "",
-
-  FIREBASE_STORAGE_BUCKET:
-    import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "",
-
-  FIREBASE_MESSAGING_SENDER_ID:
-    import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "",
-
-  FIREBASE_APP_ID:
-    import.meta.env.VITE_FIREBASE_APP_ID || "",
-
-  FIREBASE_MEASUREMENT_ID:
-    import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "",
+  RAZORPAY_KEY_ID:
+    import.meta.env.VITE_RAZORPAY_KEY_ID || "",
 };
 
 export const validateFrontendConfig = () => {
   const required = [
-    "FIREBASE_API_KEY",
-    "FIREBASE_AUTH_DOMAIN",
-    "FIREBASE_PROJECT_ID",
-    "FIREBASE_APP_ID",
+    "API_BASE_URL",
   ];
 
   return required.filter((key) => !env[key]);

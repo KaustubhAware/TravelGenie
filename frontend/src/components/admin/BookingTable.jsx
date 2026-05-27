@@ -75,6 +75,9 @@ function BookingTable({
       adjusted_price: "",
     });
 
+  const [actionMenu, setActionMenu] =
+    useState(null);
+
   /* ===================================================== */
   /* OPEN REVIEW */
   /* ===================================================== */
@@ -380,9 +383,9 @@ function BookingTable({
 
                     {/* ACTIONS */}
 
-                    <td className="px-6 py-5 min-w-[320px]">
+                    <td className="px-6 py-5 min-w-[220px]">
 
-                      <div className="flex flex-wrap items-center gap-2 max-w-[520px]">
+                      <div className="relative flex items-center gap-2">
 
                         {/* REVIEW */}
 
@@ -400,115 +403,80 @@ function BookingTable({
                           ].includes(b.status)}
                         />
 
-                        {/* APPROVE */}
-
-                        <ActionButton
-                          label="Approve"
-                          icon={<FaCheck />}
-                          className="bg-blue-600 text-white hover:bg-blue-700"
+                        <button
+                          type="button"
                           onClick={() =>
-                            updateStatus(
-                              b.booking_id,
-                              "approved"
+                            setActionMenu(
+                              actionMenu === b.booking_id
+                                ? null
+                                : b.booking_id
                             )
                           }
-                          disabled={[
-                            "approved",
-                            "paid",
-                            "completed",
-                          ].includes(b.status)}
-                        />
+                          className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                        >
+                          More
+                        </button>
 
-                        {/* PAYMENT */}
-
-                        <ActionButton
-                          label="Payment"
-                          icon={<FaCreditCard />}
-                          className="bg-orange-500 text-white hover:bg-orange-600"
-                          onClick={() =>
-                            updateStatus(
-                              b.booking_id,
-                              "payment_pending"
-                            )
-                          }
-                          disabled={
-                            b.status !== "approved"
-                          }
-                        />
-
-                        {/* PAID */}
-
-                        <ActionButton
-                          label="Paid"
-                          icon={<FaCreditCard />}
-                          className="bg-green-600 text-white hover:bg-green-700"
-                          onClick={() =>
-                            updateStatus(
-                              b.booking_id,
-                              "paid"
-                            )
-                          }
-                          disabled={
-                            ![
-                              "payment_pending",
-                              "approved",
-                            ].includes(b.status)
-                          }
-                        />
-
-                        {/* COMPLETE */}
-
-                        <ActionButton
-                          label="Complete"
-                          icon={<FaFlagCheckered />}
-                          className="bg-purple-600 text-white hover:bg-purple-700"
-                          onClick={() =>
-                            updateStatus(
-                              b.booking_id,
-                              "completed"
-                            )
-                          }
-                          disabled={
-                            b.status !== "paid"
-                          }
-                        />
-
-                        {/* REJECT */}
-
-                        <ActionButton
-                          label="Reject"
-                          icon={<FaTimes />}
-                          className="bg-red-500 text-white hover:bg-red-600"
-                          onClick={() =>
-                            updateStatus(
-                              b.booking_id,
-                              "rejected"
-                            )
-                          }
-                          disabled={[
-                            "rejected",
-                            "paid",
-                            "completed",
-                          ].includes(b.status)}
-                        />
-
-                        {/* CANCEL */}
-
-                        <ActionButton
-                          label="Cancel"
-                          icon={<FaTimes />}
-                          className="bg-slate-700 text-white hover:bg-slate-800"
-                          onClick={() =>
-                            cancelBooking(
-                              b.booking_id
-                            )
-                          }
-                          disabled={[
-                            "cancelled",
-                            "paid",
-                            "completed",
-                          ].includes(b.status)}
-                        />
+                        {actionMenu === b.booking_id && (
+                          <div className="absolute right-0 top-11 z-30 w-56 overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
+                            <MenuAction
+                              icon={<FaCheck />}
+                              label="Approve"
+                              disabled={["approved", "paid", "completed"].includes(b.status)}
+                              onClick={() => {
+                                updateStatus(b.booking_id, "approved");
+                                setActionMenu(null);
+                              }}
+                            />
+                            <MenuAction
+                              icon={<FaCreditCard />}
+                              label="Request Payment"
+                              disabled={b.status !== "approved"}
+                              onClick={() => {
+                                updateStatus(b.booking_id, "payment_pending");
+                                setActionMenu(null);
+                              }}
+                            />
+                            <MenuAction
+                              icon={<FaCreditCard />}
+                              label="Mark Paid"
+                              disabled={!["payment_pending", "approved"].includes(b.status)}
+                              onClick={() => {
+                                updateStatus(b.booking_id, "paid");
+                                setActionMenu(null);
+                              }}
+                            />
+                            <MenuAction
+                              icon={<FaFlagCheckered />}
+                              label="Complete Trip"
+                              disabled={b.status !== "paid"}
+                              onClick={() => {
+                                updateStatus(b.booking_id, "completed");
+                                setActionMenu(null);
+                              }}
+                            />
+                            <MenuAction
+                              icon={<FaTimes />}
+                              label="Reject"
+                              danger
+                              disabled={["rejected", "paid", "completed"].includes(b.status)}
+                              onClick={() => {
+                                updateStatus(b.booking_id, "rejected");
+                                setActionMenu(null);
+                              }}
+                            />
+                            <MenuAction
+                              icon={<FaTimes />}
+                              label="Cancel"
+                              danger
+                              disabled={["cancelled", "paid", "completed"].includes(b.status)}
+                              onClick={() => {
+                                cancelBooking(b.booking_id);
+                                setActionMenu(null);
+                              }}
+                            />
+                          </div>
+                        )}
 
                       </div>
 
@@ -696,6 +664,30 @@ function ActionButton({
 
   );
 
+}
+
+function MenuAction({
+  icon,
+  label,
+  onClick,
+  disabled = false,
+  danger = false,
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-40 ${
+        danger
+          ? "text-red-600 hover:bg-red-50"
+          : "text-slate-700 hover:bg-slate-50"
+      }`}
+    >
+      <span className="text-sm">{icon}</span>
+      {label}
+    </button>
+  );
 }
 
 export default memo(

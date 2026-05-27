@@ -2,8 +2,8 @@ fastapi
 uvicorn[standard]
 python-dotenv
 psycopg2-binary
-firebase-admin
 python-jose[cryptography]
+passlib[bcrypt]
 pydantic
 email-validator
 google-genai
@@ -11,3 +11,5 @@ pandas
 numpy
 bcrypt
 python-slugify
+python-multipart
+razorpay

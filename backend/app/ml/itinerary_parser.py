@@ -26,13 +26,25 @@ DEFAULT_RESPONSE = {
 
     "travel_tips": [],
 
+    "trip_summary": {},
+
+    "packing_list": [],
+
+    "safety_notes": [],
+
     "hotel_recommendations": [],
 
     "restaurant_recommendations": [],
 
     "weather": {},
 
-    "crowd_insights": []
+    "crowd_insights": [],
+
+    "transport_recommendations": [],
+
+    "nearby_attractions": [],
+
+    "best_season": ""
 }
 
 # =====================================================
@@ -73,6 +85,11 @@ def parse_itinerary_response(text):
 
         response = {
 
+            "trip_summary": data.get(
+                "trip_summary",
+                {}
+            ),
+
             "itinerary": data.get(
                 "itinerary",
                 []
@@ -81,6 +98,11 @@ def parse_itinerary_response(text):
             "recommended_places": data.get(
                 "recommended_places",
                 []
+            ),
+
+            "recommendations": data.get(
+                "recommendations",
+                data.get("recommended_places", [])
             ),
 
             "estimated_cost": data.get(
@@ -109,7 +131,7 @@ def parse_itinerary_response(text):
 
             "hotel_recommendations": data.get(
                 "hotel_recommendations",
-                []
+                data.get("hotels", [])
             ),
 
             # =====================================================
@@ -118,7 +140,7 @@ def parse_itinerary_response(text):
 
             "restaurant_recommendations": data.get(
                 "restaurant_recommendations",
-                []
+                data.get("restaurants", [])
             ),
 
             # =====================================================
@@ -130,12 +152,37 @@ def parse_itinerary_response(text):
                 {}
             ),
 
+            "transport_recommendations": data.get(
+                "transport_recommendations",
+                []
+            ),
+
+            "nearby_attractions": data.get(
+                "nearby_attractions",
+                []
+            ),
+
+            "best_season": data.get(
+                "best_season",
+                data.get("weather", {}).get("best_season", "")
+            ),
+
             # =====================================================
             # CROWD INSIGHTS
             # =====================================================
 
             "crowd_insights": data.get(
                 "crowd_insights",
+                []
+            ),
+
+            "packing_list": data.get(
+                "packing_list",
+                []
+            ),
+
+            "safety_notes": data.get(
+                "safety_notes",
                 []
             )
         }

@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 
 from app.db import get_connection
 
-from app.firebase_auth import verify_firebase_token
+from app.auth.jwt_handler import get_current_user
 
 from app.ml.recommendation import recommend
 
@@ -137,6 +137,12 @@ def generate_trip(data: dict):
                 []
             ),
 
+        "trip_summary":
+            parsed_data.get(
+                "trip_summary",
+                {}
+            ),
+
         # =====================================================
         # RECOMMENDED PLACES
         # =====================================================
@@ -250,6 +256,30 @@ def generate_trip(data: dict):
             parsed_data.get(
                 "weather",
                 {}
+            ),
+
+        "packing_list":
+            parsed_data.get(
+                "packing_list",
+                []
+            ),
+
+        "safety_notes":
+            parsed_data.get(
+                "safety_notes",
+                []
+            ),
+
+        "hotels":
+            parsed_data.get(
+                "hotel_recommendations",
+                []
+            ),
+
+        "restaurants":
+            parsed_data.get(
+                "restaurant_recommendations",
+                []
             )
     }
 
@@ -262,7 +292,7 @@ def generate_trip(data: dict):
 def save_trip(
     data: dict,
     user=Depends(
-        verify_firebase_token
+        get_current_user
     )
 ):
 
@@ -297,6 +327,7 @@ def save_trip(
                 %s,
                 %s
             )
+            RETURNING id
             """,
             (
                 user["uid"],
@@ -313,6 +344,36 @@ def save_trip(
                     )
                 )
             )
+        )
+
+        trip_id = cursor.fetchone()[0]
+
+        cursor.execute(
+            """
+            INSERT INTO saved_itineraries (
+                user_id,
+                trip_id,
+                destination,
+                budget,
+                days,
+                preferences,
+                itinerary,
+                metadata,
+                created_at,
+                updated_at
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s::jsonb, %s::jsonb, NOW(), NOW())
+            """,
+            (
+                user["uid"],
+                trip_id,
+                data.get("destination"),
+                data.get("budget"),
+                data.get("days"),
+                data.get("preferences"),
+                json.dumps(data.get("itinerary", [])),
+                json.dumps({"source": "save-trip"}),
+            ),
         )
 
         conn.commit()
@@ -338,7 +399,7 @@ def save_trip(
 @router.get("/get-trips")
 def get_trips(
     user=Depends(
-        verify_firebase_token
+        get_current_user
     )
 ):
 
@@ -436,7 +497,7 @@ def get_trips(
 def delete_trip(
     trip_id: int,
     user=Depends(
-        verify_firebase_token
+        get_current_user
     )
 ):
 

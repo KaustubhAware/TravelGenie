@@ -20,8 +20,8 @@ TravelGenie follows a modular SaaS architecture.
 
 ## Authentication Layer
 
-- Firebase Authentication for customers
-- JWT admin/agent session flow
+- JWT + PostgreSQL authentication for customers, vendors, admins, and agents
+- Compatibility JWT payload includes both `id` and `uid` for older route compatibility
 - Protected frontend routes and protected backend dependencies
 
 ## AI Layer
@@ -33,7 +33,7 @@ TravelGenie follows a modular SaaS architecture.
 ## Database Layer
 
 - PostgreSQL normalized business tables
-- Users, packages, bookings, payments, invoices, saved itineraries, activity logs
+- Users, vendors, packages, trip batches, bookings, Razorpay payment transactions, invoices, saved itineraries, notifications, AI history, and activity logs
 - Schema baseline in `backend/schema.sql`
 
 ## Analytics Layer

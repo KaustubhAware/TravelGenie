@@ -5,6 +5,8 @@
 # SLUG SUPPORT + DETAIL PAGE FIX
 # =====================================================
 
+import json
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from typing import Optional, List
@@ -37,6 +39,25 @@ def _serialize_package(row):
         item["slug"] = str(item["id"])
     item["included"] = _text_lines(item.get("included"))
     item["excluded"] = _text_lines(item.get("excluded"))
+    for key, fallback in {
+        "gallery": [],
+        "itinerary": [],
+        "pickup_points": [],
+        "highlights": [],
+        "faq": [],
+        "nearby_attractions": [],
+        "safety_notes": [],
+        "weather_details": {},
+        "transport_info": {},
+    }.items():
+        value = item.get(key)
+        if isinstance(value, str):
+            try:
+                item[key] = json.loads(value)
+            except Exception:
+                item[key] = fallback
+        elif value is None:
+            item[key] = fallback
     if item.get("created_at"):
         item["created_at"] = str(item["created_at"])
     if item.get("updated_at"):
@@ -126,6 +147,20 @@ class PackageRequest(BaseModel):
 
     pickup_points: Optional[List[str]] = []
 
+    highlights: Optional[List[str]] = []
+
+    weather_details: Optional[dict] = {}
+
+    faq: Optional[List[dict]] = []
+
+    nearby_attractions: Optional[List[str]] = []
+
+    safety_notes: Optional[List[str]] = []
+
+    transport_info: Optional[dict] = {}
+
+    map_url: Optional[str] = ""
+
     itinerary: Optional[List[dict]] = []
 
     featured: Optional[bool] = False
@@ -168,6 +203,7 @@ def get_packages():
         cur.execute("""
             SELECT
                 id,
+                vendor_id,
                 title,
                 slug,
                 location,
@@ -189,6 +225,13 @@ def get_packages():
                 full_description,
                 included,
                 excluded,
+                highlights,
+                weather_details,
+                faq,
+                nearby_attractions,
+                safety_notes,
+                transport_info,
+                map_url,
                 pickup_points,
                 itinerary,
                 featured,
@@ -248,6 +291,7 @@ def get_single_package(slug: str):
         cur.execute("""
             SELECT
                 id,
+                p.vendor_id,
                 title,
                 slug,
                 location,
@@ -269,17 +313,30 @@ def get_single_package(slug: str):
                 full_description,
                 included,
                 excluded,
+                highlights,
+                weather_details,
+                faq,
+                nearby_attractions,
+                safety_notes,
+                transport_info,
+                map_url,
                 pickup_points,
                 itinerary,
                 featured,
-                status,
-                rating,
+                p.status,
+                p.rating,
                 total_reviews,
-                created_at,
-                updated_at
-            FROM packages
-            WHERE (slug = %s OR id::text = %s)
-            AND status = 'active'
+                p.created_at,
+                p.updated_at,
+                v.business_name AS vendor_name,
+                v.owner_name AS vendor_owner,
+                v.rating AS vendor_rating,
+                v.response_time AS vendor_response_time,
+                v.verified_badge AS vendor_verified
+            FROM packages p
+            LEFT JOIN vendors v ON v.vendor_id = p.vendor_id
+            WHERE (p.slug = %s OR p.id::text = %s)
+            AND p.status = 'active'
         """, (slug, slug))
 
         package = cur.fetchone()
@@ -525,6 +582,13 @@ def create_package(
                 full_description,
                 included,
                 excluded,
+                highlights,
+                weather_details,
+                faq,
+                nearby_attractions,
+                safety_notes,
+                transport_info,
+                map_url,
                 pickup_points,
                 itinerary,
                 featured,
@@ -537,7 +601,8 @@ def create_package(
 
                 %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,
                 %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,
-                %s,%s,%s,%s,%s,%s
+                %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,
+                %s,%s,%s
 
             )
 
@@ -566,6 +631,13 @@ def create_package(
             data.full_description,
             "\n".join(data.included or []),
             "\n".join(data.excluded or []),
+            Json(data.highlights or []),
+            Json(data.weather_details or {}),
+            Json(data.faq or []),
+            Json(data.nearby_attractions or []),
+            Json(data.safety_notes or []),
+            Json(data.transport_info or {}),
+            data.map_url,
             Json(data.pickup_points or []),
             Json(data.itinerary or []),
             data.featured,
@@ -653,6 +725,13 @@ def update_package(
                 full_description = %s,
                 included = %s,
                 excluded = %s,
+                highlights = %s,
+                weather_details = %s,
+                faq = %s,
+                nearby_attractions = %s,
+                safety_notes = %s,
+                transport_info = %s,
+                map_url = %s,
                 pickup_points = %s,
                 itinerary = %s,
                 featured = %s,
@@ -685,6 +764,13 @@ def update_package(
             data.full_description,
             "\n".join(data.included or []),
             "\n".join(data.excluded or []),
+            Json(data.highlights or []),
+            Json(data.weather_details or {}),
+            Json(data.faq or []),
+            Json(data.nearby_attractions or []),
+            Json(data.safety_notes or []),
+            Json(data.transport_info or {}),
+            data.map_url,
             Json(data.pickup_points or []),
             Json(data.itinerary or []),
             data.featured,

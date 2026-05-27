@@ -14,15 +14,15 @@ export default function RestaurantRecommendationCard({
 
   return (
 
-    <div className="bg-white border border-gray-200 rounded-[28px] p-6">
+    <div className="bg-white border border-gray-200 rounded-[28px] p-6 shadow-sm">
 
       <div className="flex items-center gap-3">
 
-        <FaUtensils className="text-blue-600" />
+        <FaUtensils className="text-orange-500" />
 
         <h3 className="text-xl font-bold text-gray-900">
 
-          {restaurant.name}
+          {restaurant.name || "Recommended restaurant"}
 
         </h3>
 
@@ -30,9 +30,15 @@ export default function RestaurantRecommendationCard({
 
       <p className="text-gray-600 mt-3">
 
-        {restaurant.cuisine}
+        {restaurant.cuisine || "Local Maharashtrian"}
 
       </p>
+
+      {(restaurant.speciality || restaurant.specialty) && (
+        <p className="mt-2 text-sm text-slate-500">
+          Speciality: {restaurant.speciality || restaurant.specialty}
+        </p>
+      )}
 
       <div className="flex items-center gap-5 mt-5">
 
@@ -42,7 +48,7 @@ export default function RestaurantRecommendationCard({
 
           <span>
 
-            {restaurant.rating}
+            {restaurant.rating || "4.4"}
 
           </span>
 
@@ -54,13 +60,19 @@ export default function RestaurantRecommendationCard({
 
           <span>
 
-            {restaurant.distance}
+            {restaurant.distance || restaurant.location || "Nearby"}
 
           </span>
 
         </div>
 
       </div>
+
+      {(restaurant.approx_cost || restaurant.cost || restaurant.price_range) && (
+        <div className="mt-5 rounded-2xl bg-orange-50 px-4 py-3 text-sm font-semibold text-orange-700">
+          Approx. cost: {restaurant.approx_cost || restaurant.cost || restaurant.price_range}
+        </div>
+      )}
 
     </div>
 

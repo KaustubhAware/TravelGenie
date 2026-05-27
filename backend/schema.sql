@@ -7,15 +7,18 @@
 
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
-    firebase_uid VARCHAR(160) UNIQUE NOT NULL,
     email VARCHAR(180) UNIQUE NOT NULL,
+    password_hash TEXT,
     name VARCHAR(120),
     full_name VARCHAR(160),
     phone VARCHAR(30),
+    emergency_contact VARCHAR(60),
     city VARCHAR(100),
     country VARCHAR(100),
     preferences TEXT,
+    travel_preferences JSONB DEFAULT '[]'::jsonb,
     favorite_destinations TEXT,
+    profile_image TEXT,
     profile_completed BOOLEAN DEFAULT FALSE,
     role VARCHAR(30) DEFAULT 'customer',
     is_deleted BOOLEAN DEFAULT FALSE,
@@ -93,7 +96,7 @@ CREATE TABLE IF NOT EXISTS packages (
     services TEXT,
     hotel_details TEXT,
     transport_details TEXT,
-    itinerary TEXT,
+    itinerary JSONB DEFAULT '[]'::jsonb,
     category VARCHAR(80),
     difficulty VARCHAR(50),
     group_size VARCHAR(50),
@@ -102,6 +105,13 @@ CREATE TABLE IF NOT EXISTS packages (
     trek_distance VARCHAR(80),
     included TEXT,
     excluded TEXT,
+    highlights JSONB DEFAULT '[]'::jsonb,
+    weather_details JSONB DEFAULT '{}'::jsonb,
+    faq JSONB DEFAULT '[]'::jsonb,
+    nearby_attractions JSONB DEFAULT '[]'::jsonb,
+    safety_notes JSONB DEFAULT '[]'::jsonb,
+    transport_info JSONB DEFAULT '{}'::jsonb,
+    map_url TEXT,
     pickup_points JSONB DEFAULT '[]'::jsonb,
     fitness_required VARCHAR(120),
     travel_type VARCHAR(80),
@@ -135,6 +145,18 @@ CREATE TABLE IF NOT EXISTS vendor_packages (
 
 CREATE INDEX IF NOT EXISTS idx_vendor_packages_vendor ON vendor_packages(vendor_id);
 
+CREATE TABLE IF NOT EXISTS package_images (
+    id SERIAL PRIMARY KEY,
+    package_id INTEGER NOT NULL REFERENCES packages(id) ON DELETE CASCADE,
+    image_path TEXT NOT NULL,
+    alt_text VARCHAR(200),
+    sort_order INTEGER DEFAULT 0,
+    is_featured BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_package_images_package ON package_images(package_id);
+
 -- =====================================================
 -- TRIP BATCHES / DEPARTURES
 -- =====================================================
@@ -167,7 +189,7 @@ CREATE INDEX IF NOT EXISTS idx_trip_batches_status ON trip_batches(batch_status)
 
 CREATE TABLE IF NOT EXISTS trips (
     id SERIAL PRIMARY KEY,
-    user_id VARCHAR(160) NOT NULL REFERENCES users(firebase_uid) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     vendor_id INTEGER REFERENCES vendors(vendor_id) ON DELETE SET NULL,
     package_id INTEGER REFERENCES packages(id) ON DELETE SET NULL,
     vendor_package_id INTEGER REFERENCES vendor_packages(id) ON DELETE SET NULL,
@@ -208,7 +230,9 @@ CREATE TABLE IF NOT EXISTS bookings (
     email VARCHAR(180) NOT NULL,
     phone VARCHAR(30) NOT NULL,
     budget NUMERIC(12, 2) DEFAULT 0,
+    total_amount NUMERIC(12, 2) DEFAULT 0,
     days INTEGER DEFAULT 1,
+    persons INTEGER DEFAULT 1,
     status VARCHAR(30) DEFAULT 'pending',
     payment_status VARCHAR(30) DEFAULT 'unpaid',
     agent_id INTEGER REFERENCES agents(id) ON DELETE SET NULL,
@@ -223,6 +247,7 @@ CREATE TABLE IF NOT EXISTS bookings (
     departure_date DATE,
     return_date DATE,
     notes TEXT,
+    booking_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -253,28 +278,55 @@ CREATE INDEX IF NOT EXISTS idx_reviews_vendor ON reviews(vendor_id);
 CREATE INDEX IF NOT EXISTS idx_reviews_moderation ON reviews(moderation_status);
 
 -- =====================================================
--- SAVED ITINERARIES, PAYMENTS, INVOICES
+-- PAYMENTS, AI HISTORY, NOTIFICATIONS, INVOICES
 -- =====================================================
+
+CREATE TABLE IF NOT EXISTS payment_transactions (
+    id SERIAL PRIMARY KEY,
+    booking_id VARCHAR(40) REFERENCES bookings(booking_id) ON DELETE SET NULL,
+    razorpay_order_id TEXT UNIQUE,
+    razorpay_payment_id TEXT UNIQUE,
+    amount NUMERIC(12, 2) NOT NULL DEFAULT 0,
+    currency VARCHAR(10) DEFAULT 'INR',
+    status VARCHAR(30) NOT NULL DEFAULT 'created',
+    failure_reason TEXT,
+    metadata JSONB DEFAULT '{}'::jsonb,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS ai_chat_history (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    role VARCHAR(30) NOT NULL,
+    prompt TEXT,
+    response TEXT,
+    content TEXT NOT NULL,
+    metadata JSONB DEFAULT '{}'::jsonb,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 CREATE TABLE IF NOT EXISTS saved_itineraries (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    trip_id INTEGER REFERENCES trips(id) ON DELETE SET NULL,
     destination VARCHAR(120) NOT NULL,
     budget NUMERIC(12, 2) DEFAULT 0,
     days INTEGER DEFAULT 1,
     preferences TEXT,
-    itinerary TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    itinerary JSONB DEFAULT '[]'::jsonb,
+    metadata JSONB DEFAULT '{}'::jsonb,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS payments (
+CREATE TABLE IF NOT EXISTS notifications (
     id SERIAL PRIMARY KEY,
-    booking_id INTEGER REFERENCES bookings(id) ON DELETE CASCADE,
-    payment_reference VARCHAR(100) UNIQUE,
-    amount NUMERIC(12, 2) NOT NULL DEFAULT 0,
-    method VARCHAR(50) DEFAULT 'card',
-    status VARCHAR(30) DEFAULT 'success',
-    paid_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(160) NOT NULL,
+    message TEXT,
+    is_read BOOLEAN DEFAULT FALSE,
+    read_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS invoices (
@@ -325,7 +377,28 @@ CREATE TABLE IF NOT EXISTS activity_logs (
 -- =====================================================
 
 CREATE INDEX IF NOT EXISTS idx_bookings_user_id ON bookings(user_id);
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema = 'public'
+        AND table_name = 'bookings'
+        AND column_name = 'id'
+    ) THEN
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_bookings_id_unique ON bookings(id);
+    END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS idx_bookings_status ON bookings(status);
 CREATE INDEX IF NOT EXISTS idx_bookings_created_at ON bookings(created_at);
 CREATE INDEX IF NOT EXISTS idx_packages_location ON packages(location);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_packages_slug_unique ON packages(slug) WHERE slug IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_payments_booking_id ON payment_transactions(booking_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_payment_one_active_order_per_booking
+    ON payment_transactions(booking_id)
+    WHERE booking_id IS NOT NULL
+    AND status IN ('created', 'attempted')
+    AND razorpay_order_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_ai_chat_history_user_id ON ai_chat_history(user_id);
 CREATE INDEX IF NOT EXISTS idx_saved_itineraries_user_id ON saved_itineraries(user_id);
+CREATE INDEX IF NOT EXISTS idx_saved_itineraries_trip_id ON saved_itineraries(trip_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_user_read ON notifications(user_id, is_read);

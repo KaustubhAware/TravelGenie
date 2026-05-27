@@ -2,24 +2,26 @@ import { useEffect, useState } from "react";
 import { FaCompass, FaUserCircle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-import { useFirebaseAuth } from "../hooks/useFirebaseAuth";
-import { env } from "../config/env";
+import { useJwtAuth } from "../hooks/useJwtAuth";
 import PageContainer from "../components/ui/PageContainer";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
+import { apiRequest } from "../services/httpClient";
 
 const inputClass =
   "w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-800 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100 focus:bg-white";
 
 export default function ProfileComplete() {
   const navigate = useNavigate();
-  const { user, authReady } = useFirebaseAuth();
+  const { user, authReady } = useJwtAuth();
 
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [city, setCity] = useState("");
   const [country, setCountry] = useState("");
+  const [emergencyContact, setEmergencyContact] = useState("");
+  const [profileImage, setProfileImage] = useState("");
   const [preferences, setPreferences] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -29,7 +31,24 @@ export default function ProfileComplete() {
     }
   }, [authReady, user, navigate]);
 
-  const fields = [fullName, phone, city, country, preferences];
+  useEffect(() => {
+    if (!authReady || !user) return;
+
+    apiRequest("/profile/me")
+      .then((data) => {
+        const profile = data.profile || {};
+        setFullName(profile.full_name || "");
+        setPhone(profile.phone || "");
+        setCity(profile.city || "");
+        setCountry(profile.country || "");
+        setEmergencyContact(profile.emergency_contact || "");
+        setProfileImage(profile.profile_image || "");
+        setPreferences(profile.preferences || "");
+      })
+      .catch(() => {});
+  }, [authReady, user]);
+
+  const fields = [fullName, phone, city, country, emergencyContact, preferences];
   const completion = Math.round(
     (fields.filter(Boolean).length / fields.length) * 100
   );
@@ -39,27 +58,22 @@ export default function ProfileComplete() {
 
     try {
       setLoading(true);
-      const token = await user.getIdToken();
-
-      const res = await fetch(`${env.API_BASE_URL}/profile/save`, {
+      const data = await apiRequest("/profile/save", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
         body: JSON.stringify({
           full_name: fullName,
           phone,
+          emergency_contact: emergencyContact,
           city,
           country,
           preferences,
+          travel_preferences: preferences
+            .split(",")
+            .map((item) => item.trim())
+            .filter(Boolean),
+          profile_image: profileImage,
         }),
       });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.detail || "Failed to save profile");
-      }
 
       alert(data.message || "Profile saved successfully");
       navigate("/dashboard");
@@ -136,8 +150,18 @@ export default function ProfileComplete() {
           <div className="grid gap-4 md:grid-cols-2">
             <Field label="Full Name" value={fullName} onChange={setFullName} />
             <Field label="Phone" value={phone} onChange={setPhone} />
+            <Field
+              label="Emergency Contact"
+              value={emergencyContact}
+              onChange={setEmergencyContact}
+            />
             <Field label="City" value={city} onChange={setCity} />
             <Field label="Country" value={country} onChange={setCountry} />
+            <Field
+              label="Profile Image URL"
+              value={profileImage}
+              onChange={setProfileImage}
+            />
           </div>
 
           <label className="mt-4 block">

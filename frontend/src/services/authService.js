@@ -2,13 +2,11 @@ import { hasAuthToken } from "../utils/authToken";
 import { apiRequest } from "./httpClient";
 
 export const authService = {
-  saveFirebaseUser: () => {
+  saveCurrentUser: () => {
     if (!hasAuthToken()) {
       return Promise.reject(new Error("Not authenticated"));
     }
 
-    return apiRequest("/admin/save-user", {
-      method: "POST",
-    });
+    return apiRequest("/auth/me");
   },
 };

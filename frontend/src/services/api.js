@@ -1,4 +1,5 @@
 import axios from "axios";
+import { env } from "../config/env";
 
 /* ===================================================== */
 /* AXIOS INSTANCE */
@@ -7,7 +8,7 @@ import axios from "axios";
 const api = axios.create({
 
   baseURL:
-    "http://127.0.0.1:8000/api",
+    env.API_BASE_URL,
 
   headers: {
     "Content-Type":

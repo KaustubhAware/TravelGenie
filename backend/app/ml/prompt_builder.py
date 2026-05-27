@@ -83,26 +83,23 @@ Trip Type: {trip_type}
 
 Preferences: {preferences_text}
 
-You MUST include:
-
-1. itinerary
-2. recommended_places
-3. estimated_cost
-4. sentiment
-5. budget_breakdown
-6. travel_tips
-7. hotel_recommendations
-8. restaurant_recommendations
-9. weather
-
-IMPORTANT:
-hotel_recommendations,
-restaurant_recommendations,
-and weather are REQUIRED.
+You MUST include concise UI-ready content for every field below.
+Hotels must cover budget hotels, premium hotels, camping stays, and nearby stays.
+Restaurants should be practical nearby food stops. Avoid large paragraphs.
 
 Return this EXACT JSON structure:
 
 {{
+  "trip_summary": {{
+    "destination": "{destination}",
+    "duration": "{days} days",
+    "travelers": "{travelers}",
+    "trip_type": "{trip_type}",
+    "estimated_cost": 0,
+    "best_for": "",
+    "summary": ""
+  }},
+
   "itinerary": [
     {{
       "day": 1,
@@ -114,6 +111,10 @@ Return this EXACT JSON structure:
   ],
 
   "recommended_places": [
+    ""
+  ],
+
+  "nearby_attractions": [
     ""
   ],
 
@@ -133,22 +134,44 @@ Return this EXACT JSON structure:
     ""
   ],
 
-  "hotel_recommendations": [
+  "transport_recommendations": [
+    {{
+      "mode": "",
+      "route": "",
+      "estimated_cost": 0,
+      "duration": "",
+      "notes": ""
+    }}
+  ],
+
+  "hotels": [
     {{
       "name": "",
+      "type": "Budget Hotel",
       "price_range": "",
       "rating": "",
+      "area": "",
+      "why_recommended": "",
       "image": "https://images.unsplash.com/photo-1566073771259-6a8506099945"
     }}
   ],
 
-  "restaurant_recommendations": [
+  "restaurants": [
     {{
       "name": "",
       "cuisine": "",
       "rating": "",
-      "distance": ""
+      "distance": "",
+      "best_for": ""
     }}
+  ],
+
+  "packing_list": [
+    ""
+  ],
+
+  "safety_notes": [
+    ""
   ],
 
   "weather": {{
@@ -157,7 +180,9 @@ Return this EXACT JSON structure:
     "best_season": "",
     "rainfall_conditions": "",
     "monsoon_warning": ""
-  }}
+  }},
+
+  "best_season": ""
 }}
 
 """

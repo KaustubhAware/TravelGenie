@@ -8,10 +8,9 @@ import {
   useParams,
 } from "react-router-dom";
 
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "../../firebase";
-import { useFirebaseAuth } from "../../hooks/useFirebaseAuth";
+import { useJwtAuth } from "../../hooks/useJwtAuth";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
+import TravelMap from "../../components/ai/TravelMap";
 
 import { exportInvoicePDF } from "../../utils/exportPDF";
 
@@ -85,28 +84,31 @@ export default function BookingDetails() {
   const [loading, setLoading] =
     useState(true);
 
+  const [paymentLoading, setPaymentLoading] =
+    useState(false);
+
   /* ===================================================== */
   /* LOAD */
   /* ===================================================== */
 
-  const { user, authReady } = useFirebaseAuth();
+  const { user, authReady } = useJwtAuth();
 
   useEffect(() => {
 
     let mounted = true;
 
     const loadBooking =
-      async (firebaseUser) => {
+      async (authUser) => {
 
       try {
 
-        if (!firebaseUser) {
+        if (!authUser) {
           if (mounted) setLoading(false);
           return;
         }
 
         const token =
-          await firebaseUser.getIdToken();
+          await authUser.getIdToken();
 
         const res =
           await fetch(
@@ -428,9 +430,13 @@ export default function BookingDetails() {
                {canPay && (
 
   <button
+    disabled={paymentLoading}
     onClick={async () => {
 
       try {
+        if (paymentLoading) return;
+
+        setPaymentLoading(true);
 
         const token =
           await user.getIdToken();
@@ -486,6 +492,8 @@ export default function BookingDetails() {
             orderData.detail ||
             "Unable to create payment order"
           );
+
+          setPaymentLoading(false);
 
           return;
 
@@ -624,7 +632,7 @@ export default function BookingDetails() {
 
                       state: {
 
-                        booking,
+                        ...booking,
 
                         payment_id:
                           response.razorpay_payment_id,
@@ -642,6 +650,8 @@ export default function BookingDetails() {
                     "Payment verification failed"
                   );
 
+                  setPaymentLoading(false);
+
                 }
 
               } catch (err) {
@@ -655,6 +665,8 @@ export default function BookingDetails() {
                   "Payment verification failed"
                 );
 
+                setPaymentLoading(false);
+
               }
 
             },
@@ -667,6 +679,8 @@ export default function BookingDetails() {
                 console.log(
                   "Payment popup closed"
                 );
+
+                setPaymentLoading(false);
 
               },
 
@@ -692,13 +706,15 @@ export default function BookingDetails() {
           "Unable to start payment"
         );
 
+        setPaymentLoading(false);
+
       }
 
     }}
-    className="bg-orange-500 hover:bg-orange-600 transition text-white px-6 py-3 rounded-xl font-semibold"
+    className="bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 disabled:cursor-not-allowed transition text-white px-6 py-3 rounded-xl font-semibold"
   >
 
-    Pay Now
+    {paymentLoading ? "Starting..." : "Pay Now"}
 
   </button>
 
@@ -801,6 +817,22 @@ export default function BookingDetails() {
 
               </div>
 
+            </div>
+
+            <div className="bg-white rounded-2xl p-7 shadow-sm border border-slate-200">
+              <div className="mb-5">
+                <h2 className="text-2xl font-black text-slate-900">
+                  Location Map
+                </h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  Trek destination and nearby travel context.
+                </p>
+              </div>
+              <TravelMap
+                destination={booking.package_title || booking.destination}
+                location={booking.package_location || booking.destination}
+                heightClass="h-[280px] md:h-[340px]"
+              />
             </div>
 
             {/* CUSTOMER */}

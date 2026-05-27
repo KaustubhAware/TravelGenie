@@ -13,12 +13,13 @@ import {
 } from "react-hot-toast";
 
 import {
-  auth,
-} from "../firebase";
+  API_BASE,
+  apiRequest,
+} from "../services/httpClient";
 
 import {
-  API_BASE,
-} from "../services/httpClient";
+  hasAuthToken,
+} from "../utils/authToken";
 
 import {
   FaArrowRight,
@@ -209,16 +210,29 @@ export default function NextPage() {
 
           hotel_recommendations:
             Array.isArray(
-              data.hotel_recommendations
+              data.hotel_recommendations || data.hotels
             )
-              ? data.hotel_recommendations
+              ? data.hotel_recommendations || data.hotels
               : [],
 
           restaurant_recommendations:
             Array.isArray(
-              data.restaurant_recommendations
+              data.restaurant_recommendations || data.restaurants
             )
-              ? data.restaurant_recommendations
+              ? data.restaurant_recommendations || data.restaurants
+              : [],
+
+          trip_summary:
+            data.trip_summary || {},
+
+          packing_list:
+            Array.isArray(data.packing_list)
+              ? data.packing_list
+              : [],
+
+          safety_notes:
+            Array.isArray(data.safety_notes)
+              ? data.safety_notes
               : [],
 
           weather:
@@ -275,10 +289,7 @@ export default function NextPage() {
 
       }
 
-      const user =
-        auth.currentUser;
-
-      if (!user) {
+      if (!hasAuthToken()) {
 
         toast.error(
           "Please login first"
@@ -294,64 +305,18 @@ export default function NextPage() {
 
       try {
 
-        const token =
-          await user.getIdToken();
-
-        const res =
-          await fetch(
-
-            `${API_BASE}/save-itinerary`,
-
-            {
-
-              method: "POST",
-
-              headers: {
-
-                "Content-Type":
-                  "application/json",
-
-                Authorization:
-                  `Bearer ${token}`,
-
-              },
-
-              body: JSON.stringify({
-
-                destination:
-                  form.destination,
-
-                budget:
-                  form.budget,
-
-                days:
-                  form.days,
-
-                preferences:
-                  form.preferences,
-
-                itinerary:
-                  JSON.stringify(
-                    result.itinerary
-                  ),
-
-              }),
-
-            }
-
-          );
-
-        const data =
-          await res.json();
-
-        if (!res.ok) {
-
-          throw new Error(
-            data.detail ||
-              "Save failed"
-          );
-
-        }
+        await apiRequest("/save-trip", {
+          method: "POST",
+          body: JSON.stringify({
+            destination: form.destination,
+            budget: form.budget,
+            days: form.days,
+            preferences: form.preferences,
+            cost: result.estimated_cost,
+            sentiment: result.sentiment,
+            itinerary: result.itinerary,
+          }),
+        });
 
         toast.success(
           "Trip saved successfully!"
