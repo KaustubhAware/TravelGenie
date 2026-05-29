@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   FaBoxOpen,
   FaClipboardList,
@@ -9,11 +9,14 @@ import {
 } from "react-icons/fa";
 
 import { vendorService } from "../../services/vendorService";
+import { uploadService } from "../../services/uploadService";
 import { useJwtAuth } from "../../hooks/useJwtAuth";
+import { resolveImageUrl } from "../../utils/imageUrl";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
 import StatCard from "../../components/ui/StatCard";
+import { useAutoRefresh } from "../../hooks/useAutoRefresh";
 
 const MH_DESTINATIONS = [
   "Lonavala",
@@ -56,6 +59,7 @@ export default function VendorDashboard() {
     location: "",
     pricing: "",
     itinerary: "",
+    package_images: [],
   });
   const [batchForm, setBatchForm] = useState({
     package_id: "",
@@ -68,8 +72,10 @@ export default function VendorDashboard() {
     guide_name: "",
   });
 
-  const loadVendorData = useCallback(async () => {
-    setLoading(true);
+  const loadVendorData = useCallback(async ({ silent = false } = {}) => {
+    if (!silent) {
+      setLoading(true);
+    }
     try {
       const profileRes = await vendorService.getProfile();
       setProfile(profileRes.data);
@@ -98,14 +104,17 @@ export default function VendorDashboard() {
       setPackages([]);
       setBookings([]);
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   }, []);
 
-  useEffect(() => {
-    if (!authReady || !user) return;
-    loadVendorData();
-  }, [authReady, user, loadVendorData]);
+  useAutoRefresh(loadVendorData, {
+    intervalMs: 30000,
+    immediate: Boolean(authReady && user),
+    enabled: Boolean(authReady && user),
+  });
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -143,11 +152,48 @@ export default function VendorDashboard() {
         location,
         pricing,
         itinerary: packageForm.itinerary.trim(),
+        package_images: packageForm.package_images,
       });
-      setPackageForm({ title: "", location: "", pricing: "", itinerary: "" });
+      setPackageForm({
+        title: "",
+        location: "",
+        pricing: "",
+        itinerary: "",
+        package_images: [],
+      });
       await loadVendorData();
     } catch (err) {
       setFormError(err.message || "Package could not be created.");
+    } finally {
+      setSavingPackage(false);
+    }
+  };
+
+  const handlePackageImages = async (files) => {
+    const selected = Array.from(files || []).filter((file) =>
+      ["image/jpeg", "image/png", "image/webp"].includes(file.type)
+    );
+
+    if (selected.length === 0) {
+      setFormError("Upload JPG, PNG, or WEBP package images.");
+      return;
+    }
+
+    try {
+      setSavingPackage(true);
+      setFormError("");
+      const uploaded = await Promise.all(
+        selected.map((file) => uploadService.packageImage(file))
+      );
+      setPackageForm((current) => ({
+        ...current,
+        package_images: [
+          ...current.package_images,
+          ...uploaded.map((item) => item.path),
+        ],
+      }));
+    } catch (err) {
+      setFormError(err.message || "Images could not be uploaded.");
     } finally {
       setSavingPackage(false);
     }
@@ -355,6 +401,44 @@ export default function VendorDashboard() {
                   setPackageForm({ ...packageForm, itinerary: e.target.value })
                 }
               />
+              <label className="block rounded-2xl border border-dashed border-orange-200 bg-orange-50/60 p-5 text-center text-sm font-semibold text-orange-700 transition hover:bg-orange-50">
+                Upload package images
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  multiple
+                  className="sr-only"
+                  onChange={(e) => handlePackageImages(e.target.files)}
+                />
+              </label>
+              {packageForm.package_images.length > 0 && (
+                <div className="grid grid-cols-3 gap-3">
+                  {packageForm.package_images.map((image) => (
+                    <div key={image} className="relative overflow-hidden rounded-xl border border-slate-200">
+                      <img
+                        src={resolveImageUrl(image)}
+                        alt="Package preview"
+                        className="h-24 w-full object-cover"
+                        loading="lazy"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setPackageForm((current) => ({
+                            ...current,
+                            package_images: current.package_images.filter(
+                              (item) => item !== image
+                            ),
+                          }))
+                        }
+                        className="absolute right-2 top-2 rounded-full bg-white/90 px-2 py-1 text-xs font-bold text-red-600"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
               {formError && (
                 <p className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
                   {formError}

@@ -1,4 +1,5 @@
 import { FaStar } from "react-icons/fa";
+import { resolveImageUrl } from "../../utils/imageUrl";
 
 export default function ReviewCard({ review }) {
   const author =
@@ -33,9 +34,10 @@ export default function ReviewCard({ review }) {
       </p>
       {review.image_url && (
         <img
-          src={review.image_url}
+          src={resolveImageUrl(review.image_url)}
           alt="Review"
           className="mt-4 h-40 w-full rounded-xl object-cover"
+          loading="lazy"
         />
       )}
     </div>

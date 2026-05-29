@@ -1,4 +1,5 @@
 import { lazy, Suspense } from "react";
+import { Navigate } from "react-router-dom";
 
 import DashboardLayout from "../layouts/DashboardLayout";
 
@@ -94,10 +95,44 @@ const withSuspense = (
 const dashboardRoutes = [
 
   {
+    path: "/vendor",
+    element: (
+      <UserProtectedRoute roles={["vendor"]}>
+        <DashboardLayout />
+      </UserProtectedRoute>
+    ),
+    children: [
+      {
+        index: true,
+        element: (
+          <Navigate
+            to="/vendor/dashboard"
+            replace
+          />
+        ),
+      },
+      {
+        path: "dashboard",
+        element: withSuspense(
+          <VendorDashboard />,
+          "Loading vendor dashboard..."
+        ),
+      },
+      {
+        path: "profile",
+        element: withSuspense(
+          <ProfileComplete />,
+          "Loading profile..."
+        ),
+      },
+    ],
+  },
+
+  {
     path: "/dashboard",
 
     element: (
-      <UserProtectedRoute>
+      <UserProtectedRoute roles={["customer", "user"]}>
         <DashboardLayout />
       </UserProtectedRoute>
     ),
@@ -180,15 +215,6 @@ const dashboardRoutes = [
         element: withSuspense(
           <SaraAIPlanner />,
           "Loading Sara..."
-        ),
-      },
-
-      {
-        path: "vendor",
-
-        element: withSuspense(
-          <VendorDashboard />,
-          "Loading vendor dashboard..."
         ),
       },
 

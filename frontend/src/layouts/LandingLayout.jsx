@@ -26,7 +26,11 @@ const LandingLayout = () => {
 
     location.pathname === "/login" ||
 
-    location.pathname === "/register";
+    location.pathname === "/register" ||
+
+    location.pathname === "/vendor/login" ||
+
+    location.pathname === "/vendor/register";
 
   return (
 

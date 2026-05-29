@@ -24,11 +24,14 @@ logger = logging.getLogger(__name__)
 
 _client = None
 
-MODEL_CANDIDATES = [
-    "models/gemini-flash-latest",
-    "models/gemini-1.5-flash",
-]
+# MODEL_CANDIDATES = [
+#     "models/gemini-flash-latest",
+#     "models/gemini-1.5-flash",
+# ]
 
+MODEL_CANDIDATES = [
+    "gemini-2.5-flash",
+]
 # =====================================================
 # MAHARASHTRA SYSTEM PROMPT
 # =====================================================

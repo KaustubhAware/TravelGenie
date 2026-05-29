@@ -2,6 +2,7 @@ import {
   FaHotel,
   FaStar,
 } from "react-icons/fa";
+import { resolveImageUrl } from "../../utils/imageUrl";
 
 export default function HotelRecommendationCard({
   hotel,
@@ -16,12 +17,13 @@ export default function HotelRecommendationCard({
     <div className="bg-white border border-gray-200 rounded-[28px] overflow-hidden shadow-sm">
 
       <img
-        src={
-          hotel.image ||
+        src={resolveImageUrl(
+          hotel.image,
           "https://images.unsplash.com/photo-1566073771259-6a8506099945"
-        }
+        )}
         alt={hotel.name}
         className="w-full h-56 object-cover"
+        loading="lazy"
       />
 
       <div className="p-6">

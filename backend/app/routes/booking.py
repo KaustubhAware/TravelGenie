@@ -7,6 +7,8 @@ from pydantic import BaseModel, Field
 from app.db import get_connection
 from app.auth.jwt_handler import get_current_user
 from app.routes.auth import get_current_user as get_current_admin
+from app.services.notification_service import create_notification
+from app.services.email_service import send_email_async
 
 logger = logging.getLogger(__name__)
 
@@ -333,6 +335,29 @@ def save_booking(
                 (data.travelers or 1, data.trip_batch_id),
             )
 
+        create_notification(
+            cursor,
+            db_user_id,
+            "Booking request submitted",
+            f"Your booking for {package_title or destination} is under review.",
+            "booking_created",
+            metadata={
+                "booking_id": booking_id,
+                "package_id": data.package_id,
+            },
+        )
+
+        send_email_async(
+            data.email,
+            "TravelGenie booking request received",
+            (
+                f"Hi {name},\n\n"
+                f"Your booking request {booking_id} for {package_title or destination} "
+                "has been received and is under review.\n\n"
+                "TravelGenie"
+            ),
+        )
+
         conn.commit()
 
         return {
@@ -412,6 +437,15 @@ def update_payment(
                 status_code=404,
                 detail="Booking not found or not payable"
             )
+
+        create_notification(
+            cursor,
+            db_user_id,
+            "Payment successful",
+            f"Payment for booking {data.booking_id} was recorded successfully.",
+            "payment_success",
+            metadata={"booking_id": data.booking_id},
+        )
 
         conn.commit()
 
@@ -577,6 +611,7 @@ def get_my_bookings(
 # ADMIN BOOKINGS
 # =====================================================
 
+@router.get("/admin/bookings")
 @router.get("/get-bookings")
 def get_bookings(
     admin=Depends(get_current_admin)

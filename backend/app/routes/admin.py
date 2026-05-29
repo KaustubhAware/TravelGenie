@@ -891,6 +891,7 @@ def get_admin_booking_detail(
 # =====================================================
 
 @router.get("/advanced-analytics")
+@router.get("/analytics")
 def advanced_analytics(
     admin=Depends(get_current_user)
 ):

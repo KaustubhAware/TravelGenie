@@ -162,6 +162,34 @@ class Settings:
     )
 
     # =====================================================
+    # EMAIL (SMTP)
+    # =====================================================
+
+    SMTP_HOST = os.getenv("SMTP_HOST", "")
+
+    SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+
+    SMTP_USERNAME = os.getenv(
+        "SMTP_USERNAME",
+        os.getenv("SMTP_USER", "")
+    )
+
+    SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
+
+    SMTP_FROM_EMAIL = os.getenv(
+        "SMTP_FROM_EMAIL",
+        os.getenv(
+            "SMTP_FROM",
+            os.getenv("SMTP_USERNAME", os.getenv("SMTP_USER", ""))
+        )
+    )
+
+    SMTP_TLS = os.getenv(
+        "SMTP_TLS",
+        "true"
+    ).lower() not in {"0", "false", "no", "off"}
+
+    # =====================================================
     # RAZORPAY
     # IMPORTANT
     # =====================================================

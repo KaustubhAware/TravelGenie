@@ -270,3 +270,36 @@ To take TravelGenie from a local simulation to a production-ready SaaS product, 
 * [ ] **Cloud Media Hosting**: Integrate AWS S3 or Cloudinary APIs to upload, optimize, and serve tour package images and customer invoices.
 * [ ] **Automated Testing Suite**: Introduce unit testing for FastAPI endpoints (using `pytest` and `httpx`) and end-to-end frontend pipeline checks (using Playwright).
 * [ ] **Live Customer-Agent WebSockets Chat**: Allow customers to chat in real-time with their assigned agency representative using WebSocket channels.
+
+---
+
+## Final Enterprise SaaS Upgrade Addendum
+
+This finalization pass upgrades TravelGenie while preserving the existing React, FastAPI, PostgreSQL, JWT, Razorpay, and Gemini SDK architecture.
+
+### Production Workflow Improvements
+
+* Realtime-style polling added through `useAutoRefresh` for customer dashboard, admin dashboard, admin clients, admin reviews, vendor portal, topbar notifications, and review sections.
+* Enterprise soft-delete completed for clients with `is_deleted`, `deleted_at`, login blocking, active-list filtering, and admin restore support.
+* In-app notifications added with unread state, mark-as-read, mark-all-read, customer dashboard visibility, and topbar dropdown.
+* SMTP email service added for booking received and payment success emails when SMTP environment variables are configured.
+* Review/rating system stabilized with approved-review averages and package rating recalculation after review creation, edit, delete, moderation, and admin removal.
+* Vendor package management now supports JPG/PNG/WEBP multi-image upload with previews and removal before package creation.
+* AI planner booking CTA removed; generated plans now support saving only.
+* Image path handling now resolves `/uploads/...` paths against the backend host for Vercel/Render deployments.
+
+### Deployment Environment Additions
+
+```env
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_USERNAME=
+SMTP_PASSWORD=
+SMTP_FROM_EMAIL=
+```
+
+### Final QA Evidence
+
+* Backend syntax validation completed with `python -m py_compile` across modified backend routes and services.
+* Frontend production validation completed with `npm run build`.
+* Static audit confirmed the AI planner no longer exposes `Book Trip` / `Book This Trip` source text and new package uploads no longer accept SVG images.

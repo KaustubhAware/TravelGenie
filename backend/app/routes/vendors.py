@@ -1,19 +1,39 @@
 import logging
 import json
+from pathlib import Path
 from typing import Any, List, Optional
+from uuid import uuid4
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel, Field, field_validator, model_validator
 from slugify import slugify
 
+from app.auth.password_utils import hash_password
+from app.config import get_settings
 from app.db import get_connection, get_cursor
 from app.auth.jwt_handler import get_current_user
 from app.routes.auth import get_current_user as get_current_admin
 from app.responses import success_response
+from app.services.email_service import send_email_async
+from app.services.notification_service import create_notification
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+ALLOWED_VENDOR_LOGO_TYPES = {
+    "image/jpeg": ".jpg",
+    "image/png": ".png",
+    "image/webp": ".webp",
+}
+
+ALLOWED_VENDOR_DOCUMENT_TYPES = {
+    **ALLOWED_VENDOR_LOGO_TYPES,
+    "application/pdf": ".pdf",
+}
+
+MAX_VENDOR_UPLOAD_SIZE = 5 * 1024 * 1024
+VENDOR_STATUSES = {"pending", "approved", "rejected", "suspended"}
 
 
 class VendorRegister(BaseModel):
@@ -23,6 +43,11 @@ class VendorRegister(BaseModel):
     phone: Optional[str] = None
     description: Optional[str] = None
     logo: Optional[str] = None
+
+
+class VendorAction(BaseModel):
+    status: str = Field(..., pattern="^(pending|approved|rejected|suspended)$")
+    rejection_reason: Optional[str] = Field(default="", max_length=500)
 
 
 class VendorPackageCreate(BaseModel):
@@ -101,9 +126,10 @@ class VendorPackageCreate(BaseModel):
 class VendorVerify(BaseModel):
     verification_status: str = Field(
         ...,
-        pattern="^(approved|rejected|pending)$",
+        pattern="^(approved|rejected|pending|suspended)$",
     )
     is_active: Optional[bool] = None
+    rejection_reason: Optional[str] = Field(default="", max_length=500)
 
 
 class VendorProfileUpdate(BaseModel):
@@ -140,6 +166,41 @@ def _get_user_id(cursor, user_id):
     return row["id"] if hasattr(row, "keys") else row[0]
 
 
+def _save_vendor_file(file: UploadFile | None, folder: str, allowed_types: dict) -> str | None:
+    if not file or not file.filename:
+        return None
+
+    content_type = file.content_type or ""
+    if content_type not in allowed_types:
+        raise HTTPException(
+            status_code=400,
+            detail="Only JPG, PNG, WEBP, and approved document uploads are allowed",
+        )
+
+    upload_root = Path(get_settings().UPLOAD_DIR).resolve() / "vendors" / folder
+    upload_root.mkdir(parents=True, exist_ok=True)
+    suffix = allowed_types[content_type]
+    filename = f"{uuid4().hex}{suffix}"
+    target = upload_root / filename
+
+    size = 0
+    try:
+        with target.open("wb") as buffer:
+            while chunk := file.file.read(1024 * 1024):
+                size += len(chunk)
+                if size > MAX_VENDOR_UPLOAD_SIZE:
+                    target.unlink(missing_ok=True)
+                    raise HTTPException(
+                        status_code=413,
+                        detail="Vendor uploads must be 5 MB or less",
+                    )
+                buffer.write(chunk)
+    finally:
+        file.file.close()
+
+    return f"/uploads/vendors/{folder}/{filename}"
+
+
 def _get_vendor_for_user(cursor, user_id):
     cursor.execute(
         """
@@ -159,6 +220,156 @@ def _get_vendor_for_user(cursor, user_id):
         "verification_status": row[2],
         "is_active": row[3],
     }
+
+
+def _require_approved_vendor(cursor, user):
+    user_id = _get_user_id(cursor, user["uid"])
+    vendor = _get_vendor_for_user(cursor, user_id)
+    if user.get("role") != "vendor":
+        raise HTTPException(status_code=403, detail="Vendor account required")
+    if user.get("vendor_status") != "approved":
+        raise HTTPException(
+            status_code=403,
+            detail="Your vendor account is currently under review by TravelGenie administration.",
+        )
+    if vendor["verification_status"] != "approved" or not vendor["is_active"]:
+        raise HTTPException(
+            status_code=403,
+            detail="Vendor account is not approved for marketplace access",
+        )
+    return user_id, vendor
+
+
+@router.post("/vendors/apply")
+def apply_vendor(
+    business_name: str = Form(...),
+    owner_name: str = Form(...),
+    email: str = Form(...),
+    password: str = Form(...),
+    phone: str = Form(""),
+    gst_number: str = Form(""),
+    business_address: str = Form(""),
+    website_url: str = Form(""),
+    social_links: str = Form("[]"),
+    years_experience: int = Form(0),
+    categories: str = Form("[]"),
+    description: str = Form(""),
+    government_id: UploadFile | None = File(default=None),
+    business_logo: UploadFile | None = File(default=None),
+):
+    conn = get_connection()
+    cursor = get_cursor(conn)
+
+    try:
+        normalized_email = email.lower().strip()
+        if not normalized_email or not password or len(password) < 6:
+            raise HTTPException(status_code=400, detail="Valid email and password are required")
+
+        cursor.execute(
+            "SELECT id FROM users WHERE LOWER(email) = LOWER(%s) LIMIT 1",
+            (normalized_email,),
+        )
+        if cursor.fetchone():
+            raise HTTPException(status_code=409, detail="Email already registered")
+
+        logo_path = _save_vendor_file(
+            business_logo,
+            "logos",
+            ALLOWED_VENDOR_LOGO_TYPES,
+        )
+        document_path = _save_vendor_file(
+            government_id,
+            "documents",
+            ALLOWED_VENDOR_DOCUMENT_TYPES,
+        )
+        if not document_path:
+            raise HTTPException(status_code=400, detail="Government ID upload is required")
+
+        try:
+            parsed_social_links = json.loads(social_links or "[]")
+        except json.JSONDecodeError:
+            parsed_social_links = [social_links.strip()] if social_links.strip() else []
+
+        try:
+            parsed_categories = json.loads(categories or "[]")
+        except json.JSONDecodeError:
+            parsed_categories = [
+                item.strip() for item in categories.split(",") if item.strip()
+            ]
+
+        cursor.execute(
+            """
+            INSERT INTO users (
+                email, password_hash, name, full_name, phone, role,
+                is_vendor, vendor_status, profile_completed
+            )
+            VALUES (%s, %s, %s, %s, %s, 'vendor', TRUE, 'pending', TRUE)
+            RETURNING id
+            """,
+            (
+                normalized_email,
+                hash_password(password),
+                owner_name.strip(),
+                owner_name.strip(),
+                phone.strip(),
+            ),
+        )
+        user_id = cursor.fetchone()["id"]
+
+        cursor.execute(
+            """
+            INSERT INTO vendors (
+                user_id, business_name, owner_name, contact_email, phone,
+                gst_number, business_address, website_url, social_links,
+                years_experience, categories, government_id_path,
+                description, logo, verification_status, is_active
+            )
+            VALUES (
+                %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb,
+                %s, %s::jsonb, %s, %s, %s, 'pending', FALSE
+            )
+            RETURNING vendor_id
+            """,
+            (
+                user_id,
+                business_name.strip(),
+                owner_name.strip(),
+                normalized_email,
+                phone.strip(),
+                gst_number.strip(),
+                business_address.strip(),
+                website_url.strip(),
+                json.dumps(parsed_social_links),
+                years_experience,
+                json.dumps(parsed_categories),
+                document_path,
+                description.strip(),
+                logo_path,
+            ),
+        )
+        vendor_id = cursor.fetchone()["vendor_id"]
+        conn.commit()
+
+        send_email_async(
+            normalized_email,
+            "TravelGenie vendor application received",
+            "Your vendor account is currently under review by TravelGenie administration.",
+        )
+
+        return success_response(
+            message="Vendor application submitted for admin approval",
+            data={"vendor_id": vendor_id, "vendor_status": "pending"},
+        )
+    except HTTPException:
+        conn.rollback()
+        raise
+    except Exception as exc:
+        conn.rollback()
+        logger.error("Vendor application failed: %s", exc)
+        raise HTTPException(status_code=500, detail="Vendor application failed") from exc
+    finally:
+        cursor.close()
+        conn.close()
 
 
 @router.post("/vendors/register")
@@ -262,8 +473,7 @@ def update_my_vendor(
     cursor = get_cursor(conn)
 
     try:
-        user_id = _get_user_id(cursor, user["uid"])
-        vendor = _get_vendor_for_user(cursor, user_id)
+        _, vendor = _require_approved_vendor(cursor, user)
 
         cursor.execute(
             """
@@ -302,8 +512,7 @@ def vendor_analytics(user=Depends(get_current_user)):
     cursor = get_cursor(conn)
 
     try:
-        user_id = _get_user_id(cursor, user["uid"])
-        vendor = _get_vendor_for_user(cursor, user_id)
+        _, vendor = _require_approved_vendor(cursor, user)
         vid = vendor["vendor_id"]
 
         cursor.execute(
@@ -504,14 +713,7 @@ def create_vendor_package(
     cursor = get_cursor(conn)
 
     try:
-        user_id = _get_user_id(cursor, user["uid"])
-        vendor = _get_vendor_for_user(cursor, user_id)
-
-        if vendor["verification_status"] != "approved":
-            raise HTTPException(
-                status_code=403,
-                detail="Vendor must be approved before creating packages",
-            )
+        _, vendor = _require_approved_vendor(cursor, user)
 
         cursor.execute(
             """
@@ -592,8 +794,7 @@ def list_vendor_batches(user=Depends(get_current_user)):
     conn = get_connection()
     cursor = get_cursor(conn)
     try:
-        user_id = _get_user_id(cursor, user["uid"])
-        vendor = _get_vendor_for_user(cursor, user_id)
+        _, vendor = _require_approved_vendor(cursor, user)
         cursor.execute(
             """
             SELECT
@@ -638,13 +839,7 @@ def create_vendor_batch(data: VendorBatchCreate, user=Depends(get_current_user))
     conn = get_connection()
     cursor = get_cursor(conn)
     try:
-        user_id = _get_user_id(cursor, user["uid"])
-        vendor = _get_vendor_for_user(cursor, user_id)
-        if vendor["verification_status"] != "approved":
-            raise HTTPException(
-                status_code=403,
-                detail="Vendor must be approved before managing batches",
-            )
+        _, vendor = _require_approved_vendor(cursor, user)
         if data.booked_seats > data.max_seats:
             raise HTTPException(status_code=400, detail="Booked seats cannot exceed max seats")
 
@@ -728,13 +923,21 @@ def admin_list_vendors(admin=Depends(get_current_admin)):
             SELECT
                 vendor_id, business_name, owner_name, contact_email,
                 verification_status, is_active, created_at,
-                rating, response_time, verified_badge
+                rating, response_time, verified_badge, phone,
+                gst_number, business_address, website_url, social_links,
+                years_experience, categories, government_id_path, logo,
+                rejection_reason, user_id
             FROM vendors
             WHERE is_deleted = FALSE
             ORDER BY created_at DESC
             """
         )
-        vendors = [dict(r) for r in cursor.fetchall()]
+        vendors = []
+        for row in cursor.fetchall():
+            item = dict(row)
+            if item.get("created_at"):
+                item["created_at"] = str(item["created_at"])
+            vendors.append(item)
         return success_response(message="Vendors", data={"vendors": vendors})
     finally:
         cursor.close()
@@ -751,26 +954,96 @@ def verify_vendor(
     cursor = get_cursor(conn)
 
     try:
+        if data.verification_status not in VENDOR_STATUSES:
+            raise HTTPException(status_code=400, detail="Invalid vendor status")
+
+        is_active = data.is_active
+        if is_active is None:
+            is_active = data.verification_status == "approved"
+
         cursor.execute(
             """
             UPDATE vendors
             SET
                 verification_status = %s,
-                is_active = COALESCE(%s, is_active),
+                is_active = %s,
+                verified_badge = (%s = 'approved'),
+                rejection_reason = CASE
+                    WHEN %s = 'rejected' THEN %s
+                    ELSE NULL
+                END,
                 updated_at = CURRENT_TIMESTAMP
             WHERE vendor_id = %s
+            RETURNING user_id, contact_email, business_name
             """,
             (
                 data.verification_status,
-                data.is_active,
+                is_active,
+                data.verification_status,
+                data.verification_status,
+                data.rejection_reason or "",
                 vendor_id,
             ),
         )
 
-        if cursor.rowcount == 0:
+        row = cursor.fetchone()
+        if not row:
             raise HTTPException(status_code=404, detail="Vendor not found")
 
+        user_id = row["user_id"]
+        cursor.execute(
+            """
+            UPDATE users
+            SET
+                is_vendor = TRUE,
+                role = 'vendor',
+                vendor_status = %s,
+                approved_by = CASE WHEN %s = 'approved' THEN %s ELSE approved_by END,
+                approved_at = CASE WHEN %s = 'approved' THEN CURRENT_TIMESTAMP ELSE approved_at END,
+                rejection_reason = CASE
+                    WHEN %s = 'rejected' THEN %s
+                    ELSE NULL
+                END,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = %s
+            """,
+            (
+                data.verification_status,
+                data.verification_status,
+                admin.get("id"),
+                data.verification_status,
+                data.verification_status,
+                data.rejection_reason or "",
+                user_id,
+            ),
+        )
+
+        create_notification(
+            cursor,
+            user_id,
+            "Vendor application updated",
+            f"Your TravelGenie vendor status is now {data.verification_status}.",
+            notification_type="vendor_status",
+            audience="vendor",
+            metadata={"vendor_id": vendor_id, "status": data.verification_status},
+        )
+
         conn.commit()
+
+        if data.verification_status == "approved":
+            send_email_async(
+                row["contact_email"],
+                "TravelGenie vendor account approved",
+                "Your vendor account has been approved. You can now access the TravelGenie vendor portal.",
+            )
+        elif data.verification_status == "rejected":
+            send_email_async(
+                row["contact_email"],
+                "TravelGenie vendor application update",
+                data.rejection_reason
+                or "Your vendor application was not approved at this time.",
+            )
+
         return success_response(message="Vendor verification updated")
     except HTTPException:
         conn.rollback()

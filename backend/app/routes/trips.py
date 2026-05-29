@@ -19,6 +19,8 @@ from app.ml.itinerary_parser import (
     parse_itinerary_response
 )
 
+from app.services.notification_service import create_notification
+
 import json
 
 router = APIRouter()
@@ -374,6 +376,18 @@ def save_trip(
                 json.dumps(data.get("itinerary", [])),
                 json.dumps({"source": "save-trip"}),
             ),
+        )
+
+        create_notification(
+            cursor,
+            user["uid"],
+            "AI itinerary saved",
+            f"Your {data.get('destination')} itinerary is now available in Saved AI Itineraries.",
+            "itinerary_saved",
+            metadata={
+                "trip_id": trip_id,
+                "destination": data.get("destination"),
+            },
         )
 
         conn.commit()

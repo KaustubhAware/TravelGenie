@@ -46,6 +46,7 @@ from app.routes import (
     reviews,
     vendors,
     uploads,
+    notifications,
 )
 
 # =====================================================
@@ -217,6 +218,14 @@ app.include_router(
 
 upload_root = Path(settings.UPLOAD_DIR).resolve()
 upload_root.mkdir(parents=True, exist_ok=True)
+for upload_child in (
+    "packages",
+    "reviews",
+    "vendors",
+    "vendors/logos",
+    "vendors/documents",
+):
+    (upload_root / upload_child).mkdir(parents=True, exist_ok=True)
 app.mount(
     "/uploads",
     StaticFiles(directory=str(upload_root)),
@@ -303,6 +312,12 @@ app.include_router(
     uploads.router,
     prefix="/api",
     tags=["Uploads"],
+)
+
+app.include_router(
+    notifications.router,
+    prefix="/api",
+    tags=["Notifications"],
 )
 
 app.include_router(

@@ -98,6 +98,15 @@ const adminRoutes = [
       },
 
       {
+        path: "dashboard",
+
+        element: withSuspense(
+          <AdminDashboard />,
+          "Loading dashboard..."
+        ),
+      },
+
+      {
         path: "packages",
 
         element: withSuspense(

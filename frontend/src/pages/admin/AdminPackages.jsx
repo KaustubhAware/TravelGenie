@@ -7,6 +7,7 @@ import {
 import {
   fetchWithAuth,
 } from "../../utils/api";
+import { resolveImageUrl } from "../../utils/imageUrl";
 
 import {
   FaSearch,
@@ -131,7 +132,7 @@ export default function AdminPackages() {
 
         const data =
           await fetchWithAuth(
-            "/packages"
+            "/admin/packages"
           );
 
         console.log(
@@ -740,10 +741,7 @@ export default function AdminPackages() {
               <div className="relative h-[240px] overflow-hidden">
 
                 <img
-                  src={
-                    pkg.featured_image ||
-                    DEFAULT_IMAGE
-                  }
+                  src={resolveImageUrl(pkg.featured_image || pkg.image, DEFAULT_IMAGE)}
                   alt={pkg.title}
                   className="w-full h-full object-cover hover:scale-110 transition duration-700"
                 />

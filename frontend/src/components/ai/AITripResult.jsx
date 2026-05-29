@@ -22,7 +22,6 @@ export default function AITripResult({
   result = {},
   saveTrip,
   saving,
-  navigate,
   form,
 }) {
 
@@ -442,7 +441,7 @@ export default function AITripResult({
       {/* ACTIONS */}
       {/* ===================================================== */}
 
-      <div className="grid md:grid-cols-3 gap-3 pt-1">
+      <div className="grid md:grid-cols-2 gap-3 pt-1">
 
         {/* PDF */}
 
@@ -464,31 +463,6 @@ export default function AITripResult({
         >
 
           {saving ? "Saving..." : "Save Trip"}
-
-        </button>
-
-        {/* BOOK */}
-
-        <button
-          onClick={() =>
-
-            navigate("/dashboard/booking", {
-
-              state: {
-                destination: form.destination,
-                days: form.days,
-                budget: estimated_cost,
-                ...result,
-              },
-
-            })
-
-          }
-          className="h-12 rounded-2xl bg-orange-500 text-white font-semibold shadow-md hover:bg-orange-600 transition"
-
-        >
-
-          Book Trip
 
         </button>
 

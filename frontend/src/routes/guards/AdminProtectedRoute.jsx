@@ -8,6 +8,7 @@ import {
 } from "react-router-dom";
 
 import RouteLoader from "../../components/RouteLoader";
+import { apiRequest } from "../../services/httpClient";
 
 export default function AdminProtectedRoute({
   children,
@@ -18,19 +19,39 @@ export default function AdminProtectedRoute({
 
   useEffect(() => {
 
+    let mounted = true;
+
     const token =
       localStorage.getItem("adminToken") ||
       localStorage.getItem("token");
 
-    if (token) {
+    const checkAdmin = async () => {
+      if (!token) {
+        if (mounted) {
+          setIsValid(false);
+        }
+        return;
+      }
 
-      setIsValid(true);
+      try {
+        await apiRequest("/admin/stats", {
+          skipAuthRedirect: true,
+        });
+        if (mounted) {
+          setIsValid(true);
+        }
+      } catch {
+        if (mounted) {
+          setIsValid(false);
+        }
+      }
+    };
 
-    } else {
+    checkAdmin();
 
-      setIsValid(false);
-
-    }
+    return () => {
+      mounted = false;
+    };
 
   }, []);
 

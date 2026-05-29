@@ -3,6 +3,7 @@ from app.db import get_connection
 import json
 
 from app.auth.jwt_handler import get_current_user
+from app.services.notification_service import create_notification
 
 router = APIRouter()
 
@@ -130,6 +131,18 @@ def save_itinerary(
                 itinerary_json,
                 json.dumps({"source": "save-itinerary"}),
             ),
+        )
+
+        create_notification(
+            cursor,
+            db_user_id,
+            "AI itinerary saved",
+            f"Your {data.get('destination')} itinerary is now available in Saved AI Itineraries.",
+            "itinerary_saved",
+            metadata={
+                "trip_id": trip_id,
+                "destination": data.get("destination"),
+            },
         )
 
         conn.commit()

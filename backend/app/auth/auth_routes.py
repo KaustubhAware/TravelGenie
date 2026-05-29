@@ -90,6 +90,8 @@ def _token_for_user(user: dict) -> str:
             "uid": str(user["id"]),
             "email": user["email"],
             "role": user.get("role") or "customer",
+            "is_vendor": bool(user.get("is_vendor")),
+            "vendor_status": user.get("vendor_status") or "none",
         }
     )
 
@@ -271,7 +273,9 @@ def login(data: LoginRequest):
                 full_name,
                 role,
                 password_hash,
-                is_deleted
+                is_deleted,
+                COALESCE(is_vendor, FALSE) AS is_vendor,
+                COALESCE(vendor_status, 'none') AS vendor_status
             FROM users
             WHERE LOWER(email) = LOWER(%s)
             LIMIT 1
@@ -301,6 +305,19 @@ def login(data: LoginRequest):
             raise HTTPException(
                 status_code=403,
                 detail="Account is deactivated",
+            )
+
+        if (
+            (user.get("role") == "vendor" or user.get("is_vendor"))
+            and user.get("vendor_status") != "approved"
+        ):
+
+            raise HTTPException(
+                status_code=403,
+                detail=(
+                    "Your vendor account is currently under review by "
+                    "TravelGenie administration."
+                ),
             )
 
         # =================================================
@@ -344,6 +361,8 @@ def login(data: LoginRequest):
             ),
             "role": user.get("role")
             or "customer",
+            "is_vendor": bool(user.get("is_vendor")),
+            "vendor_status": user.get("vendor_status") or "none",
         }
 
         # =================================================

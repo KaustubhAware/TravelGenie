@@ -8,6 +8,7 @@ from app.db import get_connection, get_cursor
 from app.auth.jwt_handler import get_current_user
 from app.routes.auth import get_current_user as get_current_admin
 from app.responses import success_response
+from app.services.notification_service import create_notification
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +44,32 @@ def _get_user_id(cursor, user_id):
     if not row:
         raise HTTPException(status_code=404, detail="User not found")
     return row["id"] if hasattr(row, "keys") else row[0]
+
+
+def _recalculate_package_rating(cursor, package_id):
+    if not package_id:
+        return
+
+    cursor.execute(
+        """
+        UPDATE packages
+        SET
+            rating = COALESCE(stats.avg_rating, 0),
+            total_reviews = COALESCE(stats.review_count, 0),
+            updated_at = CURRENT_TIMESTAMP
+        FROM (
+            SELECT
+                ROUND(AVG(rating)::numeric, 2) AS avg_rating,
+                COUNT(*) AS review_count
+            FROM reviews
+            WHERE package_id = %s
+            AND is_deleted = FALSE
+            AND moderation_status = 'approved'
+        ) stats
+        WHERE packages.id = %s
+        """,
+        (package_id, package_id),
+    )
 
 
 @router.get("/reviews")
@@ -91,15 +118,26 @@ def list_reviews(
                 item["created_at"] = str(item["created_at"])
             reviews.append(item)
 
-        avg_rating = (
-            round(sum(r["rating"] for r in reviews) / len(reviews), 1)
-            if reviews
-            else 0
+        cursor.execute(
+            """
+            SELECT
+                ROUND(AVG(rating)::numeric, 2) AS average_rating,
+                COUNT(*) AS review_count
+            FROM reviews
+            WHERE is_deleted = FALSE
+            AND moderation_status = 'approved'
+            AND (%s IS NULL OR package_id = %s)
+            AND (%s IS NULL OR vendor_id = %s)
+            """,
+            (package_id, package_id, vendor_id, vendor_id),
         )
+        stats = dict(cursor.fetchone())
+        avg_rating = float(stats["average_rating"] or 0)
+        review_count = int(stats["review_count"] or 0)
 
         return success_response(
             message="Reviews fetched",
-            data={"reviews": reviews, "average_rating": avg_rating, "count": len(reviews)},
+            data={"reviews": reviews, "average_rating": avg_rating, "count": review_count},
         )
     finally:
         cursor.close()
@@ -136,7 +174,23 @@ def create_review(
                 data.image_url,
             ),
         )
+
         row = cursor.fetchone()
+        if data.package_id:
+            _recalculate_package_rating(cursor, data.package_id)
+
+        create_notification(
+            cursor,
+            user_id,
+            "Review submitted",
+            "Your review was submitted and is awaiting moderation.",
+            "review_submitted",
+            metadata={
+                "package_id": data.package_id,
+                "trip_id": data.trip_id,
+            },
+        )
+
         conn.commit()
         review_id = row["review_id"] if hasattr(row, "keys") else row[0]
 
@@ -175,8 +229,10 @@ def update_review(
                 rating = COALESCE(%s, rating),
                 review_text = COALESCE(%s, review_text),
                 image_url = COALESCE(%s, image_url),
+                moderation_status = 'pending',
                 updated_at = CURRENT_TIMESTAMP
             WHERE review_id = %s AND user_id = %s AND is_deleted = FALSE
+            RETURNING package_id
             """,
             (
                 data.rating,
@@ -190,8 +246,12 @@ def update_review(
         if cursor.rowcount == 0:
             raise HTTPException(status_code=404, detail="Review not found")
 
+        row = cursor.fetchone()
+        package_id = row["package_id"] if hasattr(row, "keys") else row[0]
+        _recalculate_package_rating(cursor, package_id)
+
         conn.commit()
-        return success_response(message="Review updated")
+        return success_response(message="Review updated and sent for moderation")
     except HTTPException:
         conn.rollback()
         raise
@@ -216,12 +276,17 @@ def delete_review(
             UPDATE reviews
             SET is_deleted = TRUE, updated_at = CURRENT_TIMESTAMP
             WHERE review_id = %s AND user_id = %s
+            RETURNING package_id
             """,
             (review_id, user_id),
         )
 
         if cursor.rowcount == 0:
             raise HTTPException(status_code=404, detail="Review not found")
+
+        row = cursor.fetchone()
+        package_id = row["package_id"] if hasattr(row, "keys") else row[0]
+        _recalculate_package_rating(cursor, package_id)
 
         conn.commit()
         return success_response(message="Review deleted")
@@ -308,6 +373,7 @@ def moderate_review(
                 is_featured = COALESCE(%s, is_featured),
                 updated_at = CURRENT_TIMESTAMP
             WHERE review_id = %s AND is_deleted = FALSE
+            RETURNING package_id
             """,
             (
                 data.moderation_status,
@@ -319,8 +385,47 @@ def moderate_review(
         if cursor.rowcount == 0:
             raise HTTPException(status_code=404, detail="Review not found")
 
+        row = cursor.fetchone()
+        package_id = row["package_id"] if hasattr(row, "keys") else row[0]
+        _recalculate_package_rating(cursor, package_id)
+
         conn.commit()
         return success_response(message="Review moderation updated")
+    except HTTPException:
+        conn.rollback()
+        raise
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@router.delete("/admin/reviews/{review_id}")
+def admin_remove_review(
+    review_id: int,
+    admin=Depends(get_current_admin),
+):
+    conn = get_connection()
+    cursor = get_cursor(conn)
+
+    try:
+        cursor.execute(
+            """
+            UPDATE reviews
+            SET is_deleted = TRUE, updated_at = CURRENT_TIMESTAMP
+            WHERE review_id = %s
+            RETURNING package_id
+            """,
+            (review_id,),
+        )
+
+        if cursor.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Review not found")
+
+        row = cursor.fetchone()
+        package_id = row["package_id"] if hasattr(row, "keys") else row[0]
+        _recalculate_package_rating(cursor, package_id)
+        conn.commit()
+        return success_response(message="Review removed")
     except HTTPException:
         conn.rollback()
         raise

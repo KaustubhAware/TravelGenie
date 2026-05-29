@@ -189,8 +189,7 @@ class TripBatchRequest(BaseModel):
 # GET ALL PACKAGES
 # =====================================================
 
-@router.get("/packages")
-def get_packages():
+def _get_packages(include_inactive=False):
 
     conn = get_connection()
 
@@ -200,7 +199,9 @@ def get_packages():
 
     try:
 
-        cur.execute("""
+        status_filter = "" if include_inactive else "WHERE status = 'active'"
+
+        cur.execute(f"""
             SELECT
                 id,
                 vendor_id,
@@ -241,7 +242,7 @@ def get_packages():
                 created_at,
                 updated_at
             FROM packages
-            WHERE status = 'active'
+            {status_filter}
             ORDER BY featured DESC, rating DESC
         """)
 
@@ -271,6 +272,16 @@ def get_packages():
 
         cur.close()
         conn.close()
+
+
+@router.get("/packages")
+def get_packages():
+    return _get_packages(include_inactive=False)
+
+
+@router.get("/admin/packages")
+def get_admin_packages(admin=Depends(get_current_user)):
+    return _get_packages(include_inactive=True)
 
 # =====================================================
 # GET SINGLE PACKAGE BY SLUG

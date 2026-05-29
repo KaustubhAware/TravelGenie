@@ -19,6 +19,7 @@ import {
   apiRequest,
 } from "../../services/httpClient";
 import { hasAuthToken } from "../../utils/authToken";
+import { resolveImageUrl } from "../../utils/imageUrl";
 
 import {
   validateBookingForm,
@@ -563,13 +564,12 @@ export default function Booking() {
             <div className="relative h-[200px]">
 
               <img
-                src={
+                src={resolveImageUrl(
                   packageData.featured_image ||
 
-                  packageData.image ||
-
+                  packageData.image,
                   "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b"
-                }
+                )}
                 alt={
                   packageData.title
                 }

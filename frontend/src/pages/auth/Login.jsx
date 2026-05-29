@@ -37,7 +37,12 @@ export default function Login() {
 
   const from =
     location.state?.from?.pathname ||
-    "/dashboard";
+    (location.pathname.startsWith("/vendor")
+      ? "/vendor/dashboard"
+      : "/dashboard");
+
+  const isVendorLogin =
+    location.pathname.startsWith("/vendor");
 
   const handleLogin = async () => {
 
@@ -217,7 +222,9 @@ export default function Login() {
 
               <p className="mt-3 text-slate-500">
 
-                Access your trekking dashboard
+                {isVendorLogin
+                  ? "Approved vendors can access the marketplace portal"
+                  : "Access your trekking dashboard"}
 
               </p>
 
@@ -311,11 +318,11 @@ export default function Login() {
               Don’t have an account?{" "}
 
               <Link
-                to="/register"
+                to={isVendorLogin ? "/vendor/register" : "/register"}
                 className="font-semibold text-orange-500 hover:text-orange-600"
               >
 
-                Register
+                {isVendorLogin ? "Apply as vendor" : "Register"}
 
               </Link>
 

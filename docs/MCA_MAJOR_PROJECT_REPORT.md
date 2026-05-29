@@ -393,3 +393,43 @@ TravelGenie demonstrates a realistic full-stack SaaS platform for Maharashtra tr
 - Razorpay API Documentation.
 - Google Gemini API Documentation.
 - OWASP Authentication and Password Storage Guidelines.
+
+## Final Enterprise Upgrade and QA Addendum
+
+### Architecture Decisions
+
+The final upgrade preserved the existing architecture: React/Vite/Tailwind frontend, FastAPI backend, PostgreSQL database, JWT authentication, Razorpay payment flow, and Gemini SDK AI planning. The platform was enhanced additively through schema migration, new service modules, and focused UI upgrades rather than a disruptive rewrite.
+
+### Realtime Update System
+
+TravelGenie now uses a polling-based realtime strategy through a shared React hook named `useAutoRefresh`. This keeps deployment simple on Vercel/Render and avoids websocket hosting complexity while still removing manual refresh dependency from key workflows. The hook refreshes visible tabs on an interval and on browser focus.
+
+Realtime-enabled areas include customer dashboard bookings/itineraries/notifications, dashboard topbar unread notifications, admin dashboard analytics/bookings, admin clients, admin reviews, vendor dashboard packages/batches/bookings, and package review sections.
+
+### Soft Delete Client Workflow
+
+The `users` table includes `is_deleted` and `deleted_at`. Admin deletion now deactivates the user instead of removing rows. Bookings, reviews, payments, trips, and saved itineraries remain preserved through existing foreign-key relationships. Deleted users are blocked during JWT login and hidden from default admin active-client lists. Admins can include deactivated users and restore accounts.
+
+### Notification and Email System
+
+The notification system includes `audience`, `type`, `metadata`, unread state, read timestamps, authenticated notification APIs, a topbar dropdown, and customer dashboard panels. Booking creation, payment success/failure, itinerary saved, and review submitted workflows now create notifications. Optional SMTP email support is available for booking confirmation and payment success.
+
+### Review System Stabilization
+
+Reviews are moderated before public display. Package ratings now recalculate from approved, non-deleted reviews using PostgreSQL aggregate queries. Ratings update after customer edit/delete and after admin moderation/removal. Customer edits return reviews to pending moderation.
+
+### Package and Image Management
+
+Vendor package creation now supports multi-image JPG/PNG/WEBP upload from the dashboard. The UI shows previews and allows removal before submission. New SVG package uploads are rejected. Frontend image rendering resolves backend `/uploads/...` paths to the API host so uploaded assets work on local, Vercel, and Render deployments.
+
+### AI Planner Finalization
+
+The AI planner retains Gemini-backed generation and structured card rendering. The booking action was removed from AI results, keeping the planner focused on generating and saving itineraries. Saved AI plans appear in customer dashboard saved-itinerary sections via backend APIs.
+
+### Role-Based Workflow Cleanup
+
+Customer navigation now uses authenticated role data. Vendor-only navigation appears only for users with vendor/admin roles. Customer dashboard surfaces only customer workflows.
+
+### Final QA Evidence
+
+Backend validation completed with Python compilation across modified routes and services. Frontend validation completed with a Vite production build. Static source checks confirmed that AI planner booking CTAs were removed and SVG package uploads are no longer accepted.

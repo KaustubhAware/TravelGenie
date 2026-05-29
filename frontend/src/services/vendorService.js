@@ -1,6 +1,20 @@
-import { apiRequest } from "./httpClient";
+import { apiRequest, API_BASE } from "./httpClient";
 
 export const vendorService = {
+  async apply(formData) {
+    const response = await fetch(`${API_BASE}/vendors/apply`, {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data?.detail || data?.message || "Vendor application failed");
+    }
+
+    return data;
+  },
+
   register(payload) {
     return apiRequest("/vendors/register", {
       method: "POST",

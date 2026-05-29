@@ -17,6 +17,10 @@ const Register = lazy(() =>
   import("../pages/auth/Register")
 );
 
+const VendorRegister = lazy(() =>
+  import("../pages/auth/VendorRegister")
+);
+
 const withSuspense = (
   element,
   label
@@ -57,11 +61,29 @@ const publicRoutes = [
       },
 
       {
+        path: "vendor/login",
+
+        element: withSuspense(
+          <Login />,
+          "Loading vendor login..."
+        ),
+      },
+
+      {
         path: "register",
 
         element: withSuspense(
           <Register />,
           "Loading registration..."
+        ),
+      },
+
+      {
+        path: "vendor/register",
+
+        element: withSuspense(
+          <VendorRegister />,
+          "Loading vendor application..."
         ),
       },
     ],

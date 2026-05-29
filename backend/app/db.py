@@ -138,6 +138,269 @@ def _fetch_existing_columns(cursor, table_name):
     return {row[0] for row in cursor.fetchall()}
 
 
+def _heal_schema(cursor):
+    """Apply safe additive production schema fixes for older databases."""
+    statements = [
+        """
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE
+        """,
+        """
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP NULL
+        """,
+        """
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS password_hash TEXT
+        """,
+        """
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS emergency_contact VARCHAR(60)
+        """,
+        """
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS travel_preferences JSONB DEFAULT '[]'::jsonb
+        """,
+        """
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS profile_image TEXT
+        """,
+        """
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS is_vendor BOOLEAN DEFAULT FALSE
+        """,
+        """
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS vendor_status VARCHAR(30) DEFAULT 'none'
+        """,
+        """
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS approved_by INTEGER NULL
+        """,
+        """
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS approved_at TIMESTAMP NULL
+        """,
+        """
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS rejection_reason TEXT
+        """,
+        """
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        """,
+        """
+        UPDATE users
+        SET is_vendor = (role = 'vendor')
+        WHERE is_vendor IS NULL
+        """,
+        """
+        UPDATE users
+        SET vendor_status = CASE
+            WHEN role = 'vendor' THEN 'approved'
+            ELSE 'none'
+        END
+        WHERE vendor_status IS NULL
+        """,
+        """
+        UPDATE users
+        SET is_deleted = FALSE
+        WHERE is_deleted IS NULL
+        """,
+        """
+        ALTER TABLE notifications
+        ADD COLUMN IF NOT EXISTS audience VARCHAR(50) DEFAULT 'customer'
+        """,
+        """
+        ALTER TABLE notifications
+        ADD COLUMN IF NOT EXISTS type VARCHAR(60) DEFAULT 'general'
+        """,
+        """
+        ALTER TABLE notifications
+        ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb
+        """,
+        """
+        ALTER TABLE notifications
+        ADD COLUMN IF NOT EXISTS is_read BOOLEAN DEFAULT FALSE
+        """,
+        """
+        ALTER TABLE notifications
+        ADD COLUMN IF NOT EXISTS read_at TIMESTAMP NULL
+        """,
+        """
+        UPDATE notifications
+        SET audience = 'customer'
+        WHERE audience IS NULL
+        """,
+        """
+        UPDATE notifications
+        SET type = 'general'
+        WHERE type IS NULL
+        """,
+        """
+        UPDATE notifications
+        SET metadata = '{}'::jsonb
+        WHERE metadata IS NULL
+        """,
+        """
+        UPDATE notifications
+        SET is_read = COALESCE(is_read, read_at IS NOT NULL, FALSE)
+        WHERE is_read IS NULL
+        """,
+        """
+        ALTER TABLE packages
+        ADD COLUMN IF NOT EXISTS status VARCHAR(30) DEFAULT 'active'
+        """,
+        """
+        ALTER TABLE packages
+        ADD COLUMN IF NOT EXISTS featured BOOLEAN DEFAULT FALSE
+        """,
+        """
+        ALTER TABLE packages
+        ADD COLUMN IF NOT EXISTS featured_image TEXT
+        """,
+        """
+        ALTER TABLE packages
+        ADD COLUMN IF NOT EXISTS gallery JSONB DEFAULT '[]'::jsonb
+        """,
+        """
+        ALTER TABLE packages
+        ADD COLUMN IF NOT EXISTS pickup_points JSONB DEFAULT '[]'::jsonb
+        """,
+        """
+        ALTER TABLE packages
+        ADD COLUMN IF NOT EXISTS highlights JSONB DEFAULT '[]'::jsonb
+        """,
+        """
+        ALTER TABLE packages
+        ADD COLUMN IF NOT EXISTS weather_details JSONB DEFAULT '{}'::jsonb
+        """,
+        """
+        ALTER TABLE packages
+        ADD COLUMN IF NOT EXISTS faq JSONB DEFAULT '[]'::jsonb
+        """,
+        """
+        ALTER TABLE packages
+        ADD COLUMN IF NOT EXISTS nearby_attractions JSONB DEFAULT '[]'::jsonb
+        """,
+        """
+        ALTER TABLE packages
+        ADD COLUMN IF NOT EXISTS safety_notes JSONB DEFAULT '[]'::jsonb
+        """,
+        """
+        ALTER TABLE packages
+        ADD COLUMN IF NOT EXISTS transport_info JSONB DEFAULT '{}'::jsonb
+        """,
+        """
+        ALTER TABLE packages
+        ADD COLUMN IF NOT EXISTS rating NUMERIC(3, 2) DEFAULT 0
+        """,
+        """
+        ALTER TABLE packages
+        ADD COLUMN IF NOT EXISTS total_reviews INTEGER DEFAULT 0
+        """,
+        """
+        ALTER TABLE packages
+        ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        """,
+        """
+        ALTER TABLE payment_transactions
+        ADD COLUMN IF NOT EXISTS currency VARCHAR(10) DEFAULT 'INR'
+        """,
+        """
+        ALTER TABLE payment_transactions
+        ADD COLUMN IF NOT EXISTS failure_reason TEXT
+        """,
+        """
+        ALTER TABLE payment_transactions
+        ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb
+        """,
+        """
+        ALTER TABLE ai_chat_history
+        ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb
+        """,
+        """
+        ALTER TABLE reviews
+        ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE
+        """,
+        """
+        ALTER TABLE reviews
+        ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        """,
+        """
+        ALTER TABLE vendors
+        ADD COLUMN IF NOT EXISTS gst_number VARCHAR(80)
+        """,
+        """
+        ALTER TABLE vendors
+        ADD COLUMN IF NOT EXISTS business_address TEXT
+        """,
+        """
+        ALTER TABLE vendors
+        ADD COLUMN IF NOT EXISTS website_url TEXT
+        """,
+        """
+        ALTER TABLE vendors
+        ADD COLUMN IF NOT EXISTS social_links JSONB DEFAULT '[]'::jsonb
+        """,
+        """
+        ALTER TABLE vendors
+        ADD COLUMN IF NOT EXISTS years_experience INTEGER DEFAULT 0
+        """,
+        """
+        ALTER TABLE vendors
+        ADD COLUMN IF NOT EXISTS categories JSONB DEFAULT '[]'::jsonb
+        """,
+        """
+        ALTER TABLE vendors
+        ADD COLUMN IF NOT EXISTS government_id_path TEXT
+        """,
+        """
+        ALTER TABLE vendors
+        ADD COLUMN IF NOT EXISTS rejection_reason TEXT
+        """,
+        """
+        ALTER TABLE vendors
+        ADD COLUMN IF NOT EXISTS rating NUMERIC(3, 2) DEFAULT 0
+        """,
+        """
+        ALTER TABLE vendors
+        ADD COLUMN IF NOT EXISTS response_time VARCHAR(80)
+        """,
+        """
+        ALTER TABLE vendors
+        ADD COLUMN IF NOT EXISTS verified_badge BOOLEAN DEFAULT FALSE
+        """,
+        """
+        CREATE INDEX IF NOT EXISTS idx_users_active_deleted
+        ON users (is_deleted, deleted_at)
+        """,
+        """
+        CREATE INDEX IF NOT EXISTS idx_users_vendor_status
+        ON users (is_vendor, vendor_status)
+        """,
+        """
+        CREATE INDEX IF NOT EXISTS idx_notifications_user_created
+        ON notifications (user_id, created_at DESC)
+        """,
+        """
+        CREATE INDEX IF NOT EXISTS idx_notifications_user_read
+        ON notifications (user_id, is_read)
+        """,
+        """
+        CREATE INDEX IF NOT EXISTS idx_packages_status_featured
+        ON packages (status, featured)
+        """,
+        """
+        CREATE INDEX IF NOT EXISTS idx_reviews_package_active
+        ON reviews (package_id, is_deleted)
+        """,
+    ]
+
+    for statement in statements:
+        cursor.execute(statement)
+
+
 def check_and_init_db():
     """Safe startup DB check and additive schema bootstrap logic."""
     settings = get_settings()
@@ -164,6 +427,7 @@ def check_and_init_db():
 
         tables_to_check = [
             "users",
+            "admins",
             "vendors",
             "packages",
             "vendor_packages",
@@ -173,6 +437,7 @@ def check_and_init_db():
             "payment_transactions",
             "package_images",
             "ai_chat_history",
+            "saved_itineraries",
             "notifications",
             "invoices",
             "booking_notes",
@@ -206,10 +471,14 @@ def check_and_init_db():
         else:
             logger.info("All required tables are present in the database.")
 
+        _heal_schema(cursor)
+
         expected_columns = {
             "users": {
                 "password_hash", "emergency_contact", "travel_preferences",
-                "profile_image",
+                "profile_image", "is_deleted", "deleted_at",
+                "updated_at", "is_vendor", "vendor_status", "approved_by",
+                "approved_at", "rejection_reason",
             },
             "packages": {
                 "vendor_id", "slug", "region", "seasonal_price",
@@ -235,10 +504,13 @@ def check_and_init_db():
                 "prompt", "response", "metadata",
             },
             "notifications": {
-                "is_read",
+                "is_read", "audience", "type", "metadata",
             },
             "vendors": {
-                "rating", "response_time", "verified_badge",
+                "rating", "response_time", "verified_badge", "gst_number",
+                "business_address", "website_url", "social_links",
+                "years_experience", "categories", "government_id_path",
+                "rejection_reason",
             },
             "trip_batches": {
                 "id", "package_id", "start_date", "end_date",

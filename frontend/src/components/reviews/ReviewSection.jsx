@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { reviewService } from "../../services/reviewService";
 import ReviewCard from "./ReviewCard";
 import ReviewForm from "./ReviewForm";
 import LoadingSpinner from "../ui/LoadingSpinner";
+import { useAutoRefresh } from "../../hooks/useAutoRefresh";
 
 export default function ReviewSection({ packageId, showForm = true }) {
   const [reviews, setReviews] = useState([]);
@@ -25,9 +26,11 @@ export default function ReviewSection({ packageId, showForm = true }) {
     }
   }, [packageId]);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useAutoRefresh(load, {
+    intervalMs: 30000,
+    immediate: true,
+    enabled: Boolean(packageId),
+  });
 
   if (loading) {
     return (

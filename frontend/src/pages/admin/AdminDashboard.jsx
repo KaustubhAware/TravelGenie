@@ -1,6 +1,5 @@
 import {
   useCallback,
-  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -35,6 +34,7 @@ import StatusChart from "../../components/admin/charts/StatusChart";
 import {
   generateDashboardAnalytics,
 } from "../../utils/adminAnalytics";
+import { useAutoRefresh } from "../../hooks/useAutoRefresh";
 
 /* ===================================================== */
 /* ADMIN DASHBOARD */
@@ -62,6 +62,9 @@ export default function AdminDashboard() {
   const [refreshing, setRefreshing] =
     useState(false);
 
+  const [error, setError] =
+    useState("");
+
   const outletContext = useOutletContext() || {};
   const search = outletContext.search ?? "";
   const setSearch = outletContext.setSearch ?? (() => {});
@@ -85,6 +88,8 @@ export default function AdminDashboard() {
 
       try {
 
+        setError("");
+
         if (silent) {
           setRefreshing(true);
         } else {
@@ -106,6 +111,10 @@ export default function AdminDashboard() {
           "Dashboard Error:",
           error
         );
+        setError(
+          error?.message ||
+          "Failed to load dashboard data."
+        );
 
       } finally {
 
@@ -119,11 +128,13 @@ export default function AdminDashboard() {
 
     }, []);
 
-  useEffect(() => {
-
-    fetchData();
-
-  }, [fetchData]);
+  useAutoRefresh(
+    ({ silent = false } = {}) => fetchData({ silent }),
+    {
+      intervalMs: 30000,
+      immediate: true,
+    }
+  );
 
   /* ===================================================== */
   /* REAL ANALYTICS */
@@ -272,8 +283,14 @@ export default function AdminDashboard() {
 
     <div className="space-y-8 relative">
       {refreshing && (
-        <div className="absolute right-0 top-0 z-10 rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-600">
+        <div className="absolute right-0 top-0 z-10 rounded-full bg-orange-50 px-3 py-1 text-xs font-medium text-orange-600">
           Refreshing analytics...
+        </div>
+      )}
+
+      {error && (
+        <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-medium text-red-700">
+          {error}
         </div>
       )}
 
@@ -315,7 +332,7 @@ export default function AdminDashboard() {
 
         <StatCard
           title="Revenue"
-          value={`₹${analytics.paidRevenue.toLocaleString("en-IN")}`}
+          value={`Rs. ${analytics.paidRevenue.toLocaleString("en-IN")}`}
           icon={
             <FaMoneyBillWave className="text-green-600 text-2xl" />
           }

@@ -32,8 +32,13 @@ def verify_access_token(token: str) -> dict:
         raise HTTPException(status_code=401, detail="Invalid token identity")
 
     if user_id is not None:
-        payload["id"] = user_id
-        payload["uid"] = str(user_id)
+        try:
+            normalized_user_id = int(user_id)
+        except (TypeError, ValueError) as exc:
+            raise HTTPException(status_code=401, detail="Invalid token identity") from exc
+
+        payload["id"] = normalized_user_id
+        payload["uid"] = str(normalized_user_id)
 
     payload.setdefault("email", "")
     payload.setdefault("role", "customer")
@@ -48,7 +53,44 @@ def get_current_user(authorization: str = Header(None)) -> dict:
     if scheme.lower() != "bearer" or not token:
         raise HTTPException(status_code=401, detail="Invalid token format")
 
-    return verify_access_token(token)
+    payload = verify_access_token(token)
+
+    # Tokens prove identity, but PostgreSQL remains the source of truth for
+    # deleted accounts and role changes.
+    from app.db import get_connection
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute(
+            """
+            SELECT
+                id, email, full_name, role, COALESCE(is_deleted, FALSE),
+                COALESCE(is_vendor, FALSE), COALESCE(vendor_status, 'none')
+            FROM users
+            WHERE id = %s
+            LIMIT 1
+            """,
+            (payload["id"],),
+        )
+        row = cursor.fetchone()
+        if not row:
+            raise HTTPException(status_code=401, detail="User no longer exists")
+        if row[4]:
+            raise HTTPException(status_code=403, detail="Account is deactivated")
+
+        payload["id"] = row[0]
+        payload["uid"] = str(row[0])
+        payload["email"] = row[1] or payload.get("email", "")
+        payload["full_name"] = row[2]
+        payload["role"] = row[3] or "customer"
+        payload["is_vendor"] = bool(row[5])
+        payload["vendor_status"] = row[6]
+        return payload
+    finally:
+        cursor.close()
+        conn.close()
 
 
 def require_roles(*roles: str):

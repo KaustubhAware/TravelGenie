@@ -17,7 +17,7 @@ import { apiRequest } from "../../services/httpClient";
 
 import logo from "../../assets/logo.svg";
 
-import registerImage from "../../assets/register.svg";
+import registerImage from "../../assets/Register.svg";
 
 export default function Register() {
 

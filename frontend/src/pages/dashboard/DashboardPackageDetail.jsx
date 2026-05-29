@@ -35,6 +35,7 @@ import {
 import ReviewSection from "../../components/reviews/ReviewSection";
 import { packageService } from "../../services/packageService";
 import TravelMap from "../../components/ai/TravelMap";
+import { resolveImageUrl } from "../../utils/imageUrl";
 
 export default function DashboardPackageDetail() {
 
@@ -392,13 +393,13 @@ export default function DashboardPackageDetail() {
         <div className="relative h-[340px] rounded-3xl overflow-hidden border border-slate-200">
 
           <img
-            src={
-              pkg.featured_image ||
-
-              "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80"
-            }
+            src={resolveImageUrl(pkg.featured_image)}
             alt={pkg.title}
             className="w-full h-full object-cover"
+            loading="eager"
+            onError={(event) => {
+              event.currentTarget.src = "/maharashtra-map.png";
+            }}
           />
 
           {/* FEATURED */}
@@ -951,7 +952,15 @@ export default function DashboardPackageDetail() {
                       onClick={() => setLightboxImage(image)}
                       className="relative h-56 overflow-hidden rounded-2xl border border-slate-200"
                     >
-                      <img src={image} alt={pkg.title} className="h-full w-full object-cover" />
+                      <img
+                        src={resolveImageUrl(image)}
+                        alt={pkg.title}
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                        onError={(event) => {
+                          event.currentTarget.src = "/maharashtra-map.png";
+                        }}
+                      />
                       <span className="absolute right-3 top-3 rounded-full bg-black/50 p-2 text-white">
                         <FaImages />
                       </span>
@@ -1171,7 +1180,7 @@ export default function DashboardPackageDetail() {
           onClick={() => setLightboxImage("")}
           className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 p-6"
         >
-          <img src={lightboxImage} alt={pkg.title} className="max-h-full max-w-full rounded-2xl object-contain" />
+          <img src={resolveImageUrl(lightboxImage)} alt={pkg.title} className="max-h-full max-w-full rounded-2xl object-contain" />
         </button>
       )}
 

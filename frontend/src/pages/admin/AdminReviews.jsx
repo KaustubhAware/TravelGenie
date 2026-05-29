@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { reviewService } from "../../services/reviewService";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import Button from "../../components/ui/Button";
+import { useAutoRefresh } from "../../hooks/useAutoRefresh";
 
 export default function AdminReviews() {
   const [reviews, setReviews] = useState([]);
@@ -13,8 +14,10 @@ export default function AdminReviews() {
   });
   const [loading, setLoading] = useState(true);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async ({ silent = false } = {}) => {
+    if (!silent) {
+      setLoading(true);
+    }
     try {
       const [listRes, statsRes] = await Promise.all([
         reviewService.adminList(),
@@ -25,13 +28,16 @@ export default function AdminReviews() {
     } catch (err) {
       console.error(err);
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   }, []);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useAutoRefresh(load, {
+    intervalMs: 30000,
+    immediate: true,
+  });
 
   const moderate = async (reviewId, status, featured = false) => {
     await reviewService.moderate(reviewId, {

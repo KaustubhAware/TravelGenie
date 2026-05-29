@@ -670,7 +670,6 @@ export default function NextPage() {
                       result={result}
                       saveTrip={saveTrip}
                       saving={saving}
-                      navigate={navigate}
                       form={form}
                     />
 

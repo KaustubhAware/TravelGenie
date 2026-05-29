@@ -13,6 +13,7 @@ import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import TravelMap from "../../components/ai/TravelMap";
 
 import { exportInvoicePDF } from "../../utils/exportPDF";
+import { resolveImageUrl } from "../../utils/imageUrl";
 
 import { API_BASE } from "../../services/httpClient";
 
@@ -338,11 +339,10 @@ export default function BookingDetails() {
         <div className="relative h-[340px] rounded-3xl overflow-hidden border border-slate-200">
 
           <img
-            src={
-              booking.package_image ||
-
+            src={resolveImageUrl(
+              booking.package_image,
               "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1400&q=80"
-            }
+            )}
             alt={
               booking.package_title
             }

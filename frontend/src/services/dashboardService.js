@@ -47,4 +47,17 @@ export const dashboardService = {
 
   },
 
+  async getNotifications() {
+
+    const response = await apiRequest(
+      "/notifications"
+    );
+
+    return {
+      data: response.data?.notifications || [],
+      unreadCount: response.data?.unread_count || 0,
+    };
+
+  },
+
 };

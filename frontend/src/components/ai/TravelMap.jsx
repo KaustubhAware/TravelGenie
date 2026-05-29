@@ -221,7 +221,7 @@ function TravelMap({
 
                   <p className="text-sm text-gray-600">
 
-                    ⭐ {hotel.rating || "4.5"}
+                    Rating: {hotel.rating || "4.5"}
 
                   </p>
 
@@ -269,7 +269,7 @@ function TravelMap({
 
                   <p className="text-sm text-gray-500">
 
-                    ⭐ {restaurant.rating || "4.4"}
+                    Rating: {restaurant.rating || "4.4"}
 
                   </p>
 

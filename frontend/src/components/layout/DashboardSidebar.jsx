@@ -6,6 +6,7 @@ import {
   User,
   LogOut,
   Bot,
+  Store,
 } from "lucide-react";
 
 import {
@@ -15,9 +16,11 @@ import {
 
 import {
   useState,
+  useEffect,
 } from "react";
 
 import logo from "../../assets/logo.svg";
+import { apiRequest } from "../../services/httpClient";
 
 const navItems = [
 
@@ -26,36 +29,49 @@ const navItems = [
     icon: LayoutDashboard,
     path: "/dashboard",
     exact: true,
+    roles: ["customer", "user"],
   },
 
   {
     label: "Packages",
     icon: Mountain,
     path: "/dashboard/packages",
+    roles: ["customer", "user"],
   },
 
   {
     label: "Bookings",
     icon: CalendarDays,
     path: "/dashboard/bookings",
+    roles: ["customer", "user"],
   },
 
   {
     label: "AI Planner",
     icon: Sparkles,
     path: "/dashboard/ai-planner",
+    roles: ["customer", "user"],
   },
 
   {
     label: "AI Chat",
     icon: Bot,
     path: "/dashboard/ai-chat",
+    roles: ["customer", "user"],
+  },
+
+  {
+    label: "Vendor Dashboard",
+    icon: Store,
+    path: "/vendor/dashboard",
+    roles: ["vendor"],
   },
 
   {
     label: "Profile",
     icon: User,
     path: "/dashboard/profile",
+    roles: ["customer", "user", "vendor"],
   },
 
 ];
@@ -65,8 +81,23 @@ export default function DashboardSidebar() {
   const [collapsed, setCollapsed] =
     useState(false);
 
+  const [role, setRole] =
+    useState("customer");
+
   const navigate =
     useNavigate();
+
+  useEffect(() => {
+
+    apiRequest("/auth/me")
+      .then((res) => {
+        setRole(res.data?.user?.role || "customer");
+      })
+      .catch(() => {
+        setRole("customer");
+      });
+
+  }, []);
 
   /* ===================================================== */
   /* LOGOUT */
@@ -174,7 +205,9 @@ export default function DashboardSidebar() {
 
       <div className="flex flex-1 flex-col gap-2 p-3">
 
-        {navItems.map(
+        {navItems
+          .filter((item) => !item.roles || item.roles.includes(role))
+          .map(
           (item) => {
 
             const Icon =

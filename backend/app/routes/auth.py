@@ -190,8 +190,13 @@ def verify_token(token: str):
         if str(user_id).lower() in ROLE_NAMES:
             raise HTTPException(status_code=401, detail="Invalid token identity")
 
-        payload["id"] = user_id
-        payload["uid"] = str(user_id)
+        try:
+            normalized_user_id = int(user_id)
+        except (TypeError, ValueError) as exc:
+            raise HTTPException(status_code=401, detail="Invalid token identity") from exc
+
+        payload["id"] = normalized_user_id
+        payload["uid"] = str(normalized_user_id)
         payload.setdefault("email", payload.get("username", ""))
         payload.setdefault("role", "admin")
         return payload

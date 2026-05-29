@@ -1,5 +1,4 @@
 import {
-  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -7,6 +6,7 @@ import {
 import {
   fetchWithAuth,
 } from "../../utils/api";
+import { useAutoRefresh } from "../../hooks/useAutoRefresh";
 
 import {
   FaUsers,
@@ -16,6 +16,7 @@ import {
   FaPhone,
   FaMoneyBillWave,
   FaSuitcaseRolling,
+  FaUndo,
 } from "react-icons/fa";
 
 // =====================================================
@@ -37,16 +38,21 @@ export default function AdminClients() {
   const [search, setSearch] =
     useState("");
 
+  const [includeDeleted, setIncludeDeleted] =
+    useState(false);
+
   /* ===================================================== */
   /* FETCH CLIENTS */
   /* ===================================================== */
 
   const fetchClients =
-    async () => {
+    async ({ silent = false } = {}) => {
 
       try {
 
-        setLoading(true);
+        if (!silent) {
+          setLoading(true);
+        }
 
         // =====================================================
         // fetchWithAuth already returns JSON
@@ -55,6 +61,7 @@ export default function AdminClients() {
         const data =
           await fetchWithAuth(
             "/admin/clients"
+            + (includeDeleted ? "?include_deleted=true" : "")
           );
 
         console.log(
@@ -77,17 +84,18 @@ export default function AdminClients() {
 
       } finally {
 
-        setLoading(false);
+        if (!silent) {
+          setLoading(false);
+        }
 
       }
 
     };
 
-  useEffect(() => {
-
-    fetchClients();
-
-  }, []);
+  useAutoRefresh(fetchClients, {
+    intervalMs: 30000,
+    immediate: true,
+  });
 
   /* ===================================================== */
   /* DELETE CLIENT */
@@ -108,7 +116,7 @@ export default function AdminClients() {
 
       const confirmDelete =
         window.confirm(
-          "Delete this client?"
+          "Deactivate this client? Booking, payment, review, and itinerary history will be preserved."
         );
 
       if (!confirmDelete) return;
@@ -137,9 +145,34 @@ export default function AdminClients() {
         );
 
         alert(
-          "Failed to delete client"
+            "Failed to deactivate client"
         );
 
+      }
+
+    };
+
+  const restoreClient =
+    async (id) => {
+
+      if (!id) {
+        alert("Client ID missing");
+        return;
+      }
+
+      try {
+        await fetchWithAuth(
+          `/admin/clients/${id}/restore`,
+          {
+            method: "POST",
+          }
+        );
+
+        await fetchClients();
+
+      } catch (err) {
+        console.error("RESTORE ERROR:", err);
+        alert("Failed to restore client");
       }
 
     };
@@ -246,6 +279,21 @@ export default function AdminClients() {
           </p>
 
         </div>
+
+        <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-600 shadow-sm">
+
+          <input
+            type="checkbox"
+            checked={includeDeleted}
+            onChange={(e) =>
+              setIncludeDeleted(e.target.checked)
+            }
+            className="h-4 w-4 accent-orange-500"
+          />
+
+          Include deactivated
+
+        </label>
 
         {/* SEARCH */}
 
@@ -469,7 +517,7 @@ export default function AdminClients() {
 
                           <p className="text-sm text-slate-500">
 
-                            Traveler
+                            {client.is_deleted ? "Deactivated" : "Traveler"}
 
                           </p>
 
@@ -541,20 +589,41 @@ export default function AdminClients() {
 
                       <div className="flex justify-center">
 
-                        <button
-                          onClick={() =>
-                            deleteClient(
-                              client.id
-                            )
-                          }
-                          className="h-11 px-5 rounded-2xl bg-gradient-to-r from-red-500 to-rose-500 text-white font-semibold flex items-center gap-2 shadow-lg hover:opacity-90 transition"
-                        >
+                        {client.is_deleted ? (
+
+                          <button
+                            onClick={() =>
+                              restoreClient(
+                                client.id
+                              )
+                            }
+                            className="h-11 px-5 rounded-2xl bg-emerald-500 text-white font-semibold flex items-center gap-2 shadow-lg hover:bg-emerald-600 transition"
+                          >
+
+                            <FaUndo />
+
+                            Restore
+
+                          </button>
+
+                        ) : (
+
+                          <button
+                            onClick={() =>
+                              deleteClient(
+                                client.id
+                              )
+                            }
+                            className="h-11 px-5 rounded-2xl bg-gradient-to-r from-red-500 to-rose-500 text-white font-semibold flex items-center gap-2 shadow-lg hover:opacity-90 transition"
+                          >
 
                           <FaTrash />
 
-                          Delete
+                          Deactivate
 
-                        </button>
+                          </button>
+
+                        )}
 
                       </div>
 

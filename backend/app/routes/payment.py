@@ -12,6 +12,8 @@ from app.services.payment_service import (
 )
 
 from app.db import get_connection
+from app.services.notification_service import create_notification
+from app.services.email_service import send_email_async
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -237,7 +239,8 @@ def verify_payment(
                 COALESCE(b.adjusted_price, b.total_amount, b.budget, 0) AS payable_amount,
                 pt.id AS transaction_id,
                 pt.razorpay_payment_id,
-                pt.status AS transaction_status
+                pt.status AS transaction_status,
+                b.email
             FROM bookings b
             LEFT JOIN payment_transactions pt
                 ON pt.booking_id = b.booking_id
@@ -346,8 +349,30 @@ def verify_payment(
                     data.razorpay_payment_id,
                     data.booking_id,
                     user["uid"],
-                ),
-            )
+            ),
+        )
+
+        create_notification(
+            cursor,
+            user["uid"],
+            "Payment successful",
+            f"Your payment for booking {data.booking_id} is confirmed.",
+            "payment_success",
+            metadata={
+                "booking_id": data.booking_id,
+                "razorpay_order_id": data.razorpay_order_id,
+                "razorpay_payment_id": data.razorpay_payment_id,
+            },
+        )
+
+        send_email_async(
+            payment_context[6],
+            "TravelGenie payment confirmed",
+            (
+                f"Your payment for booking {data.booking_id} has been verified.\n\n"
+                "Thank you for booking with TravelGenie."
+            ),
+        )
 
         conn.commit()
 
@@ -441,6 +466,18 @@ def mark_payment_failed(
                     || jsonb_build_object('last_failed_at', CURRENT_TIMESTAMP)
             """,
             (data.razorpay_order_id, data.reason, data.booking_id, user["uid"]),
+        )
+
+        create_notification(
+            cursor,
+            user["uid"],
+            "Payment failed",
+            f"Payment for booking {data.booking_id} could not be completed. Please retry or contact support.",
+            "payment_failed",
+            metadata={
+                "booking_id": data.booking_id,
+                "reason": data.reason,
+            },
         )
 
         conn.commit()

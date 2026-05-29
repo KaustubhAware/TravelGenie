@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.db import get_connection
+from app.routes.auth import get_current_user
 
 router = APIRouter()
 
@@ -9,7 +10,10 @@ router = APIRouter()
 # =====================================================
 
 @router.get("/admin/clients")
-def get_clients():
+def get_clients(
+    include_deleted: bool = False,
+    admin=Depends(get_current_user),
+):
 
     conn = get_connection()
 
@@ -33,7 +37,11 @@ def get_clients():
                 0
             ) AS total_spent,
 
-            MAX(b.created_at) AS latest_booking
+            MAX(b.created_at) AS latest_booking,
+
+            COALESCE(u.is_deleted, FALSE) AS is_deleted,
+
+            u.deleted_at
 
         FROM users u
 
@@ -41,7 +49,7 @@ def get_clients():
         ON u.id = b.user_id
 
         WHERE
-            COALESCE(u.is_deleted, FALSE) = FALSE
+            (%s = TRUE OR COALESCE(u.is_deleted, FALSE) = FALSE)
 
         GROUP BY
             u.id,
@@ -49,12 +57,14 @@ def get_clients():
             u.email,
             u.phone,
             u.city,
-            u.country
+            u.country,
+            u.is_deleted,
+            u.deleted_at
 
         ORDER BY total_spent DESC
         """
 
-        cursor.execute(query)
+        cursor.execute(query, (include_deleted,))
 
         rows = cursor.fetchall()
 
@@ -81,7 +91,11 @@ def get_clients():
                 "total_spent": float(row[7]) if row[7] else 0,
 
                 "latest_booking":
-                    str(row[8]) if row[8] else None
+                    str(row[8]) if row[8] else None,
+
+                "is_deleted": bool(row[9]),
+
+                "deleted_at": str(row[10]) if row[10] else None,
             })
 
         return {
@@ -107,7 +121,7 @@ def get_clients():
 # =====================================================
 
 @router.delete("/admin/clients/{client_id}")
-def delete_client(client_id: int):
+def delete_client(client_id: int, admin=Depends(get_current_user)):
 
     conn = get_connection()
 
@@ -144,7 +158,10 @@ def delete_client(client_id: int):
         cursor.execute(
             """
             UPDATE users
-            SET is_deleted = TRUE
+            SET
+                is_deleted = TRUE,
+                deleted_at = CURRENT_TIMESTAMP,
+                updated_at = CURRENT_TIMESTAMP
             WHERE id = %s
             """,
             (client_id,)
@@ -161,6 +178,63 @@ def delete_client(client_id: int):
         }
 
     except HTTPException:
+
+        raise
+
+    except Exception as e:
+
+        conn.rollback()
+
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
+
+    finally:
+
+        cursor.close()
+
+        conn.close()
+
+
+@router.post("/admin/clients/{client_id}/restore")
+def restore_client(client_id: int, admin=Depends(get_current_user)):
+
+    conn = get_connection()
+
+    cursor = conn.cursor()
+
+    try:
+
+        cursor.execute(
+            """
+            UPDATE users
+            SET
+                is_deleted = FALSE,
+                deleted_at = NULL,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = %s
+            """,
+            (client_id,),
+        )
+
+        if cursor.rowcount == 0:
+
+            raise HTTPException(
+                status_code=404,
+                detail="Client not found"
+            )
+
+        conn.commit()
+
+        return {
+            "success": True,
+            "message": "Client restored successfully"
+        }
+
+    except HTTPException:
+
+        conn.rollback()
 
         raise
 

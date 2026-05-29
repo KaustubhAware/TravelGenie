@@ -10,7 +10,7 @@ const requireAuth = () => {
 export const bookingService = {
   getAdminBookings: () => {
     requireAuth();
-    return apiRequest("/get-bookings");
+    return apiRequest("/admin/bookings");
   },
 
   updateStatus: (booking_id, status) => {
