@@ -2,9 +2,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 export function useAutoRefresh(loader, options = {}) {
   const {
-    intervalMs = 30000,
+    intervalMs = 60000,
     enabled = true,
     immediate = true,
+    focusThrottleMs = 15000,
   } = options;
 
   const [loading, setLoading] = useState(Boolean(immediate));
@@ -12,6 +13,7 @@ export function useAutoRefresh(loader, options = {}) {
   const mountedRef = useRef(false);
   const loaderRef = useRef(loader);
   const inFlightRef = useRef(false);
+  const lastRefreshRef = useRef(0);
 
   useEffect(() => {
     loaderRef.current = loader;
@@ -21,6 +23,7 @@ export function useAutoRefresh(loader, options = {}) {
     if (!enabled || inFlightRef.current) return;
 
     inFlightRef.current = true;
+    lastRefreshRef.current = Date.now();
 
     try {
       if (!silent && mountedRef.current) setLoading(true);
@@ -47,13 +50,20 @@ export function useAutoRefresh(loader, options = {}) {
       refresh();
     }
 
+    const safeIntervalMs = Math.max(intervalMs, 15000);
+
     const id = window.setInterval(() => {
       if (mountedRef.current && document.visibilityState === "visible") {
         refresh({ silent: true });
       }
-    }, intervalMs);
+    }, safeIntervalMs);
 
-    const onFocus = () => refresh({ silent: true });
+    const onFocus = () => {
+      const elapsed = Date.now() - lastRefreshRef.current;
+      if (elapsed >= focusThrottleMs) {
+        refresh({ silent: true });
+      }
+    };
     window.addEventListener("focus", onFocus);
 
     return () => {
@@ -61,7 +71,7 @@ export function useAutoRefresh(loader, options = {}) {
       window.clearInterval(id);
       window.removeEventListener("focus", onFocus);
     };
-  }, [enabled, immediate, intervalMs, refresh]);
+  }, [enabled, focusThrottleMs, immediate, intervalMs, refresh]);
 
   return { loading, error, refresh };
 }

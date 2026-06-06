@@ -10,6 +10,7 @@ import {
 import { motion } from "framer-motion";
 
 import PageContainer from "../../components/ui/PageContainer";
+import LandingSectionTitle from "../../components/landing/LandingSectionTitle";
 
 export default function WhyChooseUsSection() {
 
@@ -65,7 +66,7 @@ export default function WhyChooseUsSection() {
 
   return (
 
-    <section className="relative py-16 bg-[#ececec] overflow-hidden">
+    <section className="landing-section-warm overflow-hidden">
 
       <PageContainer>
 
@@ -94,21 +95,11 @@ export default function WhyChooseUsSection() {
           
           {/* TITLE */}
 
-          <h2 className="mt-7 text-4xl md:text-6xl font-black leading-tight text-[#08112b]">
-
-            Built For Modern
-
-            <span className="block italic font-serif font-normal text-orange-500">
-
-              Adventure Travelers
-
-            </span>
-
-          </h2>
+          <LandingSectionTitle lead="Built For Modern" accent="Adventure Travelers" />
 
           {/* DESCRIPTION */}
 
-          <p className="mt-6 text-lg text-slate-600 leading-relaxed">
+          <p className="landing-body mt-6 text-lg leading-relaxed">
 
             TravelGenie combines AI-powered planning,
             real trek operations, and premium travel
@@ -144,7 +135,7 @@ export default function WhyChooseUsSection() {
               viewport={{
                 once: true,
               }}
-              className="group relative overflow-hidden rounded-[32px] bg-white p-8 shadow-2xl transition-all duration-500 hover:-translate-y-2"
+              className="landing-card group relative overflow-hidden rounded-[32px] p-8 transition-all duration-500 hover:-translate-y-2"
             >
 
               {/* SOFT GLOW */}

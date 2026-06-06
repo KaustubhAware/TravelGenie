@@ -22,10 +22,10 @@ const statusStyles = {
     "bg-yellow-100 text-yellow-700 border border-yellow-200",
 
   approved:
-    "bg-blue-100 text-blue-700 border border-blue-200",
+    "bg-orange-100 text-orange-700 border border-orange-200",
 
   under_review:
-    "bg-indigo-100 text-indigo-700 border border-indigo-200",
+    "bg-orange-100 text-orange-700 border border-orange-200",
 
   rejected:
     "bg-red-100 text-red-700 border border-red-200",
@@ -150,7 +150,7 @@ function BookingTable({
 
         <div>
 
-          <p className="text-[11px] uppercase tracking-[0.22em] text-blue-600 font-bold">
+          <p className="text-[11px] uppercase tracking-[0.22em] text-orange-500 font-bold">
 
             Booking Operations
 
@@ -181,7 +181,7 @@ function BookingTable({
             setPage(1);
 
           }}
-          className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none focus:border-blue-500"
+          className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none focus:border-orange-500"
         >
 
           <option value="all">
@@ -296,7 +296,7 @@ function BookingTable({
 
                       <div className="flex items-center gap-4">
 
-                        <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-2xl bg-orange-50 text-orange-500 flex items-center justify-center">
 
                           <FaMapMarkedAlt />
 
@@ -502,7 +502,7 @@ function BookingTable({
                                 internal_notes: e.target.value,
                               })
                             }
-                            className="rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-500 md:col-span-2"
+                            className="rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-orange-500 md:col-span-2"
                           />
 
                           <input
@@ -514,7 +514,7 @@ function BookingTable({
                                 assigned_agent: e.target.value,
                               })
                             }
-                            className="rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-500"
+                            className="rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-orange-500"
                           />
 
                           <input
@@ -528,7 +528,7 @@ function BookingTable({
                                 adjusted_price: e.target.value,
                               })
                             }
-                            className="rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-500"
+                            className="rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-orange-500"
                           />
 
                           <div className="flex flex-wrap gap-2 md:col-span-4">
@@ -536,7 +536,7 @@ function BookingTable({
                             <ActionButton
                               label="Mark Review"
                               icon={<FaClipboardList />}
-                              className="bg-indigo-600 text-white hover:bg-indigo-700"
+                              className="bg-orange-500 text-white hover:bg-orange-700"
                               onClick={() =>
                                 submitReview(b, "under_review")
                               }
@@ -545,7 +545,7 @@ function BookingTable({
                             <ActionButton
                               label="Approve Payment"
                               icon={<FaCheck />}
-                              className="bg-blue-600 text-white hover:bg-blue-700"
+                              className="bg-orange-500 text-white hover:bg-orange-700"
                               onClick={() =>
                                 submitReview(b, "approve")
                               }
@@ -621,7 +621,7 @@ function BookingTable({
             disabled={
               page === totalPages
             }
-            className="h-10 px-4 rounded-xl bg-blue-600 text-sm font-semibold text-white disabled:opacity-40"
+            className="h-10 px-4 rounded-xl bg-orange-500 text-sm font-semibold text-white disabled:opacity-40"
           >
 
             Next

@@ -58,7 +58,7 @@ export default function DashboardTopbar() {
   };
 
   useAutoRefresh(loadNotifications, {
-    intervalMs: 20000,
+    intervalMs: 60000,
     immediate: true,
   });
 

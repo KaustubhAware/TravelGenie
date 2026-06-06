@@ -1,6 +1,7 @@
 import logging
 import os
 import re
+import time
 
 from dotenv import load_dotenv
 from google import genai
@@ -24,14 +25,34 @@ logger = logging.getLogger(__name__)
 
 _client = None
 
-# MODEL_CANDIDATES = [
-#     "models/gemini-flash-latest",
-#     "models/gemini-1.5-flash",
-# ]
-
 MODEL_CANDIDATES = [
     "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+    "gemini-2.0-flash",
 ]
+
+MAX_MODEL_ATTEMPTS = 2
+RETRY_BACKOFF_SECONDS = (0.75, 1.5)
+
+
+def _model_candidates():
+
+    settings = get_settings()
+
+    configured = [
+        settings.GEMINI_MODEL,
+        settings.GEMINI_FALLBACK_MODEL,
+        *MODEL_CANDIDATES,
+    ]
+
+    candidates = []
+
+    for model_name in configured:
+
+        if model_name and model_name not in candidates:
+            candidates.append(model_name)
+
+    return candidates
 # =====================================================
 # MAHARASHTRA SYSTEM PROMPT
 # =====================================================
@@ -102,6 +123,83 @@ def _get_client():
         raise RuntimeError(
             "Failed to initialize Gemini chat client"
         ) from exc
+
+
+def _generate_with_fallback(client, prompt):
+
+    response = None
+
+    last_error = None
+
+    for model_name in _model_candidates():
+
+        for attempt in range(1, MAX_MODEL_ATTEMPTS + 1):
+
+            started = time.perf_counter()
+
+            try:
+
+                logger.info(
+                    "Trying chat model=%s attempt=%s",
+                    model_name,
+                    attempt,
+                )
+
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=prompt,
+                )
+
+                latency_ms = int((time.perf_counter() - started) * 1000)
+
+                if response:
+
+                    logger.info(
+                        "Gemini chat success model=%s attempt=%s latency_ms=%s",
+                        model_name,
+                        attempt,
+                        latency_ms,
+                    )
+
+                    return response
+
+                last_error = RuntimeError("Gemini returned no response object")
+
+                logger.warning(
+                    "Gemini chat empty response model=%s attempt=%s latency_ms=%s",
+                    model_name,
+                    attempt,
+                    latency_ms,
+                )
+
+            except Exception as model_error:
+
+                latency_ms = int((time.perf_counter() - started) * 1000)
+
+                last_error = model_error
+
+                logger.warning(
+                    "Gemini chat failed model=%s attempt=%s latency_ms=%s error=%s",
+                    model_name,
+                    attempt,
+                    latency_ms,
+                    str(model_error),
+                )
+
+            if attempt < MAX_MODEL_ATTEMPTS:
+
+                time.sleep(
+                    RETRY_BACKOFF_SECONDS[
+                        min(
+                            attempt - 1,
+                            len(RETRY_BACKOFF_SECONDS) - 1,
+                        )
+                    ]
+                )
+
+    raise RuntimeError(
+        f"No working Gemini chat model found: {last_error}"
+    )
 
 # =====================================================
 # HELPERS
@@ -211,48 +309,7 @@ assistant:
 
     try:
 
-        response = None
-
-        last_error = None
-
-        for model_name in MODEL_CANDIDATES:
-
-            try:
-
-                logger.info(
-                    "Trying chat model: %s",
-                    model_name
-                )
-
-                response = client.models.generate_content(
-                    model=model_name,
-                    contents=prompt,
-                )
-
-                if response:
-
-                    logger.info(
-                        "Gemini chat success using: %s",
-                        model_name
-                    )
-
-                    break
-
-            except Exception as model_error:
-
-                last_error = model_error
-
-                logger.warning(
-                    "Gemini chat model failed: %s | %s",
-                    model_name,
-                    str(model_error),
-                )
-
-        if not response:
-
-            raise RuntimeError(
-                f"No working Gemini chat model found: {last_error}"
-            )
+        response = _generate_with_fallback(client, prompt)
 
         text = getattr(response, "text", "")
 
@@ -282,6 +339,19 @@ assistant:
             ) from exc
 
         if (
+            "network" in lowered
+            or "timeout" in lowered
+            or "connection" in lowered
+            or "503" in lowered
+            or "unavailable" in lowered
+            or "high demand" in lowered
+        ):
+
+            raise RuntimeError(
+                "Gemini is temporarily unavailable. Please try again shortly."
+            ) from exc
+
+        if (
             "model" in lowered
             or "not found" in lowered
             or "invalid" in lowered
@@ -289,16 +359,6 @@ assistant:
 
             raise RuntimeError(
                 "Configured Gemini model is unavailable."
-            ) from exc
-
-        if (
-            "network" in lowered
-            or "timeout" in lowered
-            or "connection" in lowered
-        ):
-
-            raise RuntimeError(
-                "Gemini network request failed."
             ) from exc
 
         raise RuntimeError(

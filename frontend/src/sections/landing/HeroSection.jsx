@@ -49,7 +49,7 @@ export default function HeroSection() {
 
   return (
 
-    <section className="relative px-3 md:px-5 pt-3 pb-16 bg-[#ececec]">
+    <section className="landing-section relative px-3 pb-16 pt-3 md:px-5">
 
       {/* HERO WRAPPER */}
 
@@ -65,7 +65,7 @@ export default function HeroSection() {
 
         {/* LIGHT OVERLAY */}
 
-        <div className="absolute inset-0 bg-black/25" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#08112b]/55 via-[#08112b]/35 to-orange-900/25" />
 
         {/* CONTENT */}
 
@@ -97,35 +97,24 @@ export default function HeroSection() {
               {/* TITLE */}
 
 <h1 className="mt-8 leading-[0.92] tracking-[-0.05em]">
-
-  <span className="block text-[48px] md:text-[68px] xl:text-[88px] font-black text-white">
-
+  <span className="block text-[48px] font-black text-white md:text-[68px] xl:text-[88px]">
     Explore The
-
   </span>
 
-  <span className="block italic font-serif font-normal text-orange-400 text-[58px] md:text-[82px] xl:text-[105px]">
-
+  <span className="block font-heading text-[58px] font-normal italic text-orange-300 md:text-[82px] xl:text-[105px]">
     Sahyadri
-
   </span>
 
-  <span className="block text-[48px] md:text-[68px] xl:text-[88px] font-black text-white">
-
+  <span className="block text-[48px] font-black text-white md:text-[68px] xl:text-[88px]">
     Like Never
-
   </span>
 
-  <span className="block text-[48px] md:text-[68px] xl:text-[88px] font-black text-white">
-
+  <span className="block text-[48px] font-black text-white md:text-[68px] xl:text-[88px]">
     Before.
-
   </span>
-
 </h1>
-              {/* DESCRIPTION */}
 
-              <p className="mt-8 text-lg md:text-xl leading-relaxed text-white/90 max-w-2xl">
+              <p className="mt-8 max-w-2xl text-lg leading-relaxed text-white/90 md:text-xl">
 
                 Platform to discover, plan and book
                 Maharashtra treks, camping trips,

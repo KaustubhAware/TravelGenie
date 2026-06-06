@@ -25,7 +25,7 @@ import {
 import {
   API_BASE,
 } from "../../services/httpClient";
-import { resolveImageUrl } from "../../utils/imageUrl";
+import { resolveDestinationImage } from "../../utils/imageUrl";
 
 export default function DashboardPackages() {
 
@@ -754,9 +754,9 @@ export default function DashboardPackages() {
                   <div className="relative h-[220px] overflow-hidden">
 
                     <img
-                      src={resolveImageUrl(
+                      src={resolveDestinationImage(
                         pkg.featured_image || pkg.image,
-                        "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80"
+                        pkg.location || pkg.title
                       )}
                       alt={pkg.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition duration-500"

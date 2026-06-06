@@ -8,7 +8,6 @@ import {
   FaBoxOpen,
   FaCalendarCheck,
   FaMoneyBillWave,
-  FaSignOutAlt,
   FaUsers,
   FaUserTie,
   FaMountain,
@@ -79,7 +78,6 @@ const links = [
 export default function Sidebar({
   sidebarOpen,
   setSidebarOpen,
-  logout,
 }) {
 
   const location =
@@ -259,33 +257,6 @@ export default function Sidebar({
           ))}
 
         </div>
-
-      </div>
-
-      {/* ===================================================== */}
-      {/* FOOTER */}
-      {/* ===================================================== */}
-
-      <div className="border-t border-slate-200 p-4">
-
-        <button
-          onClick={logout}
-          className="flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 py-3 text-slate-600 transition hover:bg-red-50 hover:text-red-600"
-        >
-
-          <FaSignOutAlt />
-
-          {sidebarOpen && (
-
-            <span>
-
-              Logout
-
-            </span>
-
-          )}
-
-        </button>
 
       </div>
 

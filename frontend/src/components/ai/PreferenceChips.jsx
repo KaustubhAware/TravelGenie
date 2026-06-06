@@ -36,7 +36,7 @@ export default function PreferenceChips({
 
           <div
             key={index}
-            className="px-4 py-2 rounded-full bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-100 text-blue-700 text-sm font-medium"
+            className="px-4 py-2 rounded-full bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-100 text-orange-700 text-sm font-medium"
           >
 
             {place}

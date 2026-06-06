@@ -139,12 +139,12 @@ class Settings:
 
     GEMINI_MODEL = os.getenv(
         "GEMINI_MODEL",
-        "gemini-1.5-flash"
+        "gemini-2.5-flash"
     )
 
     GEMINI_FALLBACK_MODEL = os.getenv(
         "GEMINI_FALLBACK_MODEL",
-        "gemini-1.5-flash-8b",
+        "gemini-2.5-flash-lite",
     )
 
     # =====================================================

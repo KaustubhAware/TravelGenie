@@ -315,6 +315,17 @@ export default function NextPage() {
             cost: result.estimated_cost,
             sentiment: result.sentiment,
             itinerary: result.itinerary,
+            metadata: {
+              title: `${form.destination} AI Trip`,
+              budget_breakdown: result.budget_breakdown,
+              recommendations: result.recommendations,
+              hotel_recommendations: result.hotel_recommendations,
+              restaurant_recommendations: result.restaurant_recommendations,
+              weather: result.weather,
+              travel_tips: result.travel_tips,
+              packing_list: result.packing_list,
+              safety_notes: result.safety_notes,
+            },
           }),
         });
 

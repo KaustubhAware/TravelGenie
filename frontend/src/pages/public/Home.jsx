@@ -2,38 +2,23 @@ import HeroSection from "../../sections/landing/HeroSection";
 
 import FeaturedTreksSection from "../../sections/landing/FeaturedTreksSection";
 
-import WhyChooseUsSection from "../../sections/landing/WhyChooseUsSection";
+import FeaturedDestinationsSection from "../../sections/landing/FeaturedDestinationsSection";
 
-import AIPlannerBanner from "../../sections/landing/AIPlannerBanner";
+import WhyChooseUsSection from "../../sections/landing/WhyChooseUsSection";
 
 import TestimonialsSection from "../../sections/landing/TestimonialsSection";
 
-import heroBg from "../../assets/images/backgrounds/hero-bg.jpg";
+import TopRatedSection from "../../sections/landing/TopRatedSection";
+
+import VendorOnboardingSection from "../../sections/landing/VendorOnboardingSection";
 
 export default function Home() {
 
   return (
 
-    <main className="relative overflow-hidden bg-[#ededed]">
+    <main className="landing-page relative overflow-hidden">
 
-      {/* Global Cinematic Background */}
-      <div
-        className="fixed inset-0 -z-10 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `url(${heroBg})`,
-        }}
-      >
-
-        {/* Dark Overlay */}
-        <div className="absolute inset-0 bg-black/60" />
-
-        {/* Soft Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-[#0b0f1a]/90" />
-
-      </div>
-
-      {/* Main Content */}
-      <div className="relative z-10">
+      <div className="relative">
 
         {/* Hero Section */}
         <HeroSection />
@@ -41,12 +26,20 @@ export default function Home() {
         {/* Featured Treks */}
         <FeaturedTreksSection />
 
+        {/* Featured Destinations */}
+        <FeaturedDestinationsSection />
+
+        {/* Top Rated */}
+        <TopRatedSection />
+
         {/* Why Choose Us */}
         <WhyChooseUsSection />
 
-       
         {/* Testimonials */}
         <TestimonialsSection />
+
+        {/* Vendor CTA */}
+        <VendorOnboardingSection />
 
       </div>
 

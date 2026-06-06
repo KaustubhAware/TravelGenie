@@ -1,9 +1,17 @@
 import {
+  useEffect,
+  useState,
+} from "react";
+
+import {
   FaSearch,
   FaBell,
   FaBars,
   FaChevronDown,
+  FaSignOutAlt,
 } from "react-icons/fa";
+
+import { notificationService } from "../../services/notificationService";
 
 /* ===================================================== */
 /* COMPONENT */
@@ -14,7 +22,25 @@ export default function DashboardHeader({
   setSearch,
   sidebarOpen,
   setSidebarOpen,
+  logout,
 }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    notificationService
+      .list()
+      .then((res) => {
+        setNotifications(res.data?.notifications || []);
+        setUnreadCount(res.data?.unread_count || 0);
+      })
+      .catch(() => {
+        setNotifications([]);
+        setUnreadCount(0);
+      });
+  }, []);
 
   return (
 
@@ -91,21 +117,79 @@ export default function DashboardHeader({
 
           {/* NOTIFICATIONS */}
 
-          <button className="relative w-11 h-11 rounded-xl border border-slate-200 bg-white flex items-center justify-center text-slate-600 hover:bg-slate-50 transition">
+          <div className="relative">
+            <button
+              onClick={() => setNotificationsOpen((value) => !value)}
+              className="relative w-11 h-11 rounded-xl border border-slate-200 bg-white flex items-center justify-center text-slate-600 hover:bg-slate-50 transition"
+            >
 
-            <FaBell className="text-sm" />
+              <FaBell className="text-sm" />
 
-            <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-red-500" />
+              {unreadCount > 0 && (
+                <span className="absolute -right-1 -top-1 min-w-5 rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
 
-          </button>
+            </button>
+
+            {notificationsOpen && (
+              <div className="absolute right-0 top-13 z-50 w-[340px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+                <div className="border-b border-slate-100 px-4 py-3">
+                  <h3 className="font-bold text-slate-900">Admin Notifications</h3>
+                  <p className="text-xs text-slate-500">
+                    Booking, vendor, review, and payment alerts
+                  </p>
+                </div>
+                <div className="max-h-[360px] overflow-y-auto p-2">
+                  {notifications.length === 0 ? (
+                    <div className="p-6 text-center text-sm text-slate-500">
+                      No notifications yet.
+                    </div>
+                  ) : (
+                    notifications.slice(0, 8).map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={async () => {
+                          await notificationService.markRead(item.id);
+                          setNotifications((current) =>
+                            current.map((notification) =>
+                              notification.id === item.id
+                                ? { ...notification, is_read: true }
+                                : notification
+                            )
+                          );
+                          setUnreadCount((count) => Math.max(0, count - 1));
+                        }}
+                        className={`w-full rounded-xl p-3 text-left transition ${
+                          item.is_read
+                            ? "hover:bg-slate-50"
+                            : "bg-orange-50 hover:bg-orange-100"
+                        }`}
+                      >
+                        <p className="text-sm font-bold text-slate-900">{item.title}</p>
+                        <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">
+                          {item.message}
+                        </p>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* ADMIN */}
 
-          <button className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2 hover:bg-slate-50 transition">
+          <div className="relative">
+            <button
+              onClick={() => setMenuOpen((value) => !value)}
+              className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2 hover:bg-slate-50 transition"
+            >
 
             {/* AVATAR */}
 
-            <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white font-semibold">
+            <div className="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center text-white font-semibold">
 
               A
 
@@ -131,7 +215,24 @@ export default function DashboardHeader({
 
             <FaChevronDown className="hidden md:block text-slate-400 text-xs" />
 
-          </button>
+            </button>
+
+            {menuOpen && (
+              <div className="absolute right-0 top-14 z-50 w-56 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
+                <div className="border-b border-slate-100 px-3 py-3">
+                  <p className="text-sm font-bold text-slate-900">Admin</p>
+                  <p className="text-xs text-slate-500">Administrator</p>
+                </div>
+                <button
+                  onClick={logout}
+                  className="mt-2 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-bold text-red-600 hover:bg-red-50"
+                >
+                  <FaSignOutAlt />
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
 
         </div>
 

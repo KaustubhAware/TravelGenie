@@ -184,7 +184,7 @@ function AgentStat({
             {value}
           </h2>
         </div>
-        <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+        <div className="w-12 h-12 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center">
           {icon}
         </div>
       </div>

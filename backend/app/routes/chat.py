@@ -87,11 +87,15 @@ def travel_chat(
     except RuntimeError as exc:
         from fastapi.responses import JSONResponse
         from app.responses import error_response
-        status_code = 429 if "quota" in str(exc).lower() else 502
+        lowered = str(exc).lower()
+        status_code = 429 if "quota" in lowered else 503
         return JSONResponse(
             status_code=status_code,
             content=error_response(
-                message=str(exc),
+                message=(
+                    "AI chat is temporarily unavailable. "
+                    "Please try again shortly."
+                ),
                 error="AIServiceError",
                 detail=str(exc),
             )

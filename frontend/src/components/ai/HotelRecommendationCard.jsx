@@ -8,7 +8,7 @@ export default function HotelRecommendationCard({
   hotel,
 }) {
 
-  if (!hotel) {
+  if (!hotel || !hotel.name) {
     return null;
   }
 
@@ -17,10 +17,7 @@ export default function HotelRecommendationCard({
     <div className="bg-white border border-gray-200 rounded-[28px] overflow-hidden shadow-sm">
 
       <img
-        src={resolveImageUrl(
-          hotel.image,
-          "https://images.unsplash.com/photo-1566073771259-6a8506099945"
-        )}
+        src={resolveImageUrl(hotel.image)}
         alt={hotel.name}
         className="w-full h-56 object-cover"
         loading="lazy"
@@ -34,29 +31,33 @@ export default function HotelRecommendationCard({
 
           <h3 className="text-xl font-bold text-gray-900">
 
-            {hotel.name || "Recommended stay"}
+            {hotel.name}
 
           </h3>
 
         </div>
 
-        <div className="flex items-center gap-2 mt-4">
+        {hotel.rating && (
+          <div className="flex items-center gap-2 mt-4">
 
-          <FaStar className="text-yellow-500" />
+            <FaStar className="text-yellow-500" />
 
-          <span className="font-medium">
+            <span className="font-medium">
 
-            {hotel.rating || "4.5"}
+              {hotel.rating}
 
-          </span>
+            </span>
 
-        </div>
+          </div>
+        )}
 
-        <p className="text-gray-600 mt-3">
+        {(hotel.price_range || hotel.price) && (
+          <p className="text-gray-600 mt-3">
 
-          {hotel.price_range || hotel.price || "Moderate"}
+            {hotel.price_range || hotel.price}
 
-        </p>
+          </p>
+        )}
 
         {hotel.location && (
           <p className="mt-2 text-sm text-gray-500">

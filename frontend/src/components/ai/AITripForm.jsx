@@ -96,7 +96,7 @@ export default function AITripForm({
               value={form.destination}
               onChange={handleChange}
               placeholder="Where do you want to go?"
-              className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-3 outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
             />
 
           </div>
@@ -117,7 +117,7 @@ export default function AITripForm({
               value={form.budget}
               onChange={handleChange}
               placeholder="Enter your budget"
-              className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-3 outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
             />
 
           </div>
@@ -138,7 +138,7 @@ export default function AITripForm({
               value={form.days}
               onChange={handleChange}
               placeholder="How many days?"
-              className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-3 outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
             />
 
           </div>
@@ -163,7 +163,7 @@ export default function AITripForm({
                 value={form.travelers}
                 onChange={handleChange}
                 placeholder="Number of travelers"
-                className="w-full rounded-2xl border border-gray-200 bg-gray-50 pl-12 pr-5 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="w-full rounded-2xl border border-gray-200 bg-gray-50 pl-12 pr-5 py-3 outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
               />
 
             </div>
@@ -184,7 +184,7 @@ export default function AITripForm({
               name="trip_type"
               value={form.trip_type}
               onChange={handleChange}
-              className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-3 outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
             >
 
               <option value="">
@@ -238,8 +238,8 @@ export default function AITripForm({
                     }
                     className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
                       active
-                        ? "bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-md"
-                        : "bg-gray-100 text-gray-700 hover:bg-blue-50"
+                        ? "bg-gradient-to-r from-orange-500 to-orange-400 text-white shadow-md"
+                        : "bg-gray-100 text-gray-700 hover:bg-orange-50"
                     }`}
                   >
 
@@ -260,7 +260,7 @@ export default function AITripForm({
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="w-full mt-4 bg-gradient-to-r from-blue-600 to-cyan-500 text-white py-3 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-3"
+            className="w-full mt-4 bg-gradient-to-r from-orange-500 to-orange-400 text-white py-3 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-3"
           >
 
             {loading

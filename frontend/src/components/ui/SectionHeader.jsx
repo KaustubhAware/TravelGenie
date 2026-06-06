@@ -21,7 +21,7 @@ export default function SectionHeader({
 
       {badge && (
 
-        <div className="inline-flex items-center px-5 py-2 rounded-full border border-indigo-100 bg-indigo-50 text-indigo-600 text-sm font-bold tracking-wide mb-6">
+        <div className="inline-flex items-center px-5 py-2 rounded-full border border-orange-100 bg-orange-50 text-orange-500 text-sm font-bold tracking-wide mb-6">
 
           {badge}
 

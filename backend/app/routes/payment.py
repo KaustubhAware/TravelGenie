@@ -12,7 +12,7 @@ from app.services.payment_service import (
 )
 
 from app.db import get_connection
-from app.services.notification_service import create_notification
+from app.services.notification_service import create_admin_notification, create_notification
 from app.services.email_service import send_email_async
 
 router = APIRouter()
@@ -364,6 +364,18 @@ def verify_payment(
                 "razorpay_payment_id": data.razorpay_payment_id,
             },
         )
+        create_admin_notification(
+            cursor,
+            "Payment verified",
+            f"Razorpay payment for booking {data.booking_id} was verified.",
+            "payment_success",
+            metadata={
+                "booking_id": data.booking_id,
+                "razorpay_order_id": data.razorpay_order_id,
+                "razorpay_payment_id": data.razorpay_payment_id,
+                "user_id": user["uid"],
+            },
+        )
 
         send_email_async(
             payment_context[6],
@@ -477,6 +489,17 @@ def mark_payment_failed(
             metadata={
                 "booking_id": data.booking_id,
                 "reason": data.reason,
+            },
+        )
+        create_admin_notification(
+            cursor,
+            "Payment failed",
+            f"Payment for booking {data.booking_id} failed.",
+            "payment_failed",
+            metadata={
+                "booking_id": data.booking_id,
+                "reason": data.reason,
+                "user_id": user["uid"],
             },
         )
 

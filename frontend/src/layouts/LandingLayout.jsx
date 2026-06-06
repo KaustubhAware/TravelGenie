@@ -35,7 +35,7 @@ const LandingLayout = () => {
   return (
 
     <motion.div
-      className="min-h-screen bg-surface"
+      className="min-h-screen bg-[#faf8f6]"
       initial={{
         opacity: 0,
       }}

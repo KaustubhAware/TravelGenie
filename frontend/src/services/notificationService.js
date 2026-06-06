@@ -1,8 +1,15 @@
 import { apiRequest } from "./httpClient";
 
+let listRequest = null;
+
 export const notificationService = {
   list() {
-    return apiRequest("/notifications");
+    if (!listRequest) {
+      listRequest = apiRequest("/notifications").finally(() => {
+        listRequest = null;
+      });
+    }
+    return listRequest;
   },
 
   markRead(id) {

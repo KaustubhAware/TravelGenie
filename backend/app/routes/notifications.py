@@ -42,7 +42,21 @@ def list_notifications(user=Depends(get_current_user)):
             item["created_at"] = str(item["created_at"]) if item.get("created_at") else None
             item["read_at"] = str(item["read_at"]) if item.get("read_at") else None
 
-        unread_count = sum(1 for item in notifications if not item["is_read"])
+        cursor.execute(
+            """
+            SELECT COUNT(*)
+            FROM notifications
+            WHERE user_id = %s AND is_read = FALSE
+            """,
+            (user_id,),
+        )
+        count_row = cursor.fetchone()
+        unread_count = (
+            count_row["count"]
+            if hasattr(count_row, "keys")
+            else count_row[0]
+        )
+
         return success_response(
             message="Notifications fetched",
             data={
@@ -66,12 +80,22 @@ def mark_notification_read(notification_id: int, user=Depends(get_current_user))
             """
             UPDATE notifications
             SET is_read = TRUE, read_at = CURRENT_TIMESTAMP
-            WHERE id = %s AND user_id = %s
+            WHERE id = %s AND user_id = %s AND is_read = FALSE
             """,
             (notification_id, user_id),
         )
         if cursor.rowcount == 0:
-            raise HTTPException(status_code=404, detail="Notification not found")
+            cursor.execute(
+                """
+                SELECT id
+                FROM notifications
+                WHERE id = %s AND user_id = %s
+                LIMIT 1
+                """,
+                (notification_id, user_id),
+            )
+            if not cursor.fetchone():
+                raise HTTPException(status_code=404, detail="Notification not found")
         conn.commit()
         return success_response(message="Notification marked as read")
     except HTTPException:

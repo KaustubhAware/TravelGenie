@@ -29,6 +29,10 @@ const MyBookings = lazy(() =>
   import("../pages/dashboard/MyBookings")
 );
 
+const SavedTrips = lazy(() =>
+  import("../pages/dashboard/SavedTrips")
+);
+
 /* ===================================================== */
 /* PUBLIC PAGES */
 /* ===================================================== */
@@ -184,6 +188,15 @@ const dashboardRoutes = [
         element: withSuspense(
           <MyBookings />,
           "Loading bookings..."
+        ),
+      },
+
+      {
+        path: "saved-trips",
+
+        element: withSuspense(
+          <SavedTrips />,
+          "Loading saved trips..."
         ),
       },
 

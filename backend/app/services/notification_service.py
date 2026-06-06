@@ -42,3 +42,37 @@ def create_notification(
             cursor.execute("RELEASE SAVEPOINT notification_insert")
         except Exception:
             pass
+
+
+def create_admin_notification(
+    cursor,
+    title,
+    message,
+    notification_type="admin",
+    metadata=None,
+):
+    try:
+        cursor.execute(
+            """
+            SELECT id
+            FROM users
+            WHERE role = 'admin'
+              AND COALESCE(is_deleted, FALSE) = FALSE
+            """
+        )
+        rows = cursor.fetchall()
+    except Exception as exc:
+        logger.warning("Admin notification lookup skipped: %s", exc)
+        return
+
+    for row in rows:
+        admin_id = row["id"] if hasattr(row, "keys") else row[0]
+        create_notification(
+            cursor,
+            admin_id,
+            title,
+            message,
+            notification_type=notification_type,
+            audience="admin",
+            metadata=metadata,
+        )

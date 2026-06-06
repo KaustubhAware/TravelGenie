@@ -105,11 +105,15 @@ def generate_trip(data: dict):
     except RuntimeError as exc:
         from fastapi.responses import JSONResponse
         from app.responses import error_response
-        status_code = 429 if "quota" in str(exc).lower() else 502
+        lowered = str(exc).lower()
+        status_code = 429 if "quota" in lowered else 503
         return JSONResponse(
             status_code=status_code,
             content=error_response(
-                message=str(exc),
+                message=(
+                    "AI trip planning is temporarily unavailable. "
+                    "Please try again shortly."
+                ),
                 error="AIServiceError",
                 detail=str(exc),
             )
@@ -374,7 +378,10 @@ def save_trip(
                 data.get("days"),
                 data.get("preferences"),
                 json.dumps(data.get("itinerary", [])),
-                json.dumps({"source": "save-trip"}),
+                json.dumps({
+                    "source": "save-trip",
+                    **(data.get("metadata") if isinstance(data.get("metadata"), dict) else {}),
+                }),
             ),
         )
 

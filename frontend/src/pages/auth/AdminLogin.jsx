@@ -138,7 +138,7 @@ export default function AdminLogin() {
 
       <div className="absolute top-[-120px] left-[-120px] w-[350px] h-[350px] bg-orange-200 rounded-full blur-3xl opacity-30" />
 
-      <div className="absolute bottom-[-120px] right-[-120px] w-[350px] h-[350px] bg-blue-200 rounded-full blur-3xl opacity-30" />
+      <div className="absolute bottom-[-120px] right-[-120px] w-[350px] h-[350px] bg-orange-200 rounded-full blur-3xl opacity-30" />
 
       {/* CARD */}
 

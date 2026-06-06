@@ -7,7 +7,7 @@ import {
 import {
   fetchWithAuth,
 } from "../../utils/api";
-import { resolveImageUrl } from "../../utils/imageUrl";
+import { resolveDestinationImage } from "../../utils/imageUrl";
 
 import {
   FaSearch,
@@ -20,13 +20,6 @@ import {
   FaStar,
   FaMountain,
 } from "react-icons/fa";
-
-// =====================================================
-// DEFAULT IMAGE
-// =====================================================
-
-const DEFAULT_IMAGE =
-  "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=80";
 
 // =====================================================
 // INITIAL FORM
@@ -637,7 +630,7 @@ export default function AdminPackages() {
 
       <div className="flex min-h-[320px] items-center justify-center">
 
-        <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
 
       </div>
 
@@ -694,7 +687,7 @@ export default function AdminPackages() {
                   e.target.value
                 )
               }
-              className="h-14 w-full sm:w-[320px] rounded-2xl border border-slate-200 bg-white pl-14 pr-5 outline-none shadow-sm focus:border-indigo-500"
+              className="h-14 w-full sm:w-[320px] rounded-2xl border border-slate-200 bg-white pl-14 pr-5 outline-none shadow-sm focus:border-orange-500"
             />
 
           </div>
@@ -709,7 +702,7 @@ export default function AdminPackages() {
               setShowModal(true);
 
             }}
-            className="h-14 px-6 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-500 text-white font-bold shadow-lg flex items-center justify-center gap-3 hover:shadow-2xl transition"
+            className="h-14 px-6 rounded-2xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold shadow-lg flex items-center justify-center gap-3 hover:shadow-2xl transition"
           >
 
             <FaPlus />
@@ -741,7 +734,10 @@ export default function AdminPackages() {
               <div className="relative h-[240px] overflow-hidden">
 
                 <img
-                  src={resolveImageUrl(pkg.featured_image || pkg.image, DEFAULT_IMAGE)}
+                  src={resolveDestinationImage(
+                    pkg.featured_image || pkg.image,
+                    pkg.location || pkg.title
+                  )}
                   alt={pkg.title}
                   className="w-full h-full object-cover hover:scale-110 transition duration-700"
                 />
@@ -786,7 +782,7 @@ export default function AdminPackages() {
 
                   <div className="text-right">
 
-                    <h3 className="text-2xl font-black text-indigo-600">
+                    <h3 className="text-2xl font-black text-orange-500">
 
                       ₹{pkg.price}
 
@@ -808,7 +804,7 @@ export default function AdminPackages() {
 
                   <div className="flex items-center gap-3 text-slate-700">
 
-                    <FaMapMarkedAlt className="text-indigo-500" />
+                    <FaMapMarkedAlt className="text-orange-500" />
 
                     <span>
 
@@ -857,7 +853,7 @@ export default function AdminPackages() {
 
                 <div className="mt-5 flex flex-wrap gap-2">
 
-                  <span className="bg-indigo-50 text-indigo-700 px-3 py-2 rounded-xl text-sm font-semibold">
+                  <span className="bg-orange-50 text-orange-700 px-3 py-2 rounded-xl text-sm font-semibold">
 
                     {pkg.category}
 
@@ -924,9 +920,9 @@ export default function AdminPackages() {
 
         <div className="text-center py-24">
 
-          <div className="w-24 h-24 rounded-full bg-indigo-50 flex items-center justify-center mx-auto mb-6">
+          <div className="w-24 h-24 rounded-full bg-orange-50 flex items-center justify-center mx-auto mb-6">
 
-            <FaMapMarkedAlt className="text-indigo-600 text-4xl" />
+            <FaMapMarkedAlt className="text-orange-500 text-4xl" />
 
           </div>
 
@@ -1069,7 +1065,7 @@ export default function AdminPackages() {
                           name={key}
                           value={value}
                           onChange={handleChange}
-                          className="w-full rounded-2xl border border-slate-200 px-5 py-4 outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full rounded-2xl border border-slate-200 px-5 py-4 outline-none focus:ring-2 focus:ring-orange-500"
                         />
 
                       ) : (
@@ -1086,7 +1082,7 @@ export default function AdminPackages() {
                           name={key}
                           value={value}
                           onChange={handleChange}
-                          className="w-full rounded-2xl border border-slate-200 px-5 py-4 outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full rounded-2xl border border-slate-200 px-5 py-4 outline-none focus:ring-2 focus:ring-orange-500"
                         />
 
                       )}
@@ -1136,7 +1132,7 @@ export default function AdminPackages() {
                   }
 
                 }}
-                className="px-8 py-3 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-500 text-white font-bold shadow-lg hover:shadow-2xl transition disabled:opacity-50"
+                className="px-8 py-3 rounded-2xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold shadow-lg hover:shadow-2xl transition disabled:opacity-50"
               >
 
                 {saving

@@ -2,7 +2,7 @@ import { apiRequest } from "./httpClient";
 
 export const packageService = {
   list: () =>
-    apiRequest("/packages"),
+    apiRequest("/packages", { auth: false }),
 
   getBatches: (slug) =>
     apiRequest(`/packages/${slug}/batches`, { auth: false }),

@@ -39,7 +39,7 @@ export default function NavbarLanding() {
     },
 
     {
-      label: "Treks",
+      label: "Packages",
       href: "/dashboard/packages",
     },
 
@@ -49,8 +49,13 @@ export default function NavbarLanding() {
     },
 
     {
-      label: "Destinations",
-      href: "/destinations",
+      label: "Vendor Login",
+      href: "/vendor/login",
+    },
+
+    {
+      label: "Vendor Register",
+      href: "/vendor/register",
     },
 
   ];
@@ -70,7 +75,7 @@ export default function NavbarLanding() {
 
   return (
 
-    <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-[#ececec]/90 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-orange-100/90 bg-white/95 backdrop-blur-xl">
 
       <div className="max-w-[1600px] mx-auto px-4 md:px-6 xl:px-8">
 
@@ -175,7 +180,18 @@ export default function NavbarLanding() {
               className="px-5 py-3 rounded-2xl text-sm font-semibold text-slate-700 hover:bg-white transition-all duration-300"
             >
 
-              Sign In
+              Login
+
+            </button>
+
+            <button
+              onClick={() =>
+                navigate("/register")
+              }
+              className="px-5 py-3 rounded-2xl text-sm font-semibold text-slate-700 hover:bg-white transition-all duration-300"
+            >
+
+              Register
 
             </button>
 
@@ -230,7 +246,7 @@ export default function NavbarLanding() {
 
       {mobileOpen && (
 
-        <div className="xl:hidden border-t border-slate-200 bg-[#ececec]">
+        <div className="xl:hidden border-t border-orange-100 bg-[#fff7ed]">
 
           <div className="px-4 py-5 space-y-2">
 
@@ -271,7 +287,18 @@ export default function NavbarLanding() {
                 className="w-full bg-white hover:bg-slate-100 transition-all duration-300 px-4 py-3 rounded-2xl text-slate-700 font-semibold"
               >
 
-                Sign In
+                Login
+
+              </button>
+
+              <button
+                onClick={() =>
+                  navigate("/register")
+                }
+                className="w-full bg-white hover:bg-slate-100 transition-all duration-300 px-4 py-3 rounded-2xl text-slate-700 font-semibold"
+              >
+
+                Register
 
               </button>
 

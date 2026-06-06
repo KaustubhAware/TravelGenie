@@ -8,6 +8,10 @@ export const uploadService = {
       throw new Error("Not authenticated");
     }
 
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file?.type)) {
+      throw new Error("Upload JPG, PNG, or WEBP images only");
+    }
+
     const formData = new FormData();
     formData.append("file", file);
 

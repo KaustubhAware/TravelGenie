@@ -11,7 +11,7 @@ import { exportInvoicePDF } from "../../utils/exportPDF";
 import { bookingService } from "../../services/bookingService";
 
 import { hasAuthToken } from "../../utils/authToken";
-import { resolveImageUrl } from "../../utils/imageUrl";
+import { resolveDestinationImage } from "../../utils/imageUrl";
 
 import { DASHBOARD_ROUTES } from "../../constants/routesPath";
 
@@ -409,9 +409,9 @@ export default function MyBookings() {
                 <div className="relative h-52">
 
                   <img
-                    src={resolveImageUrl(
+                    src={resolveDestinationImage(
                       booking.package_image,
-                      "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1400&q=80"
+                      booking.destination || booking.package_title
                     )}
                     alt={
                       booking.package_title ||

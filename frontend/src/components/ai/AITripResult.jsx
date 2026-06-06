@@ -14,6 +14,11 @@ import RestaurantRecommendationCard from "./RestaurantRecommendationCard";
 
 import WeatherCard from "./WeatherCard";
 
+import {
+  groupHotelsByTier,
+  groupRestaurantsByMeal,
+} from "../../utils/recommendationGroups";
+
 const TravelMap = lazy(() =>
   import("./TravelMap")
 );
@@ -59,6 +64,9 @@ export default function AITripResult({
     nearby_attractions = [],
     best_season = "",
   } = result;
+
+  const hotelTiers = groupHotelsByTier(hotel_recommendations);
+  const mealGroups = groupRestaurantsByMeal(restaurant_recommendations);
 
   /* ===================================================== */
   /* UI */
@@ -193,44 +201,30 @@ export default function AITripResult({
       {/* ===================================================== */}
 
       {hotel_recommendations.length > 0 && (
-
-        <section>
-
-          <div className="mb-6">
-
+        <section className="space-y-6">
+          <div>
             <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
-
               Hotel Recommendations
-
             </h2>
-
-            <p className="text-gray-500 mt-1">
-
-              AI suggested stays
-
-            </p>
-
+            <p className="mt-1 text-gray-500">Budget, mid-range, and premium stays</p>
           </div>
-
-          <div className="grid lg:grid-cols-2 gap-4">
-
-            {hotel_recommendations.map(
-
-              (hotel, index) => (
-
-                <HotelRecommendationCard
-                  key={index}
-                  hotel={hotel}
-                />
-
-              )
-
-            )}
-
-          </div>
-
+          {[
+            { key: "budget", label: "Budget Hotels" },
+            { key: "mid", label: "Mid-Range Hotels" },
+            { key: "premium", label: "Premium Hotels" },
+          ].map(({ key, label }) =>
+            hotelTiers[key]?.length ? (
+              <div key={key}>
+                <h3 className="mb-3 text-lg font-bold text-slate-800">{label}</h3>
+                <div className="grid gap-4 lg:grid-cols-2">
+                  {hotelTiers[key].map((hotel, index) => (
+                    <HotelRecommendationCard key={`${key}-${index}`} hotel={hotel} />
+                  ))}
+                </div>
+              </div>
+            ) : null
+          )}
         </section>
-
       )}
 
       {/* ===================================================== */}
@@ -238,44 +232,33 @@ export default function AITripResult({
       {/* ===================================================== */}
 
       {restaurant_recommendations.length > 0 && (
-
-        <section>
-
-          <div className="mb-6">
-
+        <section className="space-y-6">
+          <div>
             <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
-
               Restaurant Recommendations
-
             </h2>
-
-            <p className="text-gray-500 mt-1">
-
-              Popular nearby food spots
-
-            </p>
-
+            <p className="mt-1 text-gray-500">Meal-wise dining suggestions</p>
           </div>
-
-          <div className="grid lg:grid-cols-2 gap-4">
-
-            {restaurant_recommendations.map(
-
-              (restaurant, index) => (
-
-                <RestaurantRecommendationCard
-                  key={index}
-                  restaurant={restaurant}
-                />
-
-              )
-
-            )}
-
-          </div>
-
+          {[
+            { key: "breakfast", label: "Breakfast" },
+            { key: "lunch", label: "Lunch" },
+            { key: "dinner", label: "Dinner" },
+          ].map(({ key, label }) =>
+            mealGroups[key]?.length ? (
+              <div key={key}>
+                <h3 className="mb-3 text-lg font-bold text-slate-800">{label}</h3>
+                <div className="grid gap-4 lg:grid-cols-2">
+                  {mealGroups[key].map((restaurant, index) => (
+                    <RestaurantRecommendationCard
+                      key={`${key}-${index}`}
+                      restaurant={restaurant}
+                    />
+                  ))}
+                </div>
+              </div>
+            ) : null
+          )}
         </section>
-
       )}
 
       {/* ===================================================== */}
@@ -459,7 +442,7 @@ export default function AITripResult({
         <button
           onClick={saveTrip}
           disabled={saving}
-          className="h-12 rounded-2xl border border-gray-300 bg-white hover:bg-gray-100 text-gray-800 font-semibold transition"
+          className="h-12 rounded-2xl bg-orange-500 text-white font-semibold transition hover:bg-orange-600 disabled:opacity-60"
         >
 
           {saving ? "Saving..." : "Save Trip"}

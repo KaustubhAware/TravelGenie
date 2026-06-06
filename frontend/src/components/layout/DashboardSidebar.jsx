@@ -2,6 +2,7 @@ import {
   LayoutDashboard,
   Mountain,
   CalendarDays,
+  Bookmark,
   Sparkles,
   User,
   LogOut,
@@ -43,6 +44,13 @@ const navItems = [
     label: "Bookings",
     icon: CalendarDays,
     path: "/dashboard/bookings",
+    roles: ["customer", "user"],
+  },
+
+  {
+    label: "Saved Trips",
+    icon: Bookmark,
+    path: "/dashboard/saved-trips",
     roles: ["customer", "user"],
   },
 

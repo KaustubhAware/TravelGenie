@@ -52,15 +52,11 @@ export default function AIPlannerBanner() {
 
       <PageContainer>
 
-        <div className="relative overflow-hidden rounded-[40px] bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 px-8 md:px-16 py-16 md:py-20">
+        <div className="relative overflow-hidden rounded-[40px] border border-orange-100 bg-gradient-to-br from-[#08112b] via-[#1a1208] to-orange-950 px-8 py-16 md:px-16 md:py-20">
 
-          {/* ===================================================== */}
-          {/* GLOW EFFECTS */}
-          {/* ===================================================== */}
+          <div className="absolute top-0 right-0 h-[400px] w-[400px] rounded-full bg-orange-500/25 blur-3xl" />
 
-          <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-indigo-500/20 rounded-full blur-3xl" />
-
-          <div className="absolute bottom-0 left-0 w-[350px] h-[350px] bg-cyan-500/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-0 h-[350px] w-[350px] rounded-full bg-orange-300/10 blur-3xl" />
 
           {/* ===================================================== */}
           {/* CONTENT */}
@@ -78,7 +74,7 @@ export default function AIPlannerBanner() {
 
               <div className="inline-flex items-center gap-3 px-5 py-3 rounded-full bg-white/10 border border-white/10 backdrop-blur-xl">
 
-                <FaRobot className="text-cyan-400" />
+                <FaRobot className="text-orange-300" />
 
                 <span className="text-sm font-semibold text-white/80">
 
@@ -119,7 +115,7 @@ export default function AIPlannerBanner() {
                     className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-5"
                   >
 
-                    <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 text-cyan-400 flex items-center justify-center text-lg">
+                    <div className="w-12 h-12 rounded-2xl bg-orange-500/20 text-orange-300 flex items-center justify-center text-lg">
 
                       {feature.icon}
 
@@ -186,7 +182,7 @@ export default function AIPlannerBanner() {
 
                   </div>
 
-                  <div className="w-14 h-14 rounded-2xl bg-indigo-500 flex items-center justify-center text-white text-xl shadow-lg shadow-indigo-500/30">
+                  <div className="w-14 h-14 rounded-2xl bg-orange-500 flex items-center justify-center text-white text-xl shadow-lg shadow-orange-500/30">
 
                     <FaRobot />
 
@@ -240,7 +236,7 @@ export default function AIPlannerBanner() {
 
                       </h4>
 
-                      <span className="text-cyan-400 text-sm font-semibold">
+                      <span className="text-orange-300 text-sm font-semibold">
 
                         AI Suggested
 
@@ -266,7 +262,7 @@ export default function AIPlannerBanner() {
 
                       </h4>
 
-                      <span className="text-indigo-400 text-sm font-semibold">
+                      <span className="text-orange-300 text-sm font-semibold">
 
                         Recommended
 
@@ -277,30 +273,6 @@ export default function AIPlannerBanner() {
                   </div>
 
                 </div>
-
-              </div>
-
-              {/* FLOATING CARD */}
-
-              <div className="absolute -bottom-8 -left-8 hidden xl:block rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl p-6 shadow-2xl">
-
-                <p className="text-sm text-slate-300">
-
-                  Active AI Users
-
-                </p>
-
-                <h3 className="mt-3 text-4xl font-black text-white">
-
-                  12K+
-
-                </h3>
-
-                <p className="mt-2 text-sm text-emerald-400 font-semibold">
-
-                  +18% this month
-
-                </p>
 
               </div>
 

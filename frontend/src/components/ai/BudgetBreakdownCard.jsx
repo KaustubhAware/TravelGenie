@@ -49,7 +49,11 @@ export default function BudgetBreakdownCard({
       icon: <FaWallet />,
     },
 
-  ];
+  ].filter((item) => Number(item.value || 0) > 0);
+
+  if (!items.length) {
+    return null;
+  }
 
   return (
 
@@ -104,7 +108,7 @@ export default function BudgetBreakdownCard({
 
               <h3 className="text-xl font-bold text-gray-900">
 
-                ₹ {item.value}
+                Rs {item.value}
 
               </h3>
 

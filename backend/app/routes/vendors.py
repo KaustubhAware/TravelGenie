@@ -15,7 +15,7 @@ from app.auth.jwt_handler import get_current_user
 from app.routes.auth import get_current_user as get_current_admin
 from app.responses import success_response
 from app.services.email_service import send_email_async
-from app.services.notification_service import create_notification
+from app.services.notification_service import create_admin_notification, create_notification
 
 logger = logging.getLogger(__name__)
 
@@ -262,7 +262,12 @@ def apply_vendor(
 
     try:
         normalized_email = email.lower().strip()
-        if not normalized_email or not password or len(password) < 6:
+        normalized_password = password.strip()
+        if (
+            not normalized_email
+            or not normalized_password
+            or len(normalized_password) < 6
+        ):
             raise HTTPException(status_code=400, detail="Valid email and password are required")
 
         cursor.execute(
@@ -308,7 +313,7 @@ def apply_vendor(
             """,
             (
                 normalized_email,
-                hash_password(password),
+                hash_password(normalized_password),
                 owner_name.strip(),
                 owner_name.strip(),
                 phone.strip(),
@@ -348,6 +353,13 @@ def apply_vendor(
             ),
         )
         vendor_id = cursor.fetchone()["vendor_id"]
+        create_admin_notification(
+            cursor,
+            "Vendor application received",
+            f"{business_name.strip()} submitted a vendor application.",
+            "vendor_application",
+            metadata={"vendor_id": vendor_id, "user_id": user_id},
+        )
         conn.commit()
 
         send_email_async(
@@ -413,9 +425,15 @@ def register_vendor(
             ),
         )
         row = cursor.fetchone()
-        conn.commit()
-
         vendor_id = row["vendor_id"] if hasattr(row, "keys") else row[0]
+        create_admin_notification(
+            cursor,
+            "Vendor registration received",
+            f"{data.business_name} submitted a vendor profile for approval.",
+            "vendor_application",
+            metadata={"vendor_id": vendor_id, "user_id": user_id},
+        )
+        conn.commit()
 
         return success_response(
             message="Vendor registration submitted for approval",
@@ -1026,6 +1044,17 @@ def verify_vendor(
             notification_type="vendor_status",
             audience="vendor",
             metadata={"vendor_id": vendor_id, "status": data.verification_status},
+        )
+        create_admin_notification(
+            cursor,
+            "Vendor approval updated",
+            f"{row['business_name']} is now {data.verification_status}.",
+            "vendor_status",
+            metadata={
+                "vendor_id": vendor_id,
+                "status": data.verification_status,
+                "updated_by": admin.get("id"),
+            },
         )
 
         conn.commit()

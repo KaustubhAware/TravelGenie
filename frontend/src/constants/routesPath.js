@@ -14,6 +14,7 @@ export const DASHBOARD_ROUTES = {
   root: "/dashboard",
   bookings: "/dashboard/bookings",
   bookingDetail: (id) => `/dashboard/bookings/${id}`,
+  savedTrips: "/dashboard/saved-trips",
   aiPlanner: "/dashboard/ai-planner",
   aiChat: "/dashboard/ai-chat",
   vendor: "/dashboard/vendor",

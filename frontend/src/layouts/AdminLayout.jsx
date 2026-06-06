@@ -20,7 +20,6 @@ export default function AdminLayout() {
         <Sidebar
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
-          logout={logout}
         />
 
         <div className="flex flex-1 min-w-0 flex-col overflow-hidden">
@@ -29,6 +28,7 @@ export default function AdminLayout() {
             setSearch={setSearch}
             sidebarOpen={sidebarOpen}
             setSidebarOpen={setSidebarOpen}
+            logout={logout}
           />
 
           <main className="flex-1 overflow-y-auto overflow-x-hidden">

@@ -8,7 +8,7 @@ from app.db import get_connection, get_cursor
 from app.auth.jwt_handler import get_current_user
 from app.routes.auth import get_current_user as get_current_admin
 from app.responses import success_response
-from app.services.notification_service import create_notification
+from app.services.notification_service import create_admin_notification, create_notification
 
 logger = logging.getLogger(__name__)
 
@@ -188,6 +188,17 @@ def create_review(
             metadata={
                 "package_id": data.package_id,
                 "trip_id": data.trip_id,
+            },
+        )
+        create_admin_notification(
+            cursor,
+            "New review awaiting moderation",
+            "A customer submitted a review for moderation.",
+            "review_submitted",
+            metadata={
+                "package_id": data.package_id,
+                "trip_id": data.trip_id,
+                "user_id": user_id,
             },
         )
 

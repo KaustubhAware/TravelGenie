@@ -6,7 +6,7 @@ export default function WeatherCard({
   weather = {},
 }) {
 
-  if (!weather.temperature) {
+  if (!Object.keys(weather || {}).length) {
     return null;
   }
 
@@ -32,7 +32,7 @@ export default function WeatherCard({
 
         </div>
 
-        <FaCloudSun className="text-4xl text-blue-500" />
+        <FaCloudSun className="text-4xl text-orange-500" />
 
       </div>
 
@@ -40,33 +40,35 @@ export default function WeatherCard({
 
         <h3 className="text-5xl font-bold text-gray-900">
 
-          {weather.temperature}
+          {weather.temperature || weather.summary || weather.condition || "Weather details"}
 
         </h3>
 
         <p className="text-gray-600 mt-3">
 
-          {weather.condition}
+          {weather.condition || weather.summary || "Review local forecast before departure."}
 
         </p>
 
       </div>
 
-      <div className="mt-6 bg-blue-50 rounded-2xl p-5">
+      {weather.best_season && (
+        <div className="mt-6 bg-orange-50 rounded-2xl p-5">
 
-        <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600">
 
-          Best Season
+            Best Season
 
-        </p>
+          </p>
 
-        <h4 className="font-bold text-2xl text-gray-900 mt-2">
+          <h4 className="font-bold text-2xl text-gray-900 mt-2">
 
-          {weather.best_season}
+            {weather.best_season}
 
-        </h4>
+          </h4>
 
-      </div>
+        </div>
+      )}
 
     </div>
 

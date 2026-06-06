@@ -1,5 +1,46 @@
-/* Legacy file — landing utilities live in index.css @layer components */
+/* TravelGenie landing — unified cream / orange / navy palette */
 @layer components {
+  .landing-page {
+    @apply bg-[#faf8f6] text-[#08112b];
+  }
+
+  /* Base section — same tone across the full page */
+  .landing-section {
+    @apply relative bg-[#faf8f6] py-16 md:py-20;
+  }
+
+  /* Subtle warm band (destinations, why choose us) */
+  .landing-section-warm {
+    @apply relative py-16 md:py-20;
+    background: linear-gradient(
+      180deg,
+      #faf8f6 0%,
+      #fff7ed 42%,
+      #fff4e8 58%,
+      #faf8f6 100%
+    );
+  }
+
+  .landing-eyebrow {
+    @apply text-xs font-bold uppercase tracking-[0.24em] text-orange-500;
+  }
+
+  .landing-body {
+    @apply text-slate-600;
+  }
+
+  .landing-card {
+    @apply border border-orange-100/70 bg-white shadow-[0_16px_40px_rgba(8,17,43,0.06)];
+  }
+
+  .landing-btn-primary {
+    @apply rounded-2xl bg-orange-500 text-white transition hover:bg-orange-600;
+  }
+
+  .landing-btn-secondary {
+    @apply rounded-2xl border border-orange-200 bg-white text-[#08112b] transition hover:bg-orange-50;
+  }
+
   .hero-section {
     @apply relative min-h-screen overflow-hidden;
   }
@@ -44,19 +85,19 @@
   }
 
   .hero-glow-left {
-    @apply absolute -left-28 -top-28 h-[500px] w-[500px] blur-[90px] z-0;
+    @apply absolute -left-28 -top-28 z-0 h-[500px] w-[500px] blur-[90px];
     background: radial-gradient(
       circle,
-      rgba(31, 77, 62, 0.28),
+      rgba(249, 115, 22, 0.12),
       transparent 70%
     );
   }
 
   .hero-glow-right {
-    @apply absolute -bottom-28 -right-28 h-[500px] w-[500px] blur-[90px] z-0;
+    @apply absolute -bottom-28 -right-28 z-0 h-[500px] w-[500px] blur-[90px];
     background: radial-gradient(
       circle,
-      rgba(230, 126, 34, 0.2),
+      rgba(249, 115, 22, 0.15),
       transparent 70%
     );
   }

@@ -29,8 +29,9 @@ export default {
       },
 
       fontFamily: {
-        sans: ["Roboto", "system-ui", "sans-serif"],
+        sans: ["Poppins", "Roboto", "system-ui", "sans-serif"],
         heading: ["Merriweather", "Georgia", "serif"],
+        serif: ["Merriweather", "Georgia", "serif"],
       },
 
       boxShadow: {

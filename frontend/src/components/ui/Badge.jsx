@@ -21,7 +21,7 @@ export default function Badge({
       "bg-yellow-100 text-yellow-700",
 
     info:
-      "bg-blue-100 text-blue-700",
+      "bg-orange-100 text-orange-700",
 
     dark:
       "bg-slate-900 text-white",

@@ -323,8 +323,8 @@ export default function VendorDashboard() {
             <StatCard
               title="Packages"
               value={stats.packages}
-              icon={<FaBoxOpen className="text-blue-600 text-xl" />}
-              bgColor="bg-blue-50"
+              icon={<FaBoxOpen className="text-orange-500 text-xl" />}
+              bgColor="bg-orange-50"
             />
             <StatCard
               title="Bookings"
@@ -347,8 +347,8 @@ export default function VendorDashboard() {
             <StatCard
               title="Occupancy"
               value={`${Number(stats.occupancy || 0)}%`}
-              icon={<FaChartLine className="text-cyan-600 text-xl" />}
-              bgColor="bg-cyan-50"
+              icon={<FaChartLine className="text-orange-600 text-xl" />}
+              bgColor="bg-orange-50"
             />
           </div>
 

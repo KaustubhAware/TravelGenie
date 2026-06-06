@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 from app.db import get_connection
 from app.auth.jwt_handler import get_current_user
 from app.routes.auth import get_current_user as get_current_admin
-from app.services.notification_service import create_notification
+from app.services.notification_service import create_admin_notification, create_notification
 from app.services.email_service import send_email_async
 
 logger = logging.getLogger(__name__)
@@ -346,6 +346,17 @@ def save_booking(
                 "package_id": data.package_id,
             },
         )
+        create_admin_notification(
+            cursor,
+            "New booking request",
+            f"{name} requested {package_title or destination}.",
+            "booking_created",
+            metadata={
+                "booking_id": booking_id,
+                "package_id": data.package_id,
+                "user_id": db_user_id,
+            },
+        )
 
         send_email_async(
             data.email,
@@ -445,6 +456,13 @@ def update_payment(
             f"Payment for booking {data.booking_id} was recorded successfully.",
             "payment_success",
             metadata={"booking_id": data.booking_id},
+        )
+        create_admin_notification(
+            cursor,
+            "Booking payment recorded",
+            f"Payment for booking {data.booking_id} was recorded successfully.",
+            "payment_success",
+            metadata={"booking_id": data.booking_id, "user_id": db_user_id},
         )
 
         conn.commit()

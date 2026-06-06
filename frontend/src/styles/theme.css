@@ -1,36 +1,35 @@
 :root {
-  --tg-primary: #163328;
-  --tg-secondary: #1f4d3e;
-  --tg-accent: #e67e22;
-  --tg-dark: #0b1d17;
-  --tg-bg: #f7f8f5;
+  /* TravelGenie enterprise palette */
+  --tg-brand: #08112b;
+  --tg-primary: #f97316;
+  --tg-primary-hover: #ea580c;
+  --tg-primary-soft: #fff7ed;
+  --tg-primary-muted: #ffedd5;
+  --tg-secondary: #ffffff;
+  --tg-accent: #fb923c;
   --tg-ink: #0f172a;
   --tg-muted: #64748b;
-  --tg-text-light: #f5f5f5;
-  --tg-text-soft: #d1d5db;
-  --tg-glass: rgba(255, 255, 255, 0.08);
-  --tg-glass-strong: rgba(255, 255, 255, 0.14);
-  --tg-border: rgba(255, 255, 255, 0.12);
-  --tg-border-light: rgba(15, 23, 42, 0.08);
+  --tg-slate: #94a3b8;
+  --tg-bg: #f8fafc;
+  --tg-surface: #ffffff;
+  --tg-border: rgba(15, 23, 42, 0.08);
+  --tg-border-strong: rgba(249, 115, 22, 0.22);
+  --tg-glass: rgba(255, 255, 255, 0.72);
+  --tg-glass-strong: rgba(255, 255, 255, 0.9);
   --tg-shadow-soft: 0 14px 40px rgba(15, 23, 42, 0.08);
-  --tg-shadow-card: 0 24px 70px rgba(11, 29, 23, 0.16);
-  --tg-shadow-glow: 0 22px 55px rgba(31, 77, 62, 0.24);
+  --tg-shadow-card: 0 24px 60px rgba(249, 115, 22, 0.12);
   --tg-radius-xl: 1rem;
-  --tg-radius-2xl: 1.5rem;
-  --tg-radius-3xl: 2rem;
+  --tg-radius-2xl: 1.25rem;
+  --tg-radius-3xl: 1.75rem;
   --tg-container: 80rem;
-  --tg-section-y: clamp(4.5rem, 8vw, 7rem);
-}
-
-.font-heading {
-  font-family: "Merriweather", Georgia, serif;
+  --tg-section-y: clamp(4rem, 7vw, 6.5rem);
 }
 
 .tg-page {
   min-height: 100vh;
   background:
-    radial-gradient(circle at 12% 0%, rgba(230, 126, 34, 0.08), transparent 28rem),
-    linear-gradient(180deg, #f7f8f5 0%, #eef3ee 100%);
+    radial-gradient(circle at 12% 0%, rgba(249, 115, 22, 0.08), transparent 28rem),
+    linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
   color: var(--tg-ink);
 }
 
@@ -43,80 +42,79 @@
   padding-block: var(--tg-section-y);
 }
 
-.tg-glass {
-  border: 1px solid var(--tg-border);
-  background: var(--tg-glass);
-  box-shadow: var(--tg-shadow-card);
-  backdrop-filter: blur(18px);
-}
-
 .tg-card {
-  border: 1px solid var(--tg-border-light);
+  border: 1px solid var(--tg-border);
   border-radius: var(--tg-radius-3xl);
-  background: rgba(255, 255, 255, 0.92);
+  background: var(--tg-surface);
   box-shadow: var(--tg-shadow-soft);
 }
 
-.tg-card-dark {
-  border: 1px solid var(--tg-border);
+.tg-card-premium {
+  border: 1px solid var(--tg-border-strong);
   border-radius: var(--tg-radius-3xl);
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.04)),
-    var(--tg-primary);
+  background: linear-gradient(145deg, #ffffff 0%, var(--tg-primary-soft) 100%);
   box-shadow: var(--tg-shadow-card);
-  color: var(--tg-text-light);
+}
+
+.tg-glass {
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  background: var(--tg-glass);
+  backdrop-filter: blur(16px);
+  box-shadow: var(--tg-shadow-soft);
 }
 
 .tg-hero-gradient {
   background:
-    radial-gradient(circle at 72% 24%, rgba(230, 126, 34, 0.2), transparent 30rem),
-    linear-gradient(110deg, rgba(11, 29, 23, 0.94), rgba(22, 51, 40, 0.76) 48%, rgba(22, 51, 40, 0.28));
-}
-
-.tg-earth-gradient {
-  background: linear-gradient(135deg, var(--tg-primary), var(--tg-secondary));
+    radial-gradient(circle at 80% 10%, rgba(249, 115, 22, 0.22), transparent 32rem),
+    linear-gradient(135deg, #ffffff 0%, #fff7ed 48%, #ffffff 100%);
 }
 
 .tg-button-primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.625rem;
-  border-radius: 999px;
-  background: var(--tg-accent);
-  color: white;
+  gap: 0.5rem;
+  border-radius: 1rem;
+  background: var(--tg-primary);
+  color: #fff;
   font-weight: 700;
-  box-shadow: 0 16px 34px rgba(230, 126, 34, 0.26);
-  transition: transform 180ms ease, background 180ms ease, box-shadow 180ms ease;
+  box-shadow: 0 12px 28px rgba(249, 115, 22, 0.28);
+  transition: transform 180ms ease, background 180ms ease;
 }
 
 .tg-button-primary:hover {
   transform: translateY(-1px);
-  background: #d46f15;
-  box-shadow: 0 18px 44px rgba(230, 126, 34, 0.32);
+  background: var(--tg-primary-hover);
 }
 
 .tg-button-secondary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.625rem;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
+  gap: 0.5rem;
+  border: 1px solid var(--tg-border-strong);
+  border-radius: 1rem;
+  background: #fff;
+  color: var(--tg-brand);
   font-weight: 700;
-  backdrop-filter: blur(14px);
-  transition: transform 180ms ease, background 180ms ease;
+  transition: background 180ms ease;
 }
 
 .tg-button-secondary:hover {
-  transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.16);
+  background: var(--tg-primary-soft);
+}
+
+.tg-focus {
+  outline: none;
+}
+
+.tg-focus:focus {
+  border-color: var(--tg-primary);
+  box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.15);
 }
 
 .text-gradient-adventure {
-  background: linear-gradient(90deg, #f7f8f5 0%, #e67e22 100%);
+  background: linear-gradient(90deg, var(--tg-brand) 0%, var(--tg-primary) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

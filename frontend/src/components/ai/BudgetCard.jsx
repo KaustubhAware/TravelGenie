@@ -10,7 +10,7 @@ export default function BudgetCard({
 
   return (
 
-    <div className="bg-blue-50 border border-blue-100 rounded-[28px] p-6">
+    <div className="bg-orange-50 border border-orange-100 rounded-[28px] p-6">
 
       <div className="flex items-center gap-4">
 
@@ -18,7 +18,7 @@ export default function BudgetCard({
 
         <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center shadow-sm">
 
-          <FaWallet className="text-blue-600 text-2xl" />
+          <FaWallet className="text-orange-600 text-2xl" />
 
         </div>
 

@@ -32,7 +32,7 @@ export default class ErrorBoundary extends Component {
           </p>
           <button
             onClick={() => window.location.reload()}
-            className="mt-6 bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold"
+            className="mt-6 bg-orange-500 text-white px-6 py-3 rounded-xl font-semibold"
           >
             Refresh
           </button>

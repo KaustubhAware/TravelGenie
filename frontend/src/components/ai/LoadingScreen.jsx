@@ -16,9 +16,9 @@ export default function LoadingScreen() {
 
       <div className="relative w-24 h-24">
 
-        <div className="absolute inset-0 border-4 border-blue-100 rounded-full"></div>
+        <div className="absolute inset-0 border-4 border-orange-100 rounded-full"></div>
 
-        <div className="absolute inset-0 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="absolute inset-0 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
 
       </div>
 

@@ -1,13 +1,18 @@
 import {
   memo,
+  useEffect,
   useMemo,
+  useState,
 } from "react";
+
+import { resolveDestinationCoords } from "../../utils/geocodeCache";
 
 import {
   MapContainer,
   TileLayer,
   Marker,
   Popup,
+  useMap,
 } from "react-leaflet";
 
 import L from "leaflet";
@@ -61,6 +66,38 @@ const matchPickup = (value, index, center) => {
   ];
 };
 
+const itemCoords = (item) => {
+  if (!item || typeof item !== "object") return null;
+  const lat = Number(item.latitude ?? item.lat);
+  const lng = Number(item.longitude ?? item.lng ?? item.lon);
+  return Number.isFinite(lat) && Number.isFinite(lng) ? [lat, lng] : null;
+};
+
+const attractionCoords = (item) => {
+  const explicit = itemCoords(item);
+  if (explicit) return explicit;
+  const label = typeof item === "string" ? item : item?.name || item?.place || "";
+  const matched = matchCoordinates(label, null);
+  return matched?.coords || null;
+};
+
+function FitBounds({ positions, fallbackCenter, fallbackZoom }) {
+  const map = useMap();
+
+  useEffect(() => {
+    const valid = positions.filter(Boolean);
+    if (valid.length > 1) {
+      map.fitBounds(valid, { padding: [34, 34], maxZoom: 13 });
+    } else if (valid.length === 1) {
+      map.setView(valid[0], fallbackZoom);
+    } else {
+      map.setView(fallbackCenter, fallbackZoom);
+    }
+  }, [fallbackCenter, fallbackZoom, map, positions]);
+
+  return null;
+}
+
 /* ===================================================== */
 /* FIX DEFAULT MARKER */
 /* ===================================================== */
@@ -101,7 +138,38 @@ function TravelMap({
     [destination, location]
   );
 
-  const center = matchedLocation.coords;
+  const [resolvedLocation, setResolvedLocation] = useState(matchedLocation);
+  const [geoLoading, setGeoLoading] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    setResolvedLocation(matchedLocation);
+
+    const label = `${destination || ""} ${location || ""}`.trim();
+    if (!label || (matchedLocation.zoom && matchedLocation.zoom >= 11)) {
+      return () => {
+        active = false;
+      };
+    }
+
+    setGeoLoading(true);
+    resolveDestinationCoords(label, matchedLocation)
+      .then((locationResult) => {
+        if (active && locationResult) {
+          setResolvedLocation(locationResult);
+        }
+      })
+      .finally(() => {
+        if (active) setGeoLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [destination, location, matchedLocation]);
+
+  const center = resolvedLocation.coords;
+  const mapZoom = resolvedLocation.zoom || matchedLocation.zoom || 12;
 
   /* ===================================================== */
   /* SAFE LIMITED DATA */
@@ -125,6 +193,46 @@ function TravelMap({
   const attractionMarkers = useMemo(
     () => nearbyAttractions.filter(Boolean).slice(0, 5),
     [nearbyAttractions]
+  );
+
+  const hotelMarkerData = useMemo(
+    () => hotelMarkers
+      .map((hotel) => ({ item: hotel, coords: itemCoords(hotel) }))
+      .filter((item) => item.coords),
+    [hotelMarkers]
+  );
+
+  const restaurantMarkerData = useMemo(
+    () => restaurantMarkers
+      .map((restaurant) => ({ item: restaurant, coords: itemCoords(restaurant) }))
+      .filter((item) => item.coords),
+    [restaurantMarkers]
+  );
+
+  const attractionMarkerData = useMemo(
+    () => attractionMarkers
+      .map((attraction) => ({ item: attraction, coords: attractionCoords(attraction) }))
+      .filter((item) => item.coords),
+    [attractionMarkers]
+  );
+
+  const pickupMarkerData = useMemo(
+    () => pickupMarkers.map((point, index) => ({
+      item: point,
+      coords: matchPickup(point, index, center),
+    })),
+    [center, pickupMarkers]
+  );
+
+  const markerPositions = useMemo(
+    () => [
+      center,
+      ...hotelMarkerData.map((marker) => marker.coords),
+      ...restaurantMarkerData.map((marker) => marker.coords),
+      ...pickupMarkerData.map((marker) => marker.coords),
+      ...attractionMarkerData.map((marker) => marker.coords),
+    ],
+    [attractionMarkerData, center, hotelMarkerData, pickupMarkerData, restaurantMarkerData]
   );
 
   /* ===================================================== */
@@ -157,9 +265,15 @@ function TravelMap({
 
       <div className="relative">
 
+        {geoLoading && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/70 text-sm font-medium text-slate-600">
+            Refining map location...
+          </div>
+        )}
+
         <MapContainer
           center={center}
-          zoom={matchedLocation.zoom}
+          zoom={mapZoom}
           scrollWheelZoom={false}
           className={`w-full ${heightClass} z-0`}
         >
@@ -169,6 +283,12 @@ function TravelMap({
           <TileLayer
             attribution='&copy; OpenStreetMap contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+
+          <FitBounds
+            positions={markerPositions}
+            fallbackCenter={center}
+            fallbackZoom={mapZoom}
           />
 
           {/* MAIN DESTINATION */}
@@ -199,14 +319,11 @@ function TravelMap({
 
           {/* HOTELS */}
 
-          {hotelMarkers.map((hotel, index) => (
+          {hotelMarkerData.map(({ item: hotel, coords }, index) => (
 
             <Marker
               key={`hotel-${index}`}
-              position={[
-                center[0] + 0.015 * (index + 1),
-                center[1] + 0.008 * (index + 1),
-              ]}
+              position={coords}
             >
 
               <Popup>
@@ -219,17 +336,21 @@ function TravelMap({
 
                   </h3>
 
-                  <p className="text-sm text-gray-600">
+                  {hotel.rating && (
+                    <p className="text-sm text-gray-600">
 
-                    Rating: {hotel.rating || "4.5"}
+                      Rating: {hotel.rating}
 
-                  </p>
+                    </p>
+                  )}
 
-                  <p className="text-sm text-gray-500">
+                  {(hotel.price_range || hotel.price) && (
+                    <p className="text-sm text-gray-500">
 
-                    {hotel.price_range || "Moderate"}
+                      {hotel.price_range || hotel.price}
 
-                  </p>
+                    </p>
+                  )}
 
                 </div>
 
@@ -241,14 +362,11 @@ function TravelMap({
 
           {/* RESTAURANTS */}
 
-          {restaurantMarkers.map((restaurant, index) => (
+          {restaurantMarkerData.map(({ item: restaurant, coords }, index) => (
 
             <Marker
               key={`restaurant-${index}`}
-              position={[
-                center[0] - 0.012 * (index + 1),
-                center[1] - 0.009 * (index + 1),
-              ]}
+              position={coords}
             >
 
               <Popup>
@@ -281,10 +399,10 @@ function TravelMap({
 
           ))}
 
-          {pickupMarkers.map((point, index) => (
+          {pickupMarkerData.map(({ item: point, coords }, index) => (
             <Marker
               key={`pickup-${index}`}
-              position={matchPickup(point, index, center)}
+              position={coords}
             >
               <Popup>
                 <div className="min-w-[170px]">
@@ -299,13 +417,10 @@ function TravelMap({
             </Marker>
           ))}
 
-          {attractionMarkers.map((attraction, index) => (
+          {attractionMarkerData.map(({ item: attraction, coords }, index) => (
             <Marker
               key={`attraction-${index}`}
-              position={[
-                center[0] + 0.01 * (index + 1),
-                center[1] - 0.014 * (index + 1),
-              ]}
+              position={coords}
             >
               <Popup>
                 <div className="min-w-[170px]">

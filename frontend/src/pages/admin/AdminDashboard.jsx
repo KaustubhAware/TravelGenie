@@ -324,9 +324,9 @@ export default function AdminDashboard() {
           title="Total Bookings"
           value={analytics.totalBookings}
           icon={
-            <FaSuitcaseRolling className="text-blue-600 text-2xl" />
+            <FaSuitcaseRolling className="text-orange-500 text-2xl" />
           }
-          bgColor="bg-blue-50"
+          bgColor="bg-orange-50"
           textColor="text-slate-900"
         />
 

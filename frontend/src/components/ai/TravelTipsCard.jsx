@@ -41,7 +41,7 @@ export default function TravelTipsCard({
             className="flex items-start gap-4"
           >
 
-            <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-2xl bg-orange-50 text-orange-500 flex items-center justify-center">
 
               <FaSuitcase />
 
