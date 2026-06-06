@@ -1,4 +1,4 @@
-# TravelGenie 🧞‍♂️✈️
+# TravelGenie 
 ### *AI-Powered Tour & Travel Agency Operations Platform*
 
 TravelGenie is an enterprise-grade SaaS simulation platform designed for travel agencies and tour operators. It bridges the gap between consumer trip planning and internal agency management by combining **Generative AI itinerary planning**, **predictive travel analytics**, **automated booking lifecycles**, **staff assignments**, and **PDF invoice/itinerary exports**.
