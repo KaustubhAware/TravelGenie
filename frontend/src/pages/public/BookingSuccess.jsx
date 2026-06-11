@@ -1,6 +1,6 @@
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { hasAuthToken } from "../../utils/authToken";
 
 import {
@@ -17,31 +17,45 @@ export default function BookingSuccess() {
   const navigate = useNavigate();
 
   const location = useLocation();
+  const [searchParams] = useSearchParams();
 
-  const data = location.state || {};
+  const data = useMemo(() => {
+    if (location.state?.booking_id) {
+      return location.state;
+    }
+
+    const bookingId = searchParams.get("booking_id");
+    if (bookingId) {
+      return { booking_id: bookingId };
+    }
+
+    try {
+      const cached = sessionStorage.getItem("lastBookingSuccess");
+      return cached ? JSON.parse(cached) : {};
+    } catch {
+      return {};
+    }
+  }, [location.state, searchParams]);
 
   useEffect(() => {
-
-    const user = hasAuthToken();
-
-    // 🔐 LOGIN CHECK
-
-    if (!user) {
-
+    if (!hasAuthToken()) {
       navigate("/login");
-
       return;
-
     }
 
-    // 🔐 DATA CHECK
-
-    if (!data || !data.booking_id) {
-
-      navigate("/dashboard/ai-planner");
-
+    if (!data?.booking_id) {
+      navigate("/dashboard/bookings", { replace: true });
+      return;
     }
 
+    try {
+      sessionStorage.setItem(
+        "lastBookingSuccess",
+        JSON.stringify(data)
+      );
+    } catch {
+      // ignore storage failures
+    }
   }, [data, navigate]);
 
   // ✅ SAFE COST
@@ -177,9 +191,9 @@ export default function BookingSuccess() {
 
                         <div className="flex items-center gap-4">
 
-                          <div className="w-14 h-14 rounded-2xl bg-purple-50 flex items-center justify-center">
+                          <div className="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center">
 
-                            <FaCalendarAlt className="text-purple-600 text-xl" />
+                            <FaCalendarAlt className="text-orange-600 text-xl" />
 
                           </div>
 

@@ -22,6 +22,7 @@ import {
 
 import logo from "../../assets/logo.svg";
 import { apiRequest } from "../../services/httpClient";
+import { clearUserAuth, getPersistedRole } from "../../utils/authToken";
 
 const navItems = [
 
@@ -79,7 +80,14 @@ const navItems = [
     label: "Profile",
     icon: User,
     path: "/dashboard/profile",
-    roles: ["customer", "user", "vendor"],
+    roles: ["customer", "user"],
+  },
+
+  {
+    label: "Profile",
+    icon: User,
+    path: "/vendor/profile",
+    roles: ["vendor"],
   },
 
 ];
@@ -90,7 +98,7 @@ export default function DashboardSidebar() {
     useState(false);
 
   const [role, setRole] =
-    useState("customer");
+    useState(() => getPersistedRole() || "customer");
 
   const navigate =
     useNavigate();
@@ -101,9 +109,7 @@ export default function DashboardSidebar() {
       .then((res) => {
         setRole(res.data?.user?.role || "customer");
       })
-      .catch(() => {
-        setRole("customer");
-      });
+      .catch(() => {});
 
   }, []);
 
@@ -116,8 +122,7 @@ export default function DashboardSidebar() {
 
       try {
 
-        localStorage.removeItem("token");
-        localStorage.removeItem("adminToken");
+        clearUserAuth();
 
         navigate("/login");
 

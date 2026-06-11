@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { env } from "../../config/env";
+import { notifyAdminAuthChange } from "../../utils/authToken";
 import logo from "../../assets/logo.svg";
 
 import {
@@ -106,8 +107,9 @@ export default function AdminLogin() {
           return;
         }
 
-        localStorage.setItem("token", token);
         localStorage.setItem("adminToken", token);
+        localStorage.setItem("adminRole", "admin");
+        notifyAdminAuthChange();
         navigate("/admin", { replace: true });
 
       } catch (err) {
@@ -266,12 +268,6 @@ export default function AdminLogin() {
 
               </h2>
 
-              <p className="text-slate-500 mt-3 text-lg">
-
-                Sign in to access dashboard
-
-              </p>
-
             </div>
 
             {/* ERROR */}
@@ -305,7 +301,6 @@ export default function AdminLogin() {
                   <FaUserShield className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" />
 
                   <input
-                    placeholder="admin"
                     autoComplete="username"
                     value={form.username}
                     onChange={(e) =>
@@ -341,7 +336,6 @@ export default function AdminLogin() {
 
                   <input
                     type="password"
-                    placeholder="admin123"
                     autoComplete="current-password"
                     value={form.password}
                     onChange={(e) =>
@@ -383,14 +377,6 @@ export default function AdminLogin() {
 
               </button>
 
-            </div>
-
-            <div className="mt-8 text-center text-sm text-slate-500 space-y-1">
-              <p>Secure admin authentication system</p>
-              <p className="text-xs text-slate-400">
-                Local dev default: username <strong>admin</strong>, password{" "}
-                <strong>admin123</strong>
-              </p>
             </div>
 
           </div>

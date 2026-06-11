@@ -1,20 +1,26 @@
 import { env } from "../config/env";
-import { buildAuthHeaders, getAuthToken, clearAdminAuth } from "../utils/authToken";
+import {
+  buildAuthHeaders,
+  clearAdminAuth,
+  clearUserAuth,
+  debugAuth,
+  getLoginRedirectPath,
+  getTokenForRequest,
+  isAdminApiPath,
+  isInvalidTokenDetail,
+} from "../utils/authToken";
 
 const API_BASE = env.API_BASE_URL;
 
-const redirectUnauthorized = () => {
-  const isAdminArea =
-    window.location.pathname.startsWith("/admin") ||
-    window.location.pathname.startsWith("/agent");
-
-  if (isAdminArea) {
+const redirectUnauthorized = (apiPath = "") => {
+  if (isAdminApiPath(apiPath)) {
     clearAdminAuth();
     window.location.href = "/admin/login";
-  } else {
-    localStorage.removeItem("token");
-    window.location.href = "/login";
+    return;
   }
+
+  clearUserAuth();
+  window.location.href = getLoginRedirectPath();
 };
 
 /**
@@ -29,17 +35,30 @@ export async function apiRequest(path, options = {}) {
     ...fetchOptions
   } = options;
 
-  const token = getAuthToken();
+  const token = getTokenForRequest(path);
 
   if (auth && !token) {
+    debugAuth("api:missing-token", {
+      path,
+      tokenType: isAdminApiPath(path) ? "admin" : "user",
+    });
     throw new Error("Not authenticated");
   }
 
-  const headers = buildAuthHeaders(optionHeaders || {});
+  const headers = buildAuthHeaders(optionHeaders || {}, path);
 
   if (!token && headers.Authorization) {
     delete headers.Authorization;
   }
+
+  debugAuth("api:request", {
+    path,
+    tokenType: isAdminApiPath(path) ? "admin" : "user",
+    hasToken: Boolean(token),
+    authorization: headers.Authorization
+      ? `${headers.Authorization.slice(0, 24)}...`
+      : null,
+  });
 
   let res;
   try {
@@ -51,15 +70,18 @@ export async function apiRequest(path, options = {}) {
     throw new Error("Network error. Check your connection and try again.");
   }
 
-  if (res.status === 401 && !skipAuthRedirect) {
-    redirectUnauthorized();
-    throw new Error("Session expired. Please sign in again.");
-  }
-
   const contentType = res.headers.get("content-type") || "";
   const data = contentType.includes("application/json")
     ? await res.json()
     : null;
+
+  debugAuth("api:response", {
+    path,
+    status: res.status,
+    tokenType: isAdminApiPath(path) ? "admin" : "user",
+    detail: typeof data?.detail === "string" ? data.detail : null,
+    body: data,
+  });
 
   if (!res.ok) {
     const validationDetail = Array.isArray(data?.detail)
@@ -79,9 +101,32 @@ export async function apiRequest(path, options = {}) {
       data?.message ||
       data?.error ||
       `Request failed (${res.status})`;
-    throw new Error(
-      typeof message === "string" ? message : "Request failed"
-    );
+
+    const errorMessage =
+      typeof message === "string" ? message : "Request failed";
+
+    if (res.status === 401 && token) {
+      const detail =
+        typeof data?.detail === "string"
+          ? data.detail
+          : "";
+
+      const shouldLogout = isInvalidTokenDetail(detail);
+
+      if (shouldLogout && !skipAuthRedirect) {
+        redirectUnauthorized(path);
+      }
+
+      const authError = new Error(errorMessage);
+      authError.status = 401;
+      authError.detail = detail;
+      authError.isAuthError = shouldLogout;
+      throw authError;
+    }
+
+    const requestError = new Error(errorMessage);
+    requestError.status = res.status;
+    throw requestError;
   }
 
   return data;

@@ -8,7 +8,7 @@ const AppLayout = () => {
 
   return (
 
-    <div className="flex h-screen overflow-hidden bg-[#F7F8F5]">
+    <div className="flex min-h-screen bg-[#F7F8F5]">
 
       {/* SIDEBAR */}
 
@@ -16,7 +16,7 @@ const AppLayout = () => {
 
       {/* MAIN */}
 
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex min-w-0 flex-1 flex-col">
 
         {/* TOPBAR */}
 
@@ -24,7 +24,7 @@ const AppLayout = () => {
 
         {/* PAGE */}
 
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="min-w-0 flex-1 overflow-x-hidden p-4 md:p-6">
 
           <Outlet />
 

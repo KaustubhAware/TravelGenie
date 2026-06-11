@@ -1,123 +1,128 @@
 import {
+
   Navigate,
+
   useLocation,
+
 } from "react-router-dom";
 
-import {
-  useEffect,
-  useState,
-} from "react";
+
 
 import RouteLoader from "../../components/RouteLoader";
 
-import {
-  hasAuthToken,
-} from "../../utils/authToken";
-import { apiRequest } from "../../services/httpClient";
+import { useAuth } from "../../context/AuthContext";
+
+import { getUserToken } from "../../utils/authToken";
+
+
 
 export default function UserProtectedRoute({
+
   children,
+
   roles = [],
+
 }) {
-  const [authState, setAuthState] =
-    useState("loading");
-  const [currentRole, setCurrentRole] =
-    useState("");
 
-  const location =
-    useLocation();
+  const location = useLocation();
 
-  const roleKey = roles.join("|");
+  const {
+    authLoading,
+    userInitialized,
+    isAuthenticated,
+    role,
+  } = useAuth();
 
-  useEffect(() => {
-    let mounted = true;
 
-    const checkAuth = async () => {
-      if (!hasAuthToken()) {
-        if (mounted) {
-          setAuthState("guest");
-        }
-        return;
-      }
 
-      if (roles.length === 0) {
-        if (mounted) {
-          setAuthState("authenticated");
-        }
-        return;
-      }
+  if (!userInitialized || authLoading) {
 
-      try {
-        const res = await apiRequest("/auth/me", {
-          skipAuthRedirect: true,
-        });
-        const authUser = res.data?.user || {};
-        const role = authUser.role || "customer";
-        const vendorAllowed =
-          role !== "vendor" ||
-          !roles.includes("vendor") ||
-          authUser.vendor_status === "approved";
-        if (mounted) {
-          setCurrentRole(role);
-          setAuthState(
-            roles.includes(role) && vendorAllowed
-              ? "authenticated"
-              : "forbidden"
-          );
-        }
-      } catch {
-        if (mounted) {
-          setAuthState("guest");
-        }
-      }
-    };
-
-    checkAuth();
-
-    return () => {
-      mounted = false;
-    };
-  }, [roleKey]);
-
-  if (authState === "loading") {
     return (
+
       <RouteLoader label="Checking authentication..." />
+
     );
+
   }
 
-  if (
-    authState !== "authenticated"
-  ) {
-    if (authState === "forbidden") {
-      const fallbackPath =
-        currentRole === "vendor"
-          ? "/vendor/login"
-          : currentRole === "admin"
-            ? "/admin"
-            : "/dashboard";
 
-      return (
-        <Navigate
-          to={fallbackPath}
-          replace
-        />
-      );
-    }
+
+  const hasToken = Boolean(getUserToken());
+
+
+
+  if (!isAuthenticated && !hasToken) {
 
     return (
+
       <Navigate
+
         to={
+
           location.pathname.startsWith("/vendor")
+
             ? "/vendor/login"
+
             : "/login"
+
         }
+
         state={{
+
           from: location,
+
         }}
+
         replace
+
       />
+
     );
+
   }
+
+
+
+  if (roles.length > 0 && role && !roles.includes(role)) {
+
+    const hasAdminSession = Boolean(
+
+      localStorage.getItem("adminToken")
+
+    );
+
+    const fallbackPath =
+
+      role === "vendor"
+
+        ? "/vendor/dashboard"
+
+        : role === "admin" && hasAdminSession
+
+          ? "/admin"
+
+          : "/dashboard";
+
+
+
+    return (
+
+      <Navigate
+
+        to={fallbackPath}
+
+        replace
+
+      />
+
+    );
+
+  }
+
+
 
   return children;
+
 }
+
+

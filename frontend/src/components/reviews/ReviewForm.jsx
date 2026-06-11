@@ -39,9 +39,6 @@ export default function ReviewForm({ packageId, onSubmitted }) {
       className="rounded-2xl border border-slate-200 bg-slate-50 p-5"
     >
       <h4 className="font-semibold text-slate-900">Write a review</h4>
-      <p className="mt-1 text-xs text-slate-500">
-        Reviews are moderated before appearing publicly.
-      </p>
 
       <label className="mt-4 block text-sm font-medium text-slate-700">
         Rating
@@ -65,7 +62,6 @@ export default function ReviewForm({ packageId, onSubmitted }) {
           value={reviewText}
           onChange={(e) => setReviewText(e.target.value)}
           className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
-          placeholder="Share trek difficulty, guide quality, scenery..."
         />
       </label>
 

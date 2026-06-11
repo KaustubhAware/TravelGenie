@@ -269,7 +269,14 @@ function BookingTable({
                   className="text-center py-20 text-slate-400"
                 >
 
-                  No bookings found
+                  <div className="mx-auto max-w-md rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-8">
+                    <p className="font-semibold text-slate-900">
+                      No Bookings Match This View
+                    </p>
+                    <p className="mt-2 text-sm text-slate-500">
+                      Adjust the status filter or wait for new customer requests.
+                    </p>
+                  </div>
 
                 </td>
 
@@ -352,10 +359,12 @@ function BookingTable({
 
                     <td className="px-6 py-5 font-semibold text-slate-800">
 
-                      ₹
-                      {b.total_cost ||
-                        b.budget ||
-                        0}
+                      Rs{" "}
+                      {Number(
+                        b.total_cost ||
+                          b.budget ||
+                          0
+                      ).toLocaleString("en-IN")}
 
                     </td>
 

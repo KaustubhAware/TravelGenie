@@ -132,14 +132,21 @@ cursor.execute(
 )
 
 # =====================================================
-# DEMO USERS
+# TRAVELER PROFILES
 # =====================================================
 
-print("SEEDING DEMO USERS...")
+print("SEEDING TRAVELER PROFILES...")
 
-demo_user_ids = []
+presentation_user_ids = []
+customer_names = [
+    "Rahul Sharma",
+    "Priya Patil",
+    "Neha Joshi",
+    "Amit Deshmukh",
+]
 
 for idx in range(1, 11):
+    customer_name = customer_names[(idx - 1) % len(customer_names)]
 
     cursor.execute(
         """
@@ -165,9 +172,9 @@ for idx in range(1, 11):
         RETURNING id
         """,
         (
-            f"demo{idx}@travelgenie.in",
-            hash_password("Demo123"),
-            f"Demo User {idx}",
+            f"traveler{idx}@travelgenie.in",
+            hash_password("Travel123"),
+            customer_name,
             f"99999999{idx:02d}",
             "Pune",
             "India",
@@ -191,7 +198,7 @@ for idx in range(1, 11):
 
     if result:
 
-        demo_user_ids.append(
+        presentation_user_ids.append(
             result[0]
         )
 
@@ -578,7 +585,7 @@ for _ in range(20):
     )
 
     user_id = random.choice(
-        demo_user_ids
+        presentation_user_ids
     )
 
     total_amount = random.randint(
@@ -620,8 +627,8 @@ for _ in range(20):
             package_id,
             f"TG-BOOK-{random.randint(100000,999999)}",
             "Maharashtra Trek",
-            f"Demo Traveller {user_id}",
-            f"demo{user_id}@travelgenie.in",
+            "Ananya Patil",
+            "traveler1@travelgenie.in",
             f"88888888{random.randint(10,99)}",
             total_amount,
             random.randint(1, 3),
@@ -715,7 +722,7 @@ for package_id in package_ids:
             """,
             (
                 random.choice(
-                    demo_user_ids
+                    presentation_user_ids
                 ),
                 package_id,
                 random.randint(4, 5),
@@ -743,7 +750,7 @@ notifications = [
     "AI Planner generated your itinerary.",
 ]
 
-for user_id in demo_user_ids:
+for user_id in presentation_user_ids:
 
     for _ in range(3):
 
@@ -803,7 +810,7 @@ roles = [
     "assistant",
 ]
 
-for user_id in demo_user_ids:
+for user_id in presentation_user_ids:
 
     for _ in range(5):
 
@@ -865,7 +872,7 @@ conn.close()
 print("=" * 70)
 print("TRAVELGENIE ECOSYSTEM SEEDED SUCCESSFULLY")
 print("=" * 70)
-print(f"Demo Users Added: {len(demo_user_ids)}")
+print(f"Traveler Profiles Added: {len(presentation_user_ids)}")
 print(f"Vendors Added: {len(vendor_ids)}")
 print(f"Packages Added: {len(package_ids)}")
 print(f"Bookings Added: {len(booking_ids)}")
@@ -878,9 +885,9 @@ print("-" * 30)
 print("Email: admin@travelgenie.com")
 print("Password: Admin123")
 
-print("\nDEMO USER LOGIN")
+print("\nCUSTOMER LOGIN")
 print("-" * 30)
-print("Email: demo1@travelgenie.in")
-print("Password: Demo123")
+print("Email: traveler1@travelgenie.in")
+print("Password: Travel123")
 
 print("=" * 70)

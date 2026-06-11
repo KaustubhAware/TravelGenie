@@ -7,6 +7,7 @@ import DayPlanCard from "../../components/ai/DayPlanCard";
 import HotelRecommendationCard from "../../components/ai/HotelRecommendationCard";
 import PreferenceChips from "../../components/ai/PreferenceChips";
 import RestaurantRecommendationCard from "../../components/ai/RestaurantRecommendationCard";
+import WeatherCard from "../../components/ai/WeatherCard";
 import { savedTripService } from "../../services/savedTripService";
 import {
   groupHotelsByTier,
@@ -31,6 +32,22 @@ const safeArray = (value) => {
 const safeObject = (value) => {
   if (value && typeof value === "object" && !Array.isArray(value)) return value;
   return {};
+};
+
+const numberValue = (value) => {
+  const numeric = Number(String(value || "").replace(/[^\d.]/g, ""));
+  return Number.isFinite(numeric) ? numeric : 0;
+};
+
+const formatBudget = (value) => {
+  const numeric = numberValue(value);
+  return numeric > 0 ? `Rs ${numeric.toLocaleString("en-IN")}` : "Budget Not Specified";
+};
+
+const textArray = (value) => {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  if (typeof value === "string") return value.split(/\n|,/).map((item) => item.trim()).filter(Boolean);
+  return [];
 };
 
 export default function SavedTrips() {
@@ -79,6 +96,11 @@ export default function SavedTrips() {
   const metadata = safeObject(selected?.metadata);
   const budgetBreakdown = safeObject(metadata.budget_breakdown);
   const recommendations = safeArray(metadata.recommendations || metadata.recommended_places);
+  const weather = safeObject(metadata.weather);
+  const travelTips = textArray(metadata.travel_tips);
+  const packingList = textArray(metadata.packing_list);
+  const safetyNotes = textArray(metadata.safety_notes);
+  const nearbyAttractions = textArray(metadata.nearby_attractions || recommendations);
   const hotels = safeArray(metadata.hotel_recommendations);
   const restaurants = safeArray(
     metadata.restaurant_recommendations
@@ -177,7 +199,7 @@ export default function SavedTrips() {
                     {trip.days || 1} day(s)
                   </span>
                   <span className="rounded-full bg-white px-3 py-1">
-                    Rs. {Number(trip.budget || 0).toLocaleString("en-IN")}
+                    {formatBudget(trip.budget || trip.metadata?.requested_budget)}
                   </span>
                 </div>
               </button>
@@ -202,8 +224,8 @@ export default function SavedTrips() {
                           <MapPin size={16} /> {selected.destination}
                         </span>
                         <span className="flex items-center gap-2">
-                          <WalletCards size={16} /> Rs.{" "}
-                          {Number(selected.budget || 0).toLocaleString("en-IN")}
+                          <WalletCards size={16} />{" "}
+                          {formatBudget(selected.budget || metadata.requested_budget)}
                         </span>
                       </div>
                     </div>
@@ -287,7 +309,10 @@ export default function SavedTrips() {
                 )}
 
                 {Object.keys(budgetBreakdown).length > 0 ? (
-                  <BudgetBreakdownCard breakdown={budgetBreakdown} />
+                  <BudgetBreakdownCard
+                    breakdown={budgetBreakdown}
+                    total={selected.budget || metadata.requested_budget || metadata.estimated_cost}
+                  />
                 ) : (
                   <section className="rounded-3xl border border-slate-200 bg-white p-6">
                     <h2 className="text-xl font-black text-slate-900">
@@ -296,6 +321,32 @@ export default function SavedTrips() {
                     <p className="mt-2 text-sm text-slate-500">
                       Detailed budget data was not included in this saved itinerary.
                     </p>
+                  </section>
+                )}
+
+                {(Object.keys(weather).length > 0 ||
+                  travelTips.length > 0 ||
+                  packingList.length > 0 ||
+                  safetyNotes.length > 0 ||
+                  nearbyAttractions.length > 0) && (
+                  <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <h2 className="text-2xl font-black text-slate-900">
+                      Travel Information
+                    </h2>
+                    <div className="mt-5 grid gap-5 lg:grid-cols-2">
+                      {Object.keys(weather).length > 0 && (
+                        <WeatherCard
+                          weather={weather}
+                          bestSeason={metadata.best_season}
+                          packing={packingList}
+                          compact
+                        />
+                      )}
+                      <InfoList title="Travel Tips" items={travelTips} />
+                      <InfoList title="Packing Checklist" items={packingList} />
+                      <InfoList title="Emergency Information" items={safetyNotes} />
+                      <InfoList title="Nearby Attractions" items={nearbyAttractions} />
+                    </div>
                   </section>
                 )}
 
@@ -335,6 +386,23 @@ function MapSkeleton() {
   return (
     <div className="rounded-[28px] border border-slate-200 bg-white p-8 text-slate-500">
       Loading map...
+    </div>
+  );
+}
+
+function InfoList({ title, items }) {
+  if (!items.length) return null;
+
+  return (
+    <div className="rounded-2xl bg-slate-50 p-5">
+      <h3 className="text-base font-bold text-slate-900">{title}</h3>
+      <div className="mt-3 space-y-2">
+        {items.slice(0, 6).map((item, index) => (
+          <p key={`${title}-${index}`} className="text-sm leading-6 text-slate-600">
+            {typeof item === "string" ? item : item.name || item.title || item.description}
+          </p>
+        ))}
+      </div>
     </div>
   );
 }

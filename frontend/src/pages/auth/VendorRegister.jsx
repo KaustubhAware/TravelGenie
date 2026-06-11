@@ -93,7 +93,6 @@ export default function VendorRegister() {
       await vendorService.apply(payload);
       setSubmitted(true);
       localStorage.removeItem("token");
-      localStorage.removeItem("adminToken");
     } catch (err) {
       setError(err.message || "Vendor application could not be submitted.");
     } finally {

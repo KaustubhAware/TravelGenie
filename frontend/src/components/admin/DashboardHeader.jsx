@@ -12,6 +12,7 @@ import {
 } from "react-icons/fa";
 
 import { notificationService } from "../../services/notificationService";
+import { getUserToken } from "../../utils/authToken";
 
 /* ===================================================== */
 /* COMPONENT */
@@ -30,6 +31,12 @@ export default function DashboardHeader({
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
+    if (!getUserToken()) {
+      setNotifications([]);
+      setUnreadCount(0);
+      return undefined;
+    }
+
     notificationService
       .list()
       .then((res) => {

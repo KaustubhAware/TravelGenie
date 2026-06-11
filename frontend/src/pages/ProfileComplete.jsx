@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { FaCompass, FaUserCircle } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { useJwtAuth } from "../hooks/useJwtAuth";
 import PageContainer from "../components/ui/PageContainer";
@@ -14,6 +14,7 @@ const inputClass =
 
 export default function ProfileComplete() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, authReady } = useJwtAuth();
 
   const [fullName, setFullName] = useState("");
@@ -26,15 +27,24 @@ export default function ProfileComplete() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (authReady && !user) {
-      navigate("/login");
+    if (!authReady || user) {
+      return;
     }
-  }, [authReady, user, navigate]);
+
+    navigate(
+      location.pathname.startsWith("/vendor")
+        ? "/vendor/login"
+        : "/login",
+      { replace: true }
+    );
+  }, [authReady, user, navigate, location.pathname]);
 
   useEffect(() => {
-    if (!authReady || !user) return;
+    if (!authReady || !user?.id) return;
 
-    apiRequest("/profile/me")
+    apiRequest("/profile/me", {
+      skipAuthRedirect: true,
+    })
       .then((data) => {
         const profile = data.profile || {};
         setFullName(profile.full_name || "");
@@ -46,7 +56,7 @@ export default function ProfileComplete() {
         setPreferences(profile.preferences || "");
       })
       .catch(() => {});
-  }, [authReady, user]);
+  }, [authReady, user?.id]);
 
   const fields = [fullName, phone, city, country, emergencyContact, preferences];
   const completion = Math.round(
@@ -111,9 +121,6 @@ export default function ProfileComplete() {
             <h1 className="mt-3 text-3xl font-bold md:text-4xl">
               Personalize your travel workspace
             </h1>
-            <p className="mt-3 text-sm text-white/75">
-              Used across bookings and AI trip planning.
-            </p>
           </div>
         </Card>
 
@@ -126,9 +133,6 @@ export default function ProfileComplete() {
               <h2 className="text-2xl font-bold text-slate-900">
                 Complete your profile
               </h2>
-              <p className="mt-1 text-sm text-slate-500">
-                Add details used for bookings and support.
-              </p>
             </div>
           </div>
 
@@ -172,7 +176,6 @@ export default function ProfileComplete() {
               rows={4}
               value={preferences}
               onChange={(e) => setPreferences(e.target.value)}
-              placeholder="Destinations, budget range, travel style..."
               className={`${inputClass} resize-none`}
             />
           </label>

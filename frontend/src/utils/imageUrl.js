@@ -1,20 +1,31 @@
 import { env } from "../config/env";
 
-export const FALLBACK_TREK_IMAGE = "/maharashtra-map.png";
+export const FALLBACK_TREK_IMAGE = new URL("../assets/images/destinations/western-ghats.jpeg", import.meta.url).href;
 const ALLOWED_UPLOAD_EXTENSIONS = /\.(jpe?g|png|webp)(\?.*)?$/i;
 const IMAGE_CACHE_PREFIX = "tg-img-cache:";
 
-const DESTINATION_UNSPLASH = {
-  lonavala: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80",
-  rajmachi: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80",
-  kalsubai: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
-  igatpuri: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
-  harishchandragad: "https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=1200&q=80",
-  pune: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=80",
-  mumbai: "https://images.unsplash.com/photo-1527631746610-bca00a040d60?auto=format&fit=crop&w=1200&q=80",
-  konkan: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80",
-  alibaug: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80",
-  maharashtra: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80",
+const LOCAL_DESTINATION_IMAGES = {
+  lonavala: new URL("../assets/images/destinations/lonavala.jpg", import.meta.url).href,
+  rajmachi: new URL("../assets/images/treks/rajmachi.jpg", import.meta.url).href,
+  kalsubai: new URL("../assets/images/treks/Kalsubai.jpg", import.meta.url).href,
+  igatpuri: new URL("../assets/images/treks/igatpuri.jpg", import.meta.url).href,
+  harishchandragad: new URL("../assets/images/treks/harishchandragad.jpg", import.meta.url).href,
+  pune: new URL("../assets/images/destinations/pune.jpg", import.meta.url).href,
+  mumbai: new URL("../assets/images/destinations/mumbai.jpg", import.meta.url).href,
+  konkan: new URL("../assets/images/destinations/kokan.jpg", import.meta.url).href,
+  kokan: new URL("../assets/images/destinations/kokan.jpg", import.meta.url).href,
+  alibaug: new URL("../assets/images/treks/alibaug-camping.jpg", import.meta.url).href,
+  pawna: new URL("../assets/images/treks/pawna-camping.jpg", import.meta.url).href,
+  bhandardara: new URL("../assets/images/treks/bhandardara-camping.jpg", import.meta.url).href,
+  visapur: new URL("../assets/images/treks/visapur.jpg", import.meta.url).href,
+  lohagad: new URL("../assets/images/treks/lohagad.jpg", import.meta.url).href,
+  torna: new URL("../assets/images/treks/torna.jpg", import.meta.url).href,
+  tikona: new URL("../assets/images/treks/tikona.jpeg", import.meta.url).href,
+  devkund: new URL("../assets/images/treks/devkund.jpg", import.meta.url).href,
+  andharban: new URL("../assets/images/treks/andharban.jpg", import.meta.url).href,
+  sahyadri: new URL("../assets/images/destinations/sahyadri.jpg", import.meta.url).href,
+  camping: new URL("../assets/images/destinations/camping.jpg", import.meta.url).href,
+  waterfalls: new URL("../assets/images/destinations/waterfalls.jpg", import.meta.url).href,
 };
 
 const readImageCache = (key) => {
@@ -34,11 +45,15 @@ const writeImageCache = (key, value) => {
 };
 
 export function getUnsplashFallbackForDestination(destination = "") {
+  return getLocalFallbackForDestination(destination);
+}
+
+export function getLocalFallbackForDestination(destination = "") {
   const text = String(destination).toLowerCase();
-  const match = Object.entries(DESTINATION_UNSPLASH).find(([key]) =>
+  const match = Object.entries(LOCAL_DESTINATION_IMAGES).find(([key]) =>
     text.includes(key)
   );
-  return match?.[1] || DESTINATION_UNSPLASH.maharashtra;
+  return match?.[1] || FALLBACK_TREK_IMAGE;
 }
 
 export function resolveImageUrl(path, fallback = FALLBACK_TREK_IMAGE) {
@@ -97,7 +112,7 @@ export function resolveDestinationImage(
 ) {
   const cacheKey = `${primaryPath || ""}|${destination || ""}`.slice(0, 200);
   const cached = readImageCache(cacheKey);
-  if (cached) {
+  if (cached && !cached.endsWith("/maharashtra-map.png")) {
     return cached;
   }
 
@@ -114,12 +129,7 @@ export function resolveDestinationImage(
     return fromPrimary;
   }
 
-  if (destination) {
-    const unsplash = getUnsplashFallbackForDestination(destination);
-    writeImageCache(cacheKey, unsplash);
-    return unsplash;
-  }
-
-  writeImageCache(cacheKey, fallback);
-  return fallback;
+  const localFallback = getLocalFallbackForDestination(destination);
+  writeImageCache(cacheKey, localFallback || fallback);
+  return localFallback || fallback;
 }

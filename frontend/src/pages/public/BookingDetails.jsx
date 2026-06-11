@@ -15,7 +15,7 @@ import TravelMap from "../../components/ai/TravelMap";
 import { exportInvoicePDF } from "../../utils/exportPDF";
 import { resolveDestinationImage } from "../../utils/imageUrl";
 
-import { API_BASE } from "../../services/httpClient";
+import { API_BASE, apiRequest } from "../../services/httpClient";
 
 import {
   FaCalendarAlt,
@@ -67,6 +67,14 @@ const timeline = [
 
 ];
 
+const normalizeBookingId = (value) => {
+  const id = typeof value === "string" ? value.trim() : "";
+  if (!id || id === "undefined" || id === "null" || id === "NaN") {
+    return "";
+  }
+  return id;
+};
+
 /* ===================================================== */
 /* PAGE */
 /* ===================================================== */
@@ -82,8 +90,8 @@ export default function BookingDetails() {
   const [booking, setBooking] =
     useState(null);
 
-  const [loading, setLoading] =
-    useState(true);
+  const [fetchState, setFetchState] =
+    useState("idle");
 
   const [paymentLoading, setPaymentLoading] =
     useState(false);
@@ -92,100 +100,72 @@ export default function BookingDetails() {
   /* LOAD */
   /* ===================================================== */
 
-  const { user, authReady } = useJwtAuth();
+  const {
+    authReady,
+    isAuthenticated,
+    token,
+  } = useJwtAuth();
+
+  const normalizedBookingId =
+    normalizeBookingId(bookingId);
+
+  const canFetch =
+    authReady &&
+    Boolean(normalizedBookingId) &&
+    (isAuthenticated || Boolean(token));
 
   useEffect(() => {
+    if (!canFetch) {
+      return undefined;
+    }
 
-    let mounted = true;
+    let cancelled = false;
 
-    const loadBooking =
-      async (authUser) => {
+    setFetchState("loading");
 
+    const loadBooking = async () => {
       try {
+        const data = await apiRequest(
+          `/bookings/${encodeURIComponent(normalizedBookingId)}`,
+          {
+            skipAuthRedirect: true,
+          }
+        );
 
-        if (!authUser) {
-          if (mounted) setLoading(false);
+        if (cancelled) {
           return;
         }
 
-        const token =
-          await authUser.getIdToken();
-
-        const res =
-          await fetch(
-
-            `${API_BASE}/bookings/${bookingId}`,
-
-            {
-
-              headers: {
-
-                Authorization:
-                  `Bearer ${token}`,
-
-              },
-
-            }
-
-          );
-
-        const data =
-          await res.json();
-
-        if (!res.ok) {
-
-          throw new Error(
-
-            data.detail ||
-
-            "Booking not found"
-
-          );
-
-        }
-
-        if (mounted) {
-
-          setBooking(
-            data.booking
-          );
-
-        }
-
+        setBooking(
+          data.booking ||
+          data.data?.booking ||
+          null
+        );
+        setFetchState("done");
       } catch (err) {
-
         console.error(err);
 
-      } finally {
-
-        if (mounted) {
-
-          setLoading(false);
-
+        if (!cancelled) {
+          setBooking(null);
+          setFetchState("error");
         }
-
       }
-
     };
 
-    if (!authReady) return;
-
-    if (!user) {
-      navigate("/login");
-      return;
-    }
-
-    loadBooking(user);
+    loadBooking();
 
     return () => {
-      mounted = false;
+      cancelled = true;
     };
-
-  }, [bookingId, navigate, authReady, user]);
+  }, [canFetch, normalizedBookingId]);
 
   /* ===================================================== */
   /* LOADING */
   /* ===================================================== */
+
+  const loading =
+    !authReady ||
+    (canFetch && (fetchState === "idle" || fetchState === "loading"));
 
   if (loading) {
 
@@ -438,8 +418,11 @@ export default function BookingDetails() {
 
         setPaymentLoading(true);
 
-        const token =
-          await user.getIdToken();
+        if (!token) {
+          alert("Please sign in again to continue payment.");
+          setPaymentLoading(false);
+          return;
+        }
 
         /* ======================================== */
         /* CREATE ORDER */

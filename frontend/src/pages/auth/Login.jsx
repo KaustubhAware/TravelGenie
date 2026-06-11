@@ -13,6 +13,7 @@ import {
 } from "react-icons/fa";
 
 import { apiRequest } from "../../services/httpClient";
+import { persistAuthUser } from "../../utils/authToken";
 
 import logo from "../../assets/logo.svg";
 
@@ -64,14 +65,27 @@ export default function Login() {
         body: JSON.stringify({ email, password }),
       });
 
-      localStorage.setItem(
-        "token",
-        data.access_token || data.data?.access_token
-      );
+      const token =
+        data.access_token || data.data?.access_token;
+      const authUser =
+        data.user || data.data?.user || {};
+      const role =
+        authUser.role || "customer";
 
-      navigate(from, {
-        replace: true,
-      });
+      localStorage.setItem("token", token);
+      persistAuthUser(authUser, { notify: true });
+
+      const roleHome =
+        role === "vendor"
+          ? "/vendor/dashboard"
+          : "/dashboard";
+      const target =
+        (role === "vendor" && from.startsWith("/vendor")) ||
+        (role !== "vendor" && !from.startsWith("/vendor"))
+          ? from
+          : roleHome;
+
+      navigate(target, { replace: true });
 
     } catch (err) {
 
@@ -220,14 +234,6 @@ export default function Login() {
 
               </h2>
 
-              <p className="mt-3 text-slate-500">
-
-                {isVendorLogin
-                  ? "Approved vendors can access the marketplace portal"
-                  : "Access your trekking dashboard"}
-
-              </p>
-
             </div>
 
             {/* FORM */}
@@ -250,7 +256,6 @@ export default function Login() {
 
                   <input
                     type="email"
-                    placeholder="Enter your email"
                     value={email}
                     onChange={(e) =>
                       setEmail(e.target.value)
@@ -278,7 +283,6 @@ export default function Login() {
 
                   <input
                     type="password"
-                    placeholder="Enter password"
                     value={password}
                     onChange={(e) =>
                       setPassword(e.target.value)
@@ -315,7 +319,7 @@ export default function Login() {
 
             <p className="text-center text-slate-500 mt-8">
 
-              Don’t have an account?{" "}
+              Don't have an account?{" "}
 
               <Link
                 to={isVendorLogin ? "/vendor/register" : "/register"}

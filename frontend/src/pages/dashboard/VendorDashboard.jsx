@@ -29,6 +29,14 @@ const MH_DESTINATIONS = [
   "Bhandardara",
 ];
 
+const destinationSuggestions = (packages) => {
+  const existing = packages
+    .map((pkg) => pkg.location || pkg.destination)
+    .filter(Boolean);
+
+  return Array.from(new Set([...MH_DESTINATIONS, ...existing])).sort();
+};
+
 export default function VendorDashboard() {
   const { user, authReady } = useJwtAuth();
   const [profile, setProfile] = useState(null);
@@ -66,9 +74,9 @@ export default function VendorDashboard() {
     start_date: "",
     end_date: "",
     booking_deadline: "",
-    max_seats: "20",
+    max_seats: "",
     booked_seats: "0",
-    pickup_location: "Pune",
+    pickup_location: "",
     guide_name: "",
   });
 
@@ -99,10 +107,11 @@ export default function VendorDashboard() {
         setBookings(analyticsRes.data?.bookings || []);
         setBatches(batchRes.data?.batches || []);
       }
-    } catch {
+    } catch (err) {
       setProfile(null);
       setPackages([]);
       setBookings([]);
+      setFormError(err.message || "Unable to load vendor portal.");
     } finally {
       if (!silent) {
         setLoading(false);
@@ -135,7 +144,7 @@ export default function VendorDashboard() {
     }
 
     if (!location) {
-      setFormError("Select a Maharashtra destination.");
+      setFormError("Enter a destination.");
       return;
     }
 
@@ -221,9 +230,9 @@ export default function VendorDashboard() {
         start_date: "",
         end_date: "",
         booking_deadline: "",
-        max_seats: "20",
+        max_seats: "",
         booked_seats: "0",
-        pickup_location: "Pune",
+        pickup_location: "",
         guide_name: "",
       });
       await loadVendorData();
@@ -257,43 +266,56 @@ export default function VendorDashboard() {
         </p>
         <form onSubmit={handleRegister} className="mt-6 space-y-4">
           <Input
-            placeholder="Business name"
+            label="Business Name"
+            required
+            minLength={3}
             value={registerForm.business_name}
             onChange={(e) =>
               setRegisterForm({ ...registerForm, business_name: e.target.value })
             }
           />
           <Input
-            placeholder="Owner name"
+            label="Owner Name"
+            required
+            minLength={3}
             value={registerForm.owner_name}
             onChange={(e) =>
               setRegisterForm({ ...registerForm, owner_name: e.target.value })
             }
           />
           <Input
-            placeholder="Contact email"
+            label="Contact Email"
             type="email"
+            required
             value={registerForm.contact_email}
             onChange={(e) =>
               setRegisterForm({ ...registerForm, contact_email: e.target.value })
             }
           />
           <Input
-            placeholder="Phone"
+            label="Phone"
+            required
+            pattern="[0-9]{10,15}"
             value={registerForm.phone}
             onChange={(e) =>
               setRegisterForm({ ...registerForm, phone: e.target.value })
             }
           />
-          <textarea
-            className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm"
-            placeholder="Describe your Maharashtra trek operations..."
-            rows={4}
-            value={registerForm.description}
-            onChange={(e) =>
-              setRegisterForm({ ...registerForm, description: e.target.value })
-            }
-          />
+          <label className="block">
+            <span className="mb-2 block text-sm font-semibold text-slate-700">
+              Business Description
+            </span>
+            <textarea
+              required
+              minLength={20}
+              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+              rows={4}
+              value={registerForm.description}
+              onChange={(e) =>
+                setRegisterForm({ ...registerForm, description: e.target.value })
+              }
+            />
+          </label>
           <Button type="submit">Submit for approval</Button>
         </form>
       </div>
@@ -301,8 +323,8 @@ export default function VendorDashboard() {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+    <div className="space-y-6 pb-8">
+      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
         <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
           Vendor portal
         </p>
@@ -316,6 +338,17 @@ export default function VendorDashboard() {
           </span>
         </p>
       </div>
+
+      {profile.verification_status !== "approved" && (
+        <div className="rounded-3xl border border-amber-200 bg-amber-50 p-6 text-amber-900 shadow-sm">
+          <h2 className="text-lg font-bold">Application under review</h2>
+          <p className="mt-2 text-sm text-amber-800">
+            Your vendor profile is being verified by the TravelGenie team.
+            Package creation, batch scheduling, and booking management will
+            unlock once your account is approved.
+          </p>
+        </div>
+      )}
 
       {profile.verification_status === "approved" && (
         <>
@@ -340,7 +373,7 @@ export default function VendorDashboard() {
             />
             <StatCard
               title="Revenue"
-              value={`₹${Number(stats.revenue).toLocaleString("en-IN")}`}
+              value={`Rs ${Number(stats.revenue).toLocaleString("en-IN")}`}
               icon={<FaMoneyBillWave className="text-emerald-600 text-xl" />}
               bgColor="bg-emerald-50"
             />
@@ -361,46 +394,61 @@ export default function VendorDashboard() {
                 Add Maharashtra package
               </h2>
               <Input
-                placeholder="Package title"
+                label="Package Title"
+                required
+                minLength={3}
                 value={packageForm.title}
                 onChange={(e) =>
                   setPackageForm({ ...packageForm, title: e.target.value })
                 }
               />
-              <select
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm"
-                value={packageForm.location}
-                onChange={(e) =>
-                  setPackageForm({
-                    ...packageForm,
-                    location: e.target.value,
-                  })
-                }
-              >
-                <option value="">Select destination</option>
-                {MH_DESTINATIONS.map((d) => (
-                  <option key={d} value={d}>
-                    {d}
-                  </option>
-                ))}
-              </select>
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-700">
+                  Destination
+                </label>
+                <input
+                  list="vendor-destinations"
+                  required
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-100"
+                  value={packageForm.location}
+                  onChange={(e) =>
+                    setPackageForm({
+                      ...packageForm,
+                      location: e.target.value,
+                    })
+                  }
+                />
+                <datalist id="vendor-destinations">
+                  {destinationSuggestions(packages).map((destination) => (
+                    <option key={destination} value={destination} />
+                  ))}
+                </datalist>
+              </div>
               <Input
-                placeholder="Price (₹)"
+                label="Price"
                 type="number"
+                required
+                min="1"
                 value={packageForm.pricing}
                 onChange={(e) =>
                   setPackageForm({ ...packageForm, pricing: e.target.value })
                 }
               />
-              <textarea
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm"
-                placeholder="Itinerary outline"
-                rows={4}
-                value={packageForm.itinerary}
-                onChange={(e) =>
-                  setPackageForm({ ...packageForm, itinerary: e.target.value })
-                }
-              />
+              <label className="block">
+                <span className="mb-2 block text-sm font-semibold text-slate-700">
+                  Itinerary Outline
+                </span>
+                <textarea
+                  required
+                  minLength={20}
+                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+                  rows={4}
+                  value={packageForm.itinerary}
+                  onChange={(e) =>
+                    setPackageForm({ ...packageForm, itinerary: e.target.value })
+                  }
+                />
+              </label>
               <label className="block rounded-2xl border border-dashed border-orange-200 bg-orange-50/60 p-5 text-center text-sm font-semibold text-orange-700 transition hover:bg-orange-50">
                 Upload package images
                 <input
@@ -454,7 +502,7 @@ export default function VendorDashboard() {
                 Your packages
               </h2>
               {packages.length === 0 ? (
-                <p className="text-sm text-slate-500">No packages yet.</p>
+                <EmptyState title="No packages yet" text="Published packages will appear here." />
               ) : (
                 <ul className="space-y-3 max-h-[320px] overflow-y-auto">
                   {packages.map((pkg) => (
@@ -464,7 +512,7 @@ export default function VendorDashboard() {
                     >
                       <p className="font-semibold text-slate-900">{pkg.title}</p>
                       <p className="text-sm text-slate-500">
-                        {pkg.location || pkg.destination} · ₹{pkg.pricing}
+                        {pkg.location || pkg.destination} - Rs {Number(pkg.pricing || 0).toLocaleString("en-IN")}
                       </p>
                     </li>
                   ))}
@@ -482,6 +530,7 @@ export default function VendorDashboard() {
                 Create trek batch
               </h2>
               <select
+                required
                 className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm"
                 value={batchForm.package_id}
                 onChange={(e) => setBatchForm({ ...batchForm, package_id: e.target.value })}
@@ -494,12 +543,12 @@ export default function VendorDashboard() {
                 ))}
               </select>
               <div className="grid grid-cols-2 gap-3">
-                <Input type="date" value={batchForm.start_date} onChange={(e) => setBatchForm({ ...batchForm, start_date: e.target.value })} />
-                <Input type="date" value={batchForm.end_date} onChange={(e) => setBatchForm({ ...batchForm, end_date: e.target.value })} />
-                <Input type="date" value={batchForm.booking_deadline} onChange={(e) => setBatchForm({ ...batchForm, booking_deadline: e.target.value })} />
-                <Input type="number" placeholder="Max seats" value={batchForm.max_seats} onChange={(e) => setBatchForm({ ...batchForm, max_seats: e.target.value })} />
-                <Input placeholder="Pickup location" value={batchForm.pickup_location} onChange={(e) => setBatchForm({ ...batchForm, pickup_location: e.target.value })} />
-                <Input placeholder="Guide name" value={batchForm.guide_name} onChange={(e) => setBatchForm({ ...batchForm, guide_name: e.target.value })} />
+                <Input type="date" required value={batchForm.start_date} onChange={(e) => setBatchForm({ ...batchForm, start_date: e.target.value })} />
+                <Input type="date" required value={batchForm.end_date} onChange={(e) => setBatchForm({ ...batchForm, end_date: e.target.value })} />
+                <Input type="date" required value={batchForm.booking_deadline} onChange={(e) => setBatchForm({ ...batchForm, booking_deadline: e.target.value })} />
+                <Input type="number" required min="1" label="Max Seats" value={batchForm.max_seats} onChange={(e) => setBatchForm({ ...batchForm, max_seats: e.target.value })} />
+                <Input required label="Pickup Location" value={batchForm.pickup_location} onChange={(e) => setBatchForm({ ...batchForm, pickup_location: e.target.value })} />
+                <Input required label="Guide Name" value={batchForm.guide_name} onChange={(e) => setBatchForm({ ...batchForm, guide_name: e.target.value })} />
               </div>
               <Button type="submit" loading={savingPackage}>
                 Create batch
@@ -511,7 +560,7 @@ export default function VendorDashboard() {
                 Upcoming batches
               </h2>
               {batches.length === 0 ? (
-                <p className="text-sm text-slate-500">No batches scheduled yet.</p>
+                <EmptyState title="No batches scheduled" text="Upcoming departures will appear here." />
               ) : (
                 <ul className="space-y-3 max-h-[360px] overflow-y-auto">
                   {batches.map((batch) => (
@@ -557,7 +606,7 @@ export default function VendorDashboard() {
                         colSpan={5}
                         className="px-6 py-12 text-center text-slate-400"
                       >
-                        No bookings for your packages yet.
+                        <EmptyState title="No bookings yet" text="Package bookings will appear here." compact />
                       </td>
                     </tr>
                   ) : (
@@ -570,7 +619,7 @@ export default function VendorDashboard() {
                         </td>
                         <td className="px-6 py-4 capitalize">{b.status}</td>
                         <td className="px-6 py-4 font-medium">
-                          ₹{b.total_cost}
+                          Rs {Number(b.total_cost || 0).toLocaleString("en-IN")}
                         </td>
                       </tr>
                     ))
@@ -581,6 +630,19 @@ export default function VendorDashboard() {
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+function EmptyState({ title, text, compact = false }) {
+  return (
+    <div
+      className={`rounded-2xl border border-dashed border-slate-200 bg-slate-50 text-center ${
+        compact ? "mx-auto max-w-md p-5" : "p-8"
+      }`}
+    >
+      <p className="text-base font-semibold text-slate-900">{title}</p>
+      <p className="mt-1 text-sm text-slate-500">{text}</p>
     </div>
   );
 }

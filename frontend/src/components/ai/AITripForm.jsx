@@ -19,6 +19,12 @@ export default function AITripForm({
   handleSubmit,
   loading,
 }) {
+  const preferences = Array.isArray(form.preferences)
+    ? form.preferences
+    : String(form.preferences || "")
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
 
   const handleChange = (e) => {
 
@@ -31,13 +37,13 @@ export default function AITripForm({
 
   const togglePreference = (item) => {
 
-    const exists = form.preferences.includes(item);
+    const exists = preferences.includes(item);
 
     if (exists) {
 
       setForm({
         ...form,
-        preferences: form.preferences.filter(
+        preferences: preferences.filter(
           (p) => p !== item
         ),
       });
@@ -47,7 +53,7 @@ export default function AITripForm({
       setForm({
         ...form,
         preferences: [
-          ...form.preferences,
+          ...preferences,
           item,
         ],
       });
@@ -226,7 +232,7 @@ export default function AITripForm({
               {preferencesList.map((item) => {
 
                 const active =
-                  form.preferences.includes(item);
+                  preferences.includes(item);
 
                 return (
 

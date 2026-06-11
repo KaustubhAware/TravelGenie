@@ -26,6 +26,25 @@ import json
 router = APIRouter()
 
 
+def _positive_number(value):
+    if value in (None, ""):
+        return None
+
+    try:
+        numeric = float(str(value).replace(",", "").strip())
+    except (TypeError, ValueError):
+        return None
+
+    return numeric if numeric > 0 else None
+
+
+def _budget_breakdown_has_value(breakdown):
+    if not isinstance(breakdown, dict):
+        return False
+
+    return any(_positive_number(value) is not None for value in breakdown.values())
+
+
 # =====================================================
 # GENERATE TRIP
 # =====================================================
@@ -46,6 +65,8 @@ def generate_trip(data: dict):
         "budget",
         0
     )
+
+    requested_budget = _positive_number(budget)
 
     preferences = data.get(
         "preferences",
@@ -127,6 +148,28 @@ def generate_trip(data: dict):
         raw_text
     )
 
+    parsed_estimated_cost = _positive_number(
+        parsed_data.get("estimated_cost")
+    )
+    final_estimated_cost = requested_budget or parsed_estimated_cost or estimated_cost
+    parsed_breakdown = parsed_data.get("budget_breakdown", {})
+    fallback_breakdown = {}
+
+    if final_estimated_cost:
+        fallback_breakdown = {
+            "hotel": int(final_estimated_cost * 0.4),
+            "food": int(final_estimated_cost * 0.25),
+            "transport": int(final_estimated_cost * 0.2),
+            "activities": int(final_estimated_cost * 0.1),
+            "emergency": int(final_estimated_cost * 0.05),
+        }
+
+    final_budget_breakdown = (
+        parsed_breakdown
+        if _budget_breakdown_has_value(parsed_breakdown)
+        else fallback_breakdown
+    )
+
     # =====================================================
     # RETURN FINAL RESPONSE
     # =====================================================
@@ -164,10 +207,10 @@ def generate_trip(data: dict):
         # =====================================================
 
         "estimated_cost":
-            parsed_data.get(
-                "estimated_cost",
-                estimated_cost
-            ),
+            final_estimated_cost,
+
+        "requested_budget":
+            requested_budget,
 
         # =====================================================
         # SENTIMENT
@@ -184,36 +227,7 @@ def generate_trip(data: dict):
         # =====================================================
 
         "budget_breakdown":
-            parsed_data.get(
-                "budget_breakdown",
-                {
-
-                    "hotel":
-                        int(
-                            estimated_cost * 0.4
-                        ),
-
-                    "food":
-                        int(
-                            estimated_cost * 0.25
-                        ),
-
-                    "transport":
-                        int(
-                            estimated_cost * 0.2
-                        ),
-
-                    "activities":
-                        int(
-                            estimated_cost * 0.1
-                        ),
-
-                    "emergency":
-                        int(
-                            estimated_cost * 0.05
-                        ),
-                }
-            ),
+            final_budget_breakdown,
 
         # =====================================================
         # TRAVEL TIPS

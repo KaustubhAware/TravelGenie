@@ -1,140 +1,74 @@
-import {
-  FaPlaneArrival,
-  FaHotel,
-  FaUtensils,
-  FaMapMarkedAlt,
-} from "react-icons/fa";
+const SLOTS = [
+  { key: "morning", label: "Morning" },
+  { key: "afternoon", label: "Afternoon" },
+  { key: "evening", label: "Evening" },
+];
 
-export default function DayPlanCard({
-  day = {},
-  index,
-}) {
+const toText = (value) => {
+  if (!value) return "";
+  if (typeof value === "string") return value;
+  return (
+    value.title ||
+    value.activity ||
+    value.description ||
+    value.name ||
+    value.plan ||
+    ""
+  );
+};
 
-  const getIcon = (text = "") => {
+const slotFromActivity = (activity, index) => {
+  const text = `${activity?.time || ""} ${activity?.timing || ""} ${toText(activity)}`.toLowerCase();
+  if (text.includes("morning") || text.includes("breakfast") || text.includes("sunrise")) return "morning";
+  if (text.includes("evening") || text.includes("dinner") || text.includes("sunset") || text.includes("night")) return "evening";
+  if (text.includes("afternoon") || text.includes("lunch")) return "afternoon";
+  return SLOTS[Math.min(index, SLOTS.length - 1)].key;
+};
 
-    text = text.toLowerCase();
+const normalizeSlots = (day) => {
+  const explicit = SLOTS.reduce((acc, slot) => {
+    const value = day?.[slot.key] || day?.[slot.label] || day?.[slot.key]?.activities;
+    acc[slot.key] = Array.isArray(value) ? value.map(toText).filter(Boolean) : [toText(value)].filter(Boolean);
+    return acc;
+  }, {});
 
-    if (text.includes("arrival")) {
-      return <FaPlaneArrival />;
-    }
+  const activities = Array.isArray(day?.activities) ? day.activities : [];
+  activities.forEach((activity, index) => {
+    const slot = slotFromActivity(activity, index);
+    const text = toText(activity);
+    if (text) explicit[slot].push(text);
+  });
 
-    if (text.includes("hotel")) {
-      return <FaHotel />;
-    }
+  if (!activities.length && !SLOTS.some((slot) => explicit[slot.key].length) && day?.description) {
+    explicit.morning.push(day.description);
+  }
 
-    if (
-      text.includes("food") ||
-      text.includes("restaurant") ||
-      text.includes("lunch") ||
-      text.includes("dinner")
-    ) {
-      return <FaUtensils />;
-    }
+  return explicit;
+};
 
-    return <FaMapMarkedAlt />;
-
-  };
+export default function DayPlanCard({ day = {} }) {
+  const slots = normalizeSlots(day);
 
   return (
+    <div className="grid gap-3 lg:grid-cols-3">
+      {SLOTS.map(({ key, label }) => {
+        const items = slots[key].length ? slots[key] : ["Details available in the generated itinerary."];
 
-    <div className="relative border border-gray-200 rounded-[28px] p-6 bg-white hover:border-orange-200 hover:shadow-lg transition-all duration-300 overflow-hidden">
-
-      <div className="flex items-center justify-between mb-6">
-
-        <div>
-
-          <p className="text-sm text-orange-500 font-semibold mb-1">
-
-            DAY {day?.day || index + 1}
-
-          </p>
-
-          <h3 className="text-2xl font-bold text-gray-900">
-
-            {day?.title || `Day ${index + 1}`}
-
-          </h3>
-
-        </div>
-
-        <div className="w-14 h-14 rounded-2xl bg-orange-500 text-white flex items-center justify-center font-bold text-lg shadow-lg">
-
-          {day?.day || index + 1}
-
-        </div>
-
-      </div>
-
-      <div className="space-y-4">
-
-        {(Array.isArray(day?.activities) ? day.activities : []).map((activity, i) => {
-          const label =
-            typeof activity === "string"
-              ? activity
-              : activity.title ||
-                activity.activity ||
-                activity.description ||
-                activity.name ||
-                "Planned activity";
-
-          const meta = [
-            activity?.time || activity?.timing,
-            activity?.transport,
-            activity?.food,
-            activity?.stay,
-          ].filter(Boolean);
-
-          return (
-
-            <div
-              key={i}
-              className="flex items-start gap-4"
-            >
-
-              <div className="min-w-[44px] h-11 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600">
-
-                {getIcon(label)}
-
-              </div>
-
-              <div className="flex-1">
-
-                <p className="text-gray-700 leading-relaxed">
-
-                  {label}
-
+        return (
+          <div key={key} className="rounded-2xl bg-white p-4">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-orange-600">
+              {label}
+            </p>
+            <div className="mt-3 space-y-2">
+              {items.map((item, itemIndex) => (
+                <p key={`${key}-${itemIndex}`} className="text-sm leading-6 text-slate-600">
+                  {item}
                 </p>
-
-                {meta.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {meta.map((item) => (
-                      <span
-                        key={item}
-                        className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600"
-                      >
-                        {item}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-              </div>
-
+              ))}
             </div>
-
-          );
-        })}
-
-        {!Array.isArray(day?.activities) && day?.description && (
-          <p className="text-gray-700 leading-relaxed">
-            {day.description}
-          </p>
-        )}
-
-      </div>
-
+          </div>
+        );
+      })}
     </div>
-
   );
-
 }

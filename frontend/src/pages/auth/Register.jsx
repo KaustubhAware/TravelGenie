@@ -14,6 +14,7 @@ import {
 } from "react-icons/fa";
 
 import { apiRequest } from "../../services/httpClient";
+import { persistAuthUser } from "../../utils/authToken";
 
 import logo from "../../assets/logo.svg";
 
@@ -74,10 +75,13 @@ export default function Register() {
         body: JSON.stringify({ email, password }),
       });
 
-      localStorage.setItem(
-        "token",
-        data.access_token || data.data?.access_token
-      );
+      const token =
+        data.access_token || data.data?.access_token;
+      const authUser =
+        data.user || data.data?.user || {};
+
+      localStorage.setItem("token", token);
+      persistAuthUser(authUser, { notify: true });
 
       navigate(from, {
         replace: true,
@@ -154,12 +158,6 @@ export default function Register() {
 
               </h2>
 
-              <p className="mt-3 text-slate-500">
-
-                Start your trekking journey
-
-              </p>
-
             </div>
 
             {/* FORM */}
@@ -182,7 +180,6 @@ export default function Register() {
 
                   <input
                     type="email"
-                    placeholder="Enter your email"
                     value={email}
                     onChange={(e) =>
                       setEmail(e.target.value)
@@ -210,7 +207,6 @@ export default function Register() {
 
                   <input
                     type="password"
-                    placeholder="Create password"
                     value={password}
                     onChange={(e) =>
                       setPassword(e.target.value)
@@ -223,15 +219,6 @@ export default function Register() {
               </div>
 
             </div>
-
-            {/* INFO */}
-
-            <p className="mt-5 text-sm text-slate-500">
-
-              Password should contain at least
-              6 characters.
-
-            </p>
 
             {/* BUTTON */}
 

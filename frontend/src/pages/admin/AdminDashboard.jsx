@@ -344,10 +344,10 @@ export default function AdminDashboard() {
           title="Completed"
           value={analytics.completedBookings}
           icon={
-            <FaCheckCircle className="text-purple-600 text-2xl" />
+            <FaCheckCircle className="text-orange-600 text-2xl" />
           }
-          bgColor="bg-purple-50"
-          textColor="text-purple-600"
+          bgColor="bg-orange-50"
+          textColor="text-orange-600"
         />
 
         <StatCard

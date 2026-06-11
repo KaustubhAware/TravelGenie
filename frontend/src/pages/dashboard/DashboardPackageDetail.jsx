@@ -64,9 +64,6 @@ export default function DashboardPackageDetail() {
   const [error, setError] =
     useState("");
 
-  const [activeTab, setActiveTab] =
-    useState("overview");
-
   const [batches, setBatches] =
     useState([]);
 
@@ -433,25 +430,12 @@ export default function DashboardPackageDetail() {
 
         </div>
 
-        {/* ===================================================== */}
-        {/* HEADER */}
-        {/* ===================================================== */}
-
-        <div className="bg-white border border-slate-200 rounded-3xl p-7 mt-6">
+        <div className="bg-white border border-slate-200 rounded-3xl p-6 md:p-7 mt-6">
 
           <div className="flex flex-col xl:flex-row gap-8 xl:items-start xl:justify-between">
 
-            {/* LEFT */}
-
             <div>
-
-              <h1 className="text-4xl font-black text-slate-900">
-
-                {pkg.title}
-
-              </h1>
-
-              <div className="flex items-center gap-2 text-slate-500 mt-3">
+              <div className="flex items-center gap-2 text-slate-500">
 
                 <FaMapMarkerAlt />
 
@@ -463,8 +447,6 @@ export default function DashboardPackageDetail() {
                 </span>
 
               </div>
-
-              {/* INFO */}
 
               <div className="flex flex-wrap gap-5 mt-6">
 
@@ -498,8 +480,6 @@ export default function DashboardPackageDetail() {
 
             </div>
 
-            {/* RIGHT */}
-
             <div className="xl:text-right">
 
               <p className="text-slate-400 text-sm uppercase tracking-wider">
@@ -510,7 +490,7 @@ export default function DashboardPackageDetail() {
 
               <h2 className="text-4xl font-black text-slate-900 mt-2">
 
-                ₹{pkg.price}
+                Rs {Number(pkg.price || 0).toLocaleString("en-IN")}
 
               </h2>
 
@@ -563,44 +543,6 @@ export default function DashboardPackageDetail() {
 
           </div>
 
-          {/* ===================================================== */}
-          {/* TABS */}
-          {/* ===================================================== */}
-
-          <div className="flex flex-wrap gap-8 mt-8 border-b border-slate-200">
-
-            {[
-              "overview",
-              "itinerary",
-              "inclusions",
-              "schedule",
-              "gallery",
-              "safety",
-              "nearby",
-              "faq",
-              "reviews",
-            ].map((tab) => (
-
-              <button
-                key={tab}
-                onClick={() =>
-                  setActiveTab(tab)
-                }
-                className={`pb-4 capitalize text-sm font-semibold border-b-2 transition ${
-                  activeTab === tab
-                    ? "border-orange-500 text-orange-500"
-                    : "border-transparent text-slate-500 hover:text-slate-800"
-                }`}
-              >
-
-                {tab}
-
-              </button>
-
-            ))}
-
-          </div>
-
         </div>
 
         {/* ===================================================== */}
@@ -617,16 +559,32 @@ export default function DashboardPackageDetail() {
 
             {/* OVERVIEW */}
 
-            {activeTab ===
-              "overview" && (
+            {(
 
               <div className="grid lg:grid-cols-3 gap-6">
 
                 {/* HIGHLIGHTS */}
 
+                <div className="bg-white border border-slate-200 rounded-2xl p-6 lg:col-span-3">
+
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-orange-500">
+                    Overview Card
+                  </p>
+                  <h3 className="mt-2 text-2xl font-black text-slate-900">
+                    {pkg.title}
+                  </h3>
+                  <p className="mt-4 max-w-4xl text-base leading-8 text-slate-600">
+                    {pkg.full_description || pkg.short_description || `${pkg.title} is a curated Maharashtra travel experience with guided planning, verified batches, and clear booking details.`}
+                  </p>
+
+                </div>
+
                 <div className="bg-white border border-slate-200 rounded-2xl p-6">
 
-                  <h3 className="text-xl font-black text-slate-900 mb-5">
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-orange-500">
+                    Trip Highlights Card
+                  </p>
+                  <h3 className="mt-2 text-xl font-black text-slate-900 mb-5">
 
                     Highlights
 
@@ -637,9 +595,9 @@ export default function DashboardPackageDetail() {
                     {(includedList.length
                       ? includedList
                       : [
-                          "Stunning Himalayan views",
-                          "Perfect for beginners",
-                          "Snow trek experience",
+                          "Scenic Sahyadri ridge views",
+                          "Beginner-friendly guidance",
+                          "Curated local trek experience",
                           "Expert trek leaders",
                         ]).slice(0, 4)
 
@@ -660,7 +618,10 @@ export default function DashboardPackageDetail() {
 
                 <div className="bg-white border border-slate-200 rounded-2xl p-6">
 
-                  <h3 className="text-xl font-black text-slate-900 mb-5">
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-orange-500">
+                    Quick Facts
+                  </p>
+                  <h3 className="mt-2 text-xl font-black text-slate-900 mb-5">
 
                     Quick Info
 
@@ -716,7 +677,10 @@ export default function DashboardPackageDetail() {
 
                 <div className="bg-white border border-slate-200 rounded-2xl p-6">
 
-                  <h3 className="text-xl font-black text-slate-900 mb-5">
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-orange-500">
+                    Map Card
+                  </p>
+                  <h3 className="mt-2 text-xl font-black text-slate-900 mb-5">
 
                     Route Map
 
@@ -752,12 +716,14 @@ export default function DashboardPackageDetail() {
 
             {/* ITINERARY */}
 
-            {activeTab ===
-              "itinerary" && (
+            {(
 
               <div className="bg-white border border-slate-200 rounded-2xl p-7">
 
-                <h2 className="text-3xl font-black text-slate-900 mb-8">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-orange-500">
+                  Itinerary Card
+                </p>
+                <h2 className="mt-2 text-3xl font-black text-slate-900 mb-8">
 
                   Trek Itinerary
 
@@ -810,7 +776,7 @@ export default function DashboardPackageDetail() {
                             <p className="text-slate-500 mt-3 leading-relaxed">
 
                               {Array.isArray(day.activities)
-                                ? day.activities.join(" • ")
+                                ? day.activities.join(" - ")
                                 : day.description ||
                                   day.activities ||
                                   day}
@@ -834,8 +800,7 @@ export default function DashboardPackageDetail() {
 
             {/* INCLUSIONS */}
 
-            {activeTab ===
-              "inclusions" && (
+            {(
 
               <div className="bg-white border border-slate-200 rounded-2xl p-7">
 
@@ -894,9 +859,12 @@ export default function DashboardPackageDetail() {
 
             )}
 
-            {activeTab === "schedule" && (
+            {(
               <div className="bg-white border border-slate-200 rounded-2xl p-7">
-                <h2 className="text-3xl font-black text-slate-900 mb-3">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-orange-500">
+                  Available Batches Card
+                </p>
+                <h2 className="mt-2 text-3xl font-black text-slate-900 mb-3">
                   Upcoming Departures
                 </h2>
                 <p className="text-slate-500 mb-7">
@@ -939,7 +907,7 @@ export default function DashboardPackageDetail() {
               </div>
             )}
 
-            {activeTab === "gallery" && (
+            {(
               <div className="bg-white border border-slate-200 rounded-2xl p-7">
                 <h2 className="text-3xl font-black text-slate-900 mb-7">
                   Gallery
@@ -975,7 +943,7 @@ export default function DashboardPackageDetail() {
               </div>
             )}
 
-            {activeTab === "safety" && (
+            {(
               <div className="bg-white border border-slate-200 rounded-2xl p-7">
                 <h2 className="text-3xl font-black text-slate-900 mb-7">
                   Safety & Weather
@@ -988,7 +956,7 @@ export default function DashboardPackageDetail() {
               </div>
             )}
 
-            {activeTab === "nearby" && (
+            {(
               <div className="bg-white border border-slate-200 rounded-2xl p-7">
                 <h2 className="text-3xl font-black text-slate-900 mb-7">
                   Nearby Attractions
@@ -1017,7 +985,7 @@ export default function DashboardPackageDetail() {
               </div>
             )}
 
-            {activeTab === "faq" && (
+            {(
               <div className="bg-white border border-slate-200 rounded-2xl p-7 space-y-5">
                 <h2 className="text-3xl font-black text-slate-900">
                   Frequently asked questions
@@ -1053,8 +1021,11 @@ export default function DashboardPackageDetail() {
               </div>
             )}
 
-            {activeTab === "reviews" && (
+            {(
               <div className="bg-white border border-slate-200 rounded-2xl p-7">
+                <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-orange-500">
+                  Reviews Card
+                </p>
                 <ReviewSection packageId={pkg.id} showForm />
               </div>
             )}
@@ -1068,6 +1039,9 @@ export default function DashboardPackageDetail() {
           <div className="space-y-6 sticky top-24">
 
             <div className="bg-white border border-slate-200 rounded-2xl p-6">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-orange-500">
+                Booking Sidebar Card
+              </p>
               <p className="text-sm uppercase tracking-wider text-slate-400">
                 Booking
               </p>

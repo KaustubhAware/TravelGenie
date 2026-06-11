@@ -1,12 +1,14 @@
-import { hasAuthToken } from "../utils/authToken";
+import { hasUserAuthToken } from "../utils/authToken";
 import { apiRequest } from "./httpClient";
 
 export const authService = {
   saveCurrentUser: () => {
-    if (!hasAuthToken()) {
+    if (!hasUserAuthToken()) {
       return Promise.reject(new Error("Not authenticated"));
     }
 
-    return apiRequest("/auth/me");
+    return apiRequest("/auth/me", {
+      skipAuthRedirect: true,
+    });
   },
 };

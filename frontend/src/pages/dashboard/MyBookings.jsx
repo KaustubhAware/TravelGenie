@@ -337,7 +337,7 @@ export default function MyBookings() {
 
             <h2 className="text-3xl font-black text-slate-900">
 
-              No bookings found
+              No Trips Booked Yet
 
             </h2>
 
@@ -487,10 +487,11 @@ export default function MyBookings() {
                         <FaMoneyBillWave />
                       }
                       label="Total Cost"
-                      value={`₹ ${
+                      value={`Rs ${Number(
                         booking.total_cost ||
-                        booking.budget
-                      }`}
+                        booking.budget ||
+                        0
+                      ).toLocaleString("en-IN")}`}
                     />
 
                     <InfoRow

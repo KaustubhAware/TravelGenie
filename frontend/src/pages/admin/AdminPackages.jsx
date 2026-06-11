@@ -57,7 +57,8 @@ const initialForm = {
 
   featured_image: "",
 
-  short_description: "",
+  short_description:
+    "Guided Maharashtra trek with verified local operators and clear inclusions.",
 
   full_description: "",
 
@@ -108,6 +109,9 @@ export default function AdminPackages() {
   const [formData, setFormData] =
     useState(initialForm);
 
+  const [formError, setFormError] =
+    useState("");
+
   /* ===================================================== */
   /* FETCH PACKAGES */
   /* ===================================================== */
@@ -127,11 +131,6 @@ export default function AdminPackages() {
           await fetchWithAuth(
             "/admin/packages"
           );
-
-        console.log(
-          "PACKAGES:",
-          data
-        );
 
         setPackages(
           data.packages || []
@@ -200,6 +199,7 @@ export default function AdminPackages() {
       );
 
       setEditingPackage(null);
+      setFormError("");
 
     };
 
@@ -242,6 +242,66 @@ export default function AdminPackages() {
       }
     };
 
+  const buildPackagePayload = (data) => ({
+    title: (data.title || "").trim(),
+    location: (data.location || "").trim(),
+    region: (data.region || "").trim(),
+    category: (data.category || "").trim(),
+    duration: (data.duration || "").trim(),
+    difficulty: (data.difficulty || "").trim(),
+    trek_distance: (data.trek_distance || "").trim(),
+    altitude: (data.altitude || "").trim(),
+    best_season: (data.best_season || "").trim(),
+    group_size: Number(data.group_size) || 0,
+    fitness_required: (data.fitness_required || "").trim(),
+    travel_type: (data.travel_type || "").trim(),
+    price: Number(data.price) || 0,
+    seasonal_price: Number(data.seasonal_price) || 0,
+    featured_image: (data.featured_image || "").trim(),
+    short_description: (data.short_description || "").trim(),
+    full_description: (data.full_description || "").trim(),
+    included: parseArray(data.included),
+    excluded: parseArray(data.excluded),
+    pickup_points: parseArray(data.pickup_points),
+    gallery: parseArray(data.gallery),
+    itinerary: parseItinerary(data.itinerary),
+    rating: Number(data.rating) || 0,
+    featured: Boolean(data.featured),
+  });
+
+  const validatePackageForm = (data) => {
+    const title = (data.title || "").trim();
+    const location = (data.location || "").trim();
+    const shortDescription = (data.short_description || "").trim();
+    const price = Number(data.price);
+
+    if (title.length < 3) {
+      return "Package title must be at least 3 characters.";
+    }
+
+    if (location.length < 2) {
+      return "Destination is required.";
+    }
+
+    if (shortDescription.length < 10) {
+      return "Short description must be at least 10 characters.";
+    }
+
+    if (!Number.isFinite(price) || price < 0) {
+      return "Enter a valid package price.";
+    }
+
+    if (!(data.duration || "").trim()) {
+      return "Duration is required.";
+    }
+
+    if (!(data.difficulty || "").trim()) {
+      return "Difficulty is required.";
+    }
+
+    return "";
+  };
+
   /* ===================================================== */
   /* ADD PACKAGE */
   /* ===================================================== */
@@ -249,65 +309,25 @@ export default function AdminPackages() {
   const addPackage =
     async () => {
 
+      const validationError = validatePackageForm(formData);
+      if (validationError) {
+        setFormError(validationError);
+        return;
+      }
+
       try {
 
         setSaving(true);
+        setFormError("");
 
         await fetchWithAuth(
           "/packages",
           {
             method: "POST",
 
-            body: JSON.stringify({
-
-              ...formData,
-
-              price:
-                Number(
-                  formData.price
-                ) || 0,
-
-              seasonal_price:
-                Number(
-                  formData.seasonal_price
-                ) || 0,
-
-              rating:
-                Number(
-                  formData.rating
-                ) || 0,
-
-              group_size:
-                Number(
-                  formData.group_size
-                ) || 0,
-
-              included:
-                parseArray(
-                  formData.included
-                ),
-
-              excluded:
-                parseArray(
-                  formData.excluded
-                ),
-
-              pickup_points:
-                parseArray(
-                  formData.pickup_points
-                ),
-
-              gallery:
-                parseArray(
-                  formData.gallery
-                ),
-
-              itinerary:
-                parseItinerary(
-                  formData.itinerary
-                ),
-
-            }),
+            body: JSON.stringify(
+              buildPackagePayload(formData)
+            ),
 
           }
         );
@@ -325,8 +345,8 @@ export default function AdminPackages() {
           err
         );
 
-        alert(
-          "Failed to add package"
+        setFormError(
+          err.message || "Failed to add package"
         );
 
       } finally {
@@ -343,6 +363,8 @@ export default function AdminPackages() {
 
   const editPackage =
     (pkg) => {
+
+      setFormError("");
 
       setEditingPackage(
         pkg.id
@@ -396,7 +418,9 @@ export default function AdminPackages() {
           pkg.featured_image || "",
 
         short_description:
-          pkg.short_description || "",
+          pkg.short_description ||
+          pkg.description ||
+          "Guided Maharashtra trek with verified local operators and clear inclusions.",
 
         full_description:
           pkg.full_description || "",
@@ -459,9 +483,16 @@ export default function AdminPackages() {
   const updatePackage =
     async () => {
 
+      const validationError = validatePackageForm(formData);
+      if (validationError) {
+        setFormError(validationError);
+        return;
+      }
+
       try {
 
         setSaving(true);
+        setFormError("");
 
         await fetchWithAuth(
 
@@ -470,56 +501,9 @@ export default function AdminPackages() {
           {
             method: "PUT",
 
-            body: JSON.stringify({
-
-              ...formData,
-
-              price:
-                Number(
-                  formData.price
-                ) || 0,
-
-              seasonal_price:
-                Number(
-                  formData.seasonal_price
-                ) || 0,
-
-              rating:
-                Number(
-                  formData.rating
-                ) || 0,
-
-              group_size:
-                Number(
-                  formData.group_size
-                ) || 0,
-
-              included:
-                parseArray(
-                  formData.included
-                ),
-
-              excluded:
-                parseArray(
-                  formData.excluded
-                ),
-
-              pickup_points:
-                parseArray(
-                  formData.pickup_points
-                ),
-
-              gallery:
-                parseArray(
-                  formData.gallery
-                ),
-
-              itinerary:
-                parseItinerary(
-                  formData.itinerary
-                ),
-
-            }),
+            body: JSON.stringify(
+              buildPackagePayload(formData)
+            ),
 
           }
 
@@ -538,8 +522,8 @@ export default function AdminPackages() {
           err
         );
 
-        alert(
-          "Failed to update package"
+        setFormError(
+          err.message || "Failed to update package"
         );
 
       } finally {
@@ -588,8 +572,8 @@ export default function AdminPackages() {
           err
         );
 
-        alert(
-          "Failed to delete package"
+        window.alert(
+          err.message || "Failed to delete package"
         );
 
       }
@@ -1095,6 +1079,12 @@ export default function AdminPackages() {
               )}
 
             </div>
+
+            {formError && (
+              <div className="mt-8 rounded-2xl border border-red-100 bg-red-50 px-5 py-4 text-sm font-medium text-red-700">
+                {formError}
+              </div>
+            )}
 
             {/* BUTTONS */}
 

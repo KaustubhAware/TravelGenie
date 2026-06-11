@@ -9,7 +9,19 @@ export const isEmail = (value) =>
 export const isPhone = (value) =>
   /^\d{10,15}$/.test(String(value || ""));
 
-export const validateBookingForm = (form) => {
+const toInputDate = (value) => {
+  if (!value) {
+    return "";
+  }
+
+  return String(value).slice(0, 10);
+};
+
+export const validateBookingForm = (form, options = {}) => {
+  const {
+    selectedBatch = null,
+    batchesAvailable = false,
+  } = options;
   const errors = {};
 
   if (!isRequired(form.firstName)) {
@@ -26,6 +38,36 @@ export const validateBookingForm = (form) => {
 
   if (!isPhone(form.phone)) {
     errors.phone = "Enter a valid phone number";
+  }
+
+  if (batchesAvailable && !selectedBatch) {
+    errors.batch = "Select a departure batch to continue";
+  }
+
+  if (selectedBatch) {
+    const batchStart = toInputDate(selectedBatch.start_date);
+    const batchEnd = toInputDate(selectedBatch.end_date);
+
+    if (!batchStart || !batchEnd) {
+      errors.batch = "Selected batch is missing travel dates";
+    } else if (form.departure !== batchStart) {
+      errors.departure = "Travel start date must match the selected batch";
+    } else if (form.returnDate !== batchEnd) {
+      errors.returnDate = "Travel end date must match the selected batch";
+    }
+  } else {
+    if (!isRequired(form.departure)) {
+      errors.departure = "Departure date is required";
+    }
+
+    if (!isRequired(form.returnDate)) {
+      errors.returnDate = "Return date is required";
+    } else if (
+      isRequired(form.departure) &&
+      form.returnDate < form.departure
+    ) {
+      errors.returnDate = "Return date cannot be before departure date";
+    }
   }
 
   return errors;

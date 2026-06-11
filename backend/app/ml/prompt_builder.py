@@ -14,6 +14,15 @@ def build_itinerary_prompt(data):
         ""
     )
 
+    budget_label = str(budget).strip() if budget is not None else ""
+    budget_json_value = budget_label if budget_label else "null"
+    budget_instruction = (
+        f"Use the user's exact total budget of INR {budget_label}. "
+        "Never return 0 for estimated_cost or budget_breakdown when this budget is provided."
+        if budget_label
+        else "The user did not specify a budget. Use null for estimated_cost and budget_breakdown values."
+    )
+
     days = data.get(
         "days",
         ""
@@ -73,7 +82,9 @@ Do NOT skip any fields.
 
 Destination (Maharashtra): {destination}
 
-Budget: ₹{budget}
+Budget: INR {budget_label or "Not specified"}
+
+Budget Rule: {budget_instruction}
 
 Days: {days}
 
@@ -95,7 +106,7 @@ Return this EXACT JSON structure:
     "duration": "{days} days",
     "travelers": "{travelers}",
     "trip_type": "{trip_type}",
-    "estimated_cost": 0,
+    "estimated_cost": {budget_json_value},
     "best_for": "",
     "summary": ""
   }},
@@ -118,16 +129,16 @@ Return this EXACT JSON structure:
     ""
   ],
 
-  "estimated_cost": 0,
+  "estimated_cost": {budget_json_value},
 
   "sentiment": "Positive",
 
   "budget_breakdown": {{
-    "hotel": 0,
-    "food": 0,
-    "transport": 0,
-    "activities": 0,
-    "emergency": 0
+    "hotel": null,
+    "food": null,
+    "transport": null,
+    "activities": null,
+    "emergency": null
   }},
 
   "travel_tips": [

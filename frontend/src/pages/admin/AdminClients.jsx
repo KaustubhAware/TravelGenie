@@ -64,11 +64,6 @@ export default function AdminClients() {
             + (includeDeleted ? "?include_deleted=true" : "")
           );
 
-        console.log(
-          "CLIENT DATA:",
-          data
-        );
-
         setClients(
           data.clients || []
         );

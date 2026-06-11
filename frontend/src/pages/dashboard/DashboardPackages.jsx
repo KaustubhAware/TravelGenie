@@ -722,13 +722,13 @@ export default function DashboardPackages() {
 
                 <h2 className="text-3xl font-black text-slate-900">
 
-                  No packages found
+                  No Matching Experiences
 
                 </h2>
 
                 <p className="text-slate-500 mt-4">
 
-                  Try different filters or keywords.
+                  Try a different destination, activity, or budget range.
 
                 </p>
 

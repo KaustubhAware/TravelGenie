@@ -65,6 +65,128 @@ def _serialize_package(row):
     return item
 
 
+def _package_db_error_message(exc, action="save"):
+    message = str(exc).lower()
+
+    if "idx_packages_slug_unique" in message or (
+        "duplicate key" in message and "slug" in message
+    ):
+        return "Duplicate package slug"
+
+    if "value too long" in message:
+        return "Invalid package data: one or more fields exceed maximum length."
+
+    if "foreign key" in message or "violates foreign key" in message:
+        if action == "delete":
+            return "Package cannot be deleted because related records still exist."
+        return "Invalid package data: related record reference is missing."
+
+    if action == "delete":
+        return "Package could not be deleted. Remove active bookings and batches first."
+
+    return "Invalid package data. Check required fields and try again."
+
+
+def _ensure_unique_package_slug(cur, slug, package_id=None):
+    if package_id is None:
+        cur.execute(
+            "SELECT id FROM packages WHERE slug = %s",
+            (slug,),
+        )
+    else:
+        cur.execute(
+            "SELECT id FROM packages WHERE slug = %s AND id != %s",
+            (slug, package_id),
+        )
+
+    if cur.fetchone():
+        raise HTTPException(
+            status_code=400,
+            detail="Duplicate package slug",
+        )
+
+
+def _resolve_package_slug(cur, package_id, title, current_slug=None, current_title=None):
+    package_slug = slugify(title)
+    normalized_title = (title or "").strip().lower()
+    normalized_current = (current_title or "").strip().lower()
+
+    if current_slug and normalized_title == normalized_current:
+        return current_slug
+
+    cur.execute(
+        "SELECT id FROM packages WHERE slug = %s AND id != %s",
+        (package_slug, package_id),
+    )
+    if cur.fetchone():
+        suffixed = f"{package_slug}-{package_id}"
+        cur.execute(
+            "SELECT id FROM packages WHERE slug = %s AND id != %s",
+            (suffixed, package_id),
+        )
+        if cur.fetchone():
+            raise HTTPException(
+                status_code=400,
+                detail="Duplicate package slug",
+            )
+        return suffixed
+
+    return package_slug
+
+
+def _ensure_package_deletable(cur, package_id):
+    cur.execute(
+        """
+        SELECT COUNT(*) AS total
+        FROM bookings
+        WHERE package_id = %s
+          AND COALESCE(status, '') NOT IN ('cancelled', 'completed')
+        """,
+        (package_id,),
+    )
+    active_bookings = int(cur.fetchone()["total"])
+
+    if active_bookings > 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Package has active bookings",
+        )
+
+    cur.execute(
+        """
+        SELECT COUNT(*) AS total
+        FROM trip_batches
+        WHERE package_id = %s
+          AND end_date >= CURRENT_DATE
+        """,
+        (package_id,),
+    )
+    active_batches = int(cur.fetchone()["total"])
+
+    if active_batches > 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Package has active batches",
+        )
+
+    cur.execute(
+        """
+        SELECT COUNT(*) AS total
+        FROM reviews
+        WHERE package_id = %s
+          AND COALESCE(is_deleted, FALSE) = FALSE
+        """,
+        (package_id,),
+    )
+    attached_reviews = int(cur.fetchone()["total"])
+
+    if attached_reviews > 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Package has reviews attached",
+        )
+
+
 def _serialize_batch(row):
     item = dict(row)
     for key in ("start_date", "end_date", "booking_deadline", "created_at", "updated_at"):
@@ -630,7 +752,7 @@ def create_package(
             data.duration,
             data.altitude,
             data.trek_distance,
-            data.group_size,
+            str(data.group_size) if data.group_size is not None else "0",
             data.best_season,
             data.fitness_required,
             data.travel_type,
@@ -673,13 +795,16 @@ def create_package(
 
         }
 
+    except HTTPException:
+        raise
+
     except Exception as e:
 
         conn.rollback()
 
         raise HTTPException(
             status_code=400,
-            detail=str(e)
+            detail=_package_db_error_message(e, action="create"),
         )
 
     finally:
@@ -706,8 +831,23 @@ def update_package(
 
     try:
 
-        package_slug = slugify(
-            data.title
+        cur.execute(
+            "SELECT id, slug, title FROM packages WHERE id = %s",
+            (id,),
+        )
+        current_package = cur.fetchone()
+        if not current_package:
+            raise HTTPException(
+                status_code=404,
+                detail="Package not found",
+            )
+
+        package_slug = _resolve_package_slug(
+            cur,
+            id,
+            data.title,
+            current_slug=current_package.get("slug"),
+            current_title=current_package.get("title"),
         )
 
         cur.execute("""
@@ -763,7 +903,7 @@ def update_package(
             data.duration,
             data.altitude,
             data.trek_distance,
-            data.group_size,
+            str(data.group_size) if data.group_size is not None else "0",
             data.best_season,
             data.fitness_required,
             data.travel_type,
@@ -817,7 +957,7 @@ def update_package(
 
         raise HTTPException(
             status_code=400,
-            detail=str(e)
+            detail=_package_db_error_message(e, action="update"),
         )
 
     finally:
@@ -842,6 +982,18 @@ def delete_package(
     )
 
     try:
+
+        cur.execute(
+            "SELECT id FROM packages WHERE id = %s",
+            (id,),
+        )
+        if not cur.fetchone():
+            raise HTTPException(
+                status_code=404,
+                detail="Package not found",
+            )
+
+        _ensure_package_deletable(cur, id)
 
         cur.execute("""
             DELETE FROM packages
@@ -874,7 +1026,7 @@ def delete_package(
 
         raise HTTPException(
             status_code=400,
-            detail=str(e)
+            detail=_package_db_error_message(e, action="delete"),
         )
 
     finally:

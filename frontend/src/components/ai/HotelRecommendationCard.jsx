@@ -1,87 +1,63 @@
-import {
-  FaHotel,
-  FaStar,
-} from "react-icons/fa";
-import { resolveImageUrl } from "../../utils/imageUrl";
+const pick = (...values) => values.find((value) => value !== undefined && value !== null && value !== "");
 
-export default function HotelRecommendationCard({
-  hotel,
-}) {
-
+export default function HotelRecommendationCard({ hotel }) {
   if (!hotel || !hotel.name) {
     return null;
   }
 
+  const amenities = Array.isArray(hotel.amenities)
+    ? hotel.amenities
+    : String(hotel.amenities || "")
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+
+  const price = pick(hotel.price_range, hotel.price, hotel.estimated_price, hotel.cost);
+  const distance = pick(hotel.distance, hotel.distance_from_destination, hotel.nearby, hotel.travel_time);
+
   return (
+    <article className="h-full rounded-[22px] border border-slate-100 bg-white p-5 transition duration-200 hover:bg-slate-50 md:p-6">
+      <h3 className="text-base font-semibold leading-snug text-slate-950">
+        {hotel.name}
+      </h3>
 
-    <div className="bg-white border border-gray-200 rounded-[28px] overflow-hidden shadow-sm">
-
-      <img
-        src={resolveImageUrl(hotel.image)}
-        alt={hotel.name}
-        className="w-full h-56 object-cover"
-        loading="lazy"
-      />
-
-      <div className="p-6">
-
-        <div className="flex items-center gap-3">
-
-          <FaHotel className="text-orange-500" />
-
-          <h3 className="text-xl font-bold text-gray-900">
-
-            {hotel.name}
-
-          </h3>
-
-        </div>
-
-        {hotel.rating && (
-          <div className="flex items-center gap-2 mt-4">
-
-            <FaStar className="text-yellow-500" />
-
-            <span className="font-medium">
-
-              {hotel.rating}
-
-            </span>
-
-          </div>
+      <div className="mt-5 grid gap-4 text-sm text-slate-600 sm:grid-cols-2">
+        {price && (
+          <Info label="Price" value={price} />
         )}
+        {distance && (
+          <Info label="Distance" value={distance} />
+        )}
+      </div>
 
-        {(hotel.price_range || hotel.price) && (
-          <p className="text-gray-600 mt-3">
-
-            {hotel.price_range || hotel.price}
-
+      {amenities.length > 0 && (
+        <div className="mt-5">
+          <p className="mb-3 text-sm font-semibold text-slate-500">
+            Amenities
           </p>
-        )}
-
-        {hotel.location && (
-          <p className="mt-2 text-sm text-gray-500">
-            {hotel.location}
-          </p>
-        )}
-
-        {Array.isArray(hotel.amenities) && hotel.amenities.length > 0 && (
-          <div className="mt-4 flex flex-wrap gap-2">
-            {hotel.amenities.slice(0, 4).map((amenity) => (
+          <div className="flex flex-wrap gap-2">
+            {amenities.slice(0, 4).map((amenity) => (
               <span
                 key={amenity}
-                className="rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700"
+                className="rounded-full bg-orange-50 px-3 py-1.5 text-sm font-medium text-orange-700"
               >
                 {amenity}
               </span>
             ))}
           </div>
-        )}
-
-      </div>
-
-    </div>
-
+        </div>
+      )}
+    </article>
   );
+}
 
+function Info({ label, value }) {
+  return (
+    <div>
+      <span className="text-sm font-semibold text-slate-500">
+        {label}
+      </span>
+      <p className="mt-1 text-sm leading-relaxed text-slate-800">{value}</p>
+    </div>
+  );
 }

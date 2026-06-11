@@ -128,6 +128,26 @@ export default function NextPage() {
 
       }
 
+      if (form.budget && Number(form.budget) <= 0) {
+
+        toast.error(
+          "Enter a valid budget greater than 0"
+        );
+
+        return;
+
+      }
+
+      if (form.days && Number(form.days) <= 0) {
+
+        toast.error(
+          "Enter a valid trip duration"
+        );
+
+        return;
+
+      }
+
       setLoading(true);
 
       setResult(null);
@@ -239,7 +259,12 @@ export default function NextPage() {
             data.weather || {},
 
           estimated_cost:
-            data.estimated_cost || 0,
+            data.estimated_cost || form.budget || null,
+
+          requested_budget:
+            data.requested_budget ||
+            form.budget ||
+            null,
 
           sentiment:
             data.sentiment ||
@@ -256,10 +281,51 @@ export default function NextPage() {
               ? data.travel_tips
               : [],
 
+          transport:
+            data.transport ||
+            data.transportation ||
+            {},
+
+          transport_recommendations:
+            Array.isArray(data.transport_recommendations)
+              ? data.transport_recommendations
+              : [],
+
+          nearby_attractions:
+            Array.isArray(data.nearby_attractions)
+              ? data.nearby_attractions
+              : [],
+
+          emergency_information:
+            data.emergency_information ||
+            data.emergency_info ||
+            {},
+
+          packing:
+            data.packing ||
+            {},
+
+          best_season:
+            data.best_season ||
+            data.trip_summary?.best_season ||
+            data.weather?.best_season ||
+            "",
+
+          package_image:
+            data.package_image ||
+            data.packageImage ||
+            "",
+
+          destination_image:
+            data.destination_image ||
+            data.destinationImage ||
+            data.image ||
+            "",
+
         });
 
         toast.success(
-          "Trip generated!"
+          "Premium AI itinerary generated."
         );
 
       } catch (err) {
@@ -267,7 +333,7 @@ export default function NextPage() {
         console.error(err);
 
         toast.error(
-          "Failed to generate trip"
+          "Unable to generate itinerary. Please try again."
         );
 
       }
@@ -318,19 +384,29 @@ export default function NextPage() {
             metadata: {
               title: `${form.destination} AI Trip`,
               budget_breakdown: result.budget_breakdown,
+              estimated_cost: result.estimated_cost,
+              requested_budget: result.requested_budget || form.budget,
               recommendations: result.recommendations,
               hotel_recommendations: result.hotel_recommendations,
               restaurant_recommendations: result.restaurant_recommendations,
               weather: result.weather,
+              transport: result.transport,
+              transport_recommendations: result.transport_recommendations,
+              nearby_attractions: result.nearby_attractions,
+              emergency_information: result.emergency_information,
               travel_tips: result.travel_tips,
               packing_list: result.packing_list,
+              packing: result.packing,
               safety_notes: result.safety_notes,
+              best_season: result.best_season,
+              destination_image: result.destination_image,
+              package_image: result.package_image,
             },
           }),
         });
 
         toast.success(
-          "Trip saved successfully!"
+          "Trip saved to your AI itineraries."
         );
 
       } catch (err) {
@@ -338,7 +414,7 @@ export default function NextPage() {
         console.error(err);
 
         toast.error(
-          "Failed to save trip"
+          "Unable to save trip. Please try again."
         );
 
       }
@@ -434,7 +510,7 @@ export default function NextPage() {
                     name="destination"
                     value={form.destination}
                     onChange={handleChange}
-                    placeholder="Lonavala, Rajmachi..."
+                    placeholder=""
                     className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:bg-white"
                   />
 
@@ -455,7 +531,9 @@ export default function NextPage() {
                     name="budget"
                     value={form.budget}
                     onChange={handleChange}
-                    placeholder="5000"
+                    min="1"
+                    inputMode="numeric"
+                    placeholder=""
                     className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:bg-white"
                   />
 
@@ -476,7 +554,9 @@ export default function NextPage() {
                     name="days"
                     value={form.days}
                     onChange={handleChange}
-                    placeholder="2"
+                    min="1"
+                    inputMode="numeric"
+                    placeholder=""
                     className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:bg-white"
                   />
 
@@ -571,7 +651,7 @@ export default function NextPage() {
                     name="preferences"
                     value={form.preferences}
                     onChange={handleChange}
-                    placeholder="Waterfalls, camping, photography..."
+                    placeholder=""
                     className="w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:bg-white"
                   />
 
@@ -618,7 +698,7 @@ export default function NextPage() {
                 >
 
                   {loading
-                    ? "Generating..."
+                    ? "Building itinerary..."
                     : "Generate AI Trip"}
 
                   {!loading && (
@@ -653,7 +733,7 @@ export default function NextPage() {
 
                     <p className="mt-5 text-sm text-slate-500">
 
-                      Generating AI itinerary...
+                      Building your premium AI travel plan...
 
                     </p>
 

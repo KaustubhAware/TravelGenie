@@ -14,11 +14,9 @@ import {
   toast,
 } from "react-hot-toast";
 
-import {
-  API_BASE,
-  apiRequest,
-} from "../../services/httpClient";
-import { hasAuthToken } from "../../utils/authToken";
+import { apiRequest } from "../../services/httpClient";
+import { packageService } from "../../services/packageService";
+import { getUserToken } from "../../utils/authToken";
 import { resolveImageUrl } from "../../utils/imageUrl";
 
 import {
@@ -36,6 +34,32 @@ import {
   FaCheckCircle,
 } from "react-icons/fa";
 
+const toInputDate = (value) => {
+  if (!value) {
+    return "";
+  }
+
+  return String(value).slice(0, 10);
+};
+
+const formatBatchDate = (value) => {
+  const normalized = toInputDate(value);
+  if (!normalized) {
+    return "-";
+  }
+
+  const date = new Date(`${normalized}T00:00:00`);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(date);
+};
+
 export default function Booking() {
 
   const location =
@@ -50,10 +74,16 @@ export default function Booking() {
   const packageData =
     tripData.package || {};
 
-  const selectedBatch =
-    tripData.selected_batch || null;
+  const [batches, setBatches] =
+    useState([]);
+
+  const [selectedBatch, setSelectedBatch] =
+    useState(tripData.selected_batch || null);
 
   const [loading, setLoading] =
+    useState(false);
+
+  const [batchesLoading, setBatchesLoading] =
     useState(false);
 
   const [errors, setErrors] =
@@ -90,6 +120,81 @@ export default function Booking() {
     }
 
   }, [packageData]);
+
+  useEffect(() => {
+    const slug = packageData.slug;
+
+    if (!slug) {
+      setBatches([]);
+      return undefined;
+    }
+
+    let cancelled = false;
+
+    const loadBatches = async () => {
+      try {
+        setBatchesLoading(true);
+        const batchData = await packageService.getBatches(slug);
+        const upcoming = batchData.batches || [];
+
+        if (cancelled) {
+          return;
+        }
+
+        setBatches(upcoming);
+
+        setSelectedBatch((current) => {
+          if (!current) {
+            return upcoming[0] || null;
+          }
+
+          return (
+            upcoming.find((batch) => batch.id === current.id) ||
+            current
+          );
+        });
+      } catch (err) {
+        console.error(err);
+
+        if (!cancelled) {
+          setBatches([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setBatchesLoading(false);
+        }
+      }
+    };
+
+    loadBatches();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [packageData.slug]);
+
+  useEffect(() => {
+    if (selectedBatch?.start_date && selectedBatch?.end_date) {
+      setForm((current) => ({
+        ...current,
+        departure: toInputDate(selectedBatch.start_date),
+        returnDate: toInputDate(selectedBatch.end_date),
+      }));
+      return;
+    }
+
+    setForm((current) => ({
+      ...current,
+      departure: "",
+      returnDate: "",
+    }));
+  }, [
+    selectedBatch?.id,
+    selectedBatch?.start_date,
+    selectedBatch?.end_date,
+  ]);
+
+  const datesLocked = Boolean(selectedBatch);
 
   /* ===================================================== */
   /* TOTAL TRAVELERS */
@@ -146,6 +251,13 @@ export default function Booking() {
 
   const handleChange =
     (e) => {
+      if (
+        datesLocked &&
+        (e.target.name === "departure" ||
+          e.target.name === "returnDate")
+      ) {
+        return;
+      }
 
       setForm({
 
@@ -163,9 +275,31 @@ export default function Booking() {
         [e.target.name]:
           "",
 
+        batch: "",
+
       });
 
     };
+
+  const handleBatchSelect = (batch) => {
+    setSelectedBatch(batch);
+    setErrors((current) => ({
+      ...current,
+      batch: "",
+      departure: "",
+      returnDate: "",
+    }));
+  };
+
+  const handleClearBatch = () => {
+    setSelectedBatch(null);
+    setErrors((current) => ({
+      ...current,
+      batch: "",
+      departure: "",
+      returnDate: "",
+    }));
+  };
 
   /* ===================================================== */
   /* VALIDATION */
@@ -175,7 +309,10 @@ export default function Booking() {
     () => {
 
       const newErrors =
-        validateBookingForm(form);
+        validateBookingForm(form, {
+          selectedBatch,
+          batchesAvailable: batches.length > 0,
+        });
 
       setErrors(
         newErrors
@@ -197,17 +334,18 @@ export default function Booking() {
     async () => {
 
       if (!validateForm()) {
-
-        toast.error(
-          "Please fix form errors"
-        );
+        if (batches.length > 0 && !selectedBatch) {
+          toast.error("Please select a departure batch");
+        } else {
+          toast.error("Please fix form errors");
+        }
 
         return;
 
       }
 
       const user =
-        hasAuthToken();
+        getUserToken();
 
       if (!user) {
 
@@ -250,7 +388,7 @@ export default function Booking() {
             packageData.id,
 
           trip_batch_id:
-            selectedBatch?.id,
+            selectedBatch?.id || null,
 
           package_title:
             packageData.title,
@@ -340,12 +478,6 @@ export default function Booking() {
 
               </h1>
 
-              <p className="text-slate-500 mt-2">
-
-                Confirm traveler details and reserve your adventure package.
-
-              </p>
-
             </div>
 
             {/* STEPS */}
@@ -399,22 +531,83 @@ export default function Booking() {
 
               </h2>
 
-              <p className="text-slate-500 mt-2">
-
-                Fill traveler details carefully before confirming your booking.
-
-              </p>
-
             </div>
 
             {/* FORM */}
+
+            {batches.length > 0 && (
+              <div className="mb-8">
+                <div className="mb-4">
+                  <h3 className="text-xl font-black text-slate-900">
+                    Select Departure Batch
+                  </h3>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Travel dates are set automatically from your batch.
+                  </p>
+                </div>
+
+                {batchesLoading ? (
+                  <p className="text-sm text-slate-500">
+                    Loading available batches...
+                  </p>
+                ) : (
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {batches.map((batch) => (
+                      <button
+                        key={batch.id}
+                        type="button"
+                        onClick={() => handleBatchSelect(batch)}
+                        className={`text-left rounded-2xl border p-5 transition ${
+                          selectedBatch?.id === batch.id
+                            ? "border-orange-400 bg-orange-50"
+                            : "border-slate-200 bg-white hover:bg-slate-50"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-4">
+                          <p className="font-black text-slate-900">
+                            {formatBatchDate(batch.start_date)}
+                            {" "}
+                            -
+                            {" "}
+                            {formatBatchDate(batch.end_date)}
+                          </p>
+                          <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
+                            {batch.seats_left ?? 0} seats left
+                          </span>
+                        </div>
+                        <p className="mt-3 text-sm text-slate-600">
+                          Pickup:
+                          {" "}
+                          {batch.pickup_location || "Pune"}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {errors.batch && (
+                  <p className="text-red-500 text-sm mt-3">
+                    {errors.batch}
+                  </p>
+                )}
+
+                {selectedBatch && (
+                  <button
+                    type="button"
+                    onClick={handleClearBatch}
+                    className="mt-4 text-sm font-semibold text-slate-500 hover:text-slate-700"
+                  >
+                    Clear batch selection
+                  </button>
+                )}
+              </div>
+            )}
 
             <div className="grid md:grid-cols-2 gap-5">
 
               <InputField
                 label="First Name"
                 name="firstName"
-                placeholder="John"
                 value={form.firstName}
                 onChange={handleChange}
                 error={errors.firstName}
@@ -424,7 +617,6 @@ export default function Booking() {
               <InputField
                 label="Last Name"
                 name="lastName"
-                placeholder="Doe"
                 value={form.lastName}
                 onChange={handleChange}
                 error={errors.lastName}
@@ -434,7 +626,6 @@ export default function Booking() {
               <InputField
                 label="Email Address"
                 name="email"
-                placeholder="example@gmail.com"
                 value={form.email}
                 onChange={handleChange}
                 error={errors.email}
@@ -444,7 +635,6 @@ export default function Booking() {
               <InputField
                 label="Phone Number"
                 name="phone"
-                placeholder="9876543210"
                 value={form.phone}
                 onChange={handleChange}
                 error={errors.phone}
@@ -452,21 +642,43 @@ export default function Booking() {
               />
 
               <InputField
-                label="Departure Date"
+                label="Travel Start Date"
                 type="date"
                 name="departure"
                 value={form.departure}
                 onChange={handleChange}
-                inputStyle={inputStyle}
+                inputStyle={`${inputStyle} ${
+                  datesLocked ? "cursor-not-allowed bg-slate-100 text-slate-600" : ""
+                }`}
+                readOnly={datesLocked}
+                min={datesLocked ? toInputDate(selectedBatch?.start_date) : undefined}
+                max={datesLocked ? toInputDate(selectedBatch?.start_date) : undefined}
+                helperText={
+                  datesLocked
+                    ? "Locked to selected batch start date"
+                    : ""
+                }
+                error={errors.departure}
               />
 
               <InputField
-                label="Return Date"
+                label="Travel End Date"
                 type="date"
                 name="returnDate"
                 value={form.returnDate}
                 onChange={handleChange}
-                inputStyle={inputStyle}
+                inputStyle={`${inputStyle} ${
+                  datesLocked ? "cursor-not-allowed bg-slate-100 text-slate-600" : ""
+                }`}
+                readOnly={datesLocked}
+                min={datesLocked ? toInputDate(selectedBatch?.end_date) : undefined}
+                max={datesLocked ? toInputDate(selectedBatch?.end_date) : undefined}
+                helperText={
+                  datesLocked
+                    ? "Locked to selected batch end date"
+                    : ""
+                }
+                error={errors.returnDate}
               />
 
               <InputField
@@ -504,7 +716,6 @@ export default function Booking() {
               <textarea
                 name="special_request"
                 rows="4"
-                placeholder="Meal preference, pickup request, medical notes..."
                 value={form.special_request}
                 onChange={handleChange}
                 className={inputStyle}
@@ -525,7 +736,6 @@ export default function Booking() {
               <textarea
                 name="notes"
                 rows="4"
-                placeholder="Additional travel preferences..."
                 value={form.notes}
                 onChange={handleChange}
                 className={inputStyle}
@@ -626,6 +836,14 @@ export default function Booking() {
 
               <div className="space-y-4 mt-7">
 
+                {selectedBatch ? (
+                  <BatchSummaryCard batch={selectedBatch} />
+                ) : batches.length > 0 ? (
+                  <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 text-sm text-slate-500">
+                    Select a batch to lock your travel dates.
+                  </div>
+                ) : null}
+
                 <SidebarInfo
                   icon={<FaCalendarAlt />}
                   title="Duration"
@@ -634,14 +852,6 @@ export default function Booking() {
                     "-"
                   }
                 />
-
-                {selectedBatch && (
-                  <SidebarInfo
-                    icon={<FaCalendarAlt />}
-                    title="Selected Batch"
-                    value={`${selectedBatch.start_date} to ${selectedBatch.end_date}`}
-                  />
-                )}
 
                 <SidebarInfo
                   icon={<FaUsers />}
@@ -765,6 +975,46 @@ function Line() {
 
 }
 
+function BatchSummaryCard({ batch }) {
+  return (
+    <div className="rounded-2xl border border-orange-100 bg-orange-50 p-5">
+      <p className="text-xs font-bold uppercase tracking-[0.18em] text-orange-500">
+        Selected Batch
+      </p>
+      <h3 className="mt-2 text-lg font-black text-slate-900">
+        {formatBatchDate(batch.start_date)}
+        {" "}
+        -
+        {" "}
+        {formatBatchDate(batch.end_date)}
+      </h3>
+      <div className="mt-4 space-y-2 text-sm text-slate-600">
+        <p>
+          <span className="font-semibold text-slate-800">Batch dates:</span>
+          {" "}
+          {formatBatchDate(batch.start_date)}
+          {" "}
+          to
+          {" "}
+          {formatBatchDate(batch.end_date)}
+        </p>
+        <p>
+          <span className="font-semibold text-slate-800">Seats available:</span>
+          {" "}
+          {batch.seats_left ?? 0}
+        </p>
+        {batch.pickup_location && (
+          <p>
+            <span className="font-semibold text-slate-800">Pickup:</span>
+            {" "}
+            {batch.pickup_location}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function SidebarInfo({
   icon,
   title,
@@ -806,6 +1056,7 @@ function SidebarInfo({
 function InputField({
   label,
   error,
+  helperText,
   inputStyle,
   ...props
 }) {
@@ -824,6 +1075,12 @@ function InputField({
         {...props}
         className={inputStyle}
       />
+
+      {helperText && (
+        <p className="text-slate-500 text-xs mt-2">
+          {helperText}
+        </p>
+      )}
 
       {error && (
 

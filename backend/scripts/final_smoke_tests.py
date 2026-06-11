@@ -81,16 +81,16 @@ def ensure_package(client, admin_headers):
         return package_list[0]["id"]
 
     payload = {
-        "title": f"Smoke Trek {int(time.time())}",
+        "title": f"Rajmachi QA Trek {int(time.time())}",
         "location": "Pune",
         "region": "Western Ghats",
         "category": "Trek",
         "difficulty": "Easy",
         "duration": "1D",
         "price": 1200,
-        "featured_image": "/uploads/packages/smoke.jpg",
-        "short_description": "Smoke test package for QA validation.",
-        "full_description": "Smoke test package for QA validation.",
+        "featured_image": "/uploads/packages/rajmachi.jpg",
+        "short_description": "Curated Rajmachi trek used for release validation.",
+        "full_description": "Curated Rajmachi trek with guide support, fort views, and safe weekend operations.",
         "included": ["Guide"],
         "excluded": ["Personal expenses"],
         "pickup_points": ["Pune"],
@@ -117,7 +117,7 @@ def main():
 
     trips_routes.generate_ai_itinerary = fake_itinerary
     chat_routes.generate_chat_reply = (
-        lambda message, history, packages: "AI smoke chat response"
+        lambda message, history, packages: "Rajmachi and Kalsubai are strong weekend options from Pune."
     )
 
     admin_login = ok(
@@ -147,12 +147,12 @@ def main():
     ok(client.get(f"/api/packages/{package_id}"), "package detail")
     ok(client.get("/api/reviews", params={"package_id": package_id}), "reviews list")
 
-    email = f"smoke.customer.{stamp}@travelgenie.in"
-    password = "Smoke123"
+    email = f"rahul.sharma.qa.{stamp}@travelgenie.in"
+    password = "Travel123"
     register = ok(
         client.post(
             "/api/auth/register",
-            json={"email": email, "password": password, "full_name": "Smoke Customer"},
+            json={"email": email, "password": password, "full_name": "Rahul Sharma"},
         ),
         "customer register",
     )
@@ -166,8 +166,8 @@ def main():
             "/api/save-booking",
             headers=customer_headers,
             json={
-                "firstName": "Smoke",
-                "lastName": "Customer",
+                "firstName": "Rahul",
+                "lastName": "Sharma",
                 "email": email,
                 "phone": "9000000000",
                 "destination": "Pune",
@@ -210,7 +210,7 @@ def main():
             json={
                 "package_id": package_id,
                 "rating": 5,
-                "review_text": "Smoke review content",
+                "review_text": "Well organized trek with clear pickup details and helpful guide support.",
             },
         ),
         "review create",
@@ -256,18 +256,18 @@ def main():
     )
     ok(payment, "payment create order", statuses=(200, 503))
 
-    vendor_email = f"smoke.vendor.{stamp}@travelgenie.in"
+    vendor_email = f"sahyadri.adventures.qa.{stamp}@travelgenie.in"
     apply_vendor = ok(
         client.post(
             "/api/vendors/apply",
             data={
-                "business_name": f"Smoke Vendor {stamp}",
-                "owner_name": "Smoke Vendor",
+                "business_name": f"Sahyadri Adventures QA {stamp}",
+                "owner_name": "Amit Deshmukh",
                 "email": vendor_email,
                 "password": "Vendor123",
                 "phone": "9000000001",
                 "categories": '["trekking"]',
-                "description": "Smoke vendor",
+                "description": "Licensed Maharashtra trekking operator for QA validation.",
             },
             files={
                 "government_id": ("id.png", PNG_1X1, "image/png"),
@@ -319,11 +319,11 @@ def main():
             "/api/vendors/packages",
             headers=vendor_headers,
             json={
-                "title": f"Vendor Smoke Package {stamp}",
+                "title": f"Kalsubai Sunrise Trek QA {stamp}",
                 "destination": "Pune",
                 "location": "Pune",
                 "pricing": 1500,
-                "itinerary": "Smoke itinerary",
+                "itinerary": "Late night pickup, guided sunrise summit, breakfast, and return transfer.",
                 "package_images": [image_path],
                 "availability": {},
             },

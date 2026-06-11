@@ -1,77 +1,36 @@
 import {
-  useEffect,
-  useState,
-} from "react";
-
-import {
   Navigate,
 } from "react-router-dom";
 
 import RouteLoader from "../../components/RouteLoader";
-import { apiRequest } from "../../services/httpClient";
+import { useAuth } from "../../context/AuthContext";
+import { getAdminToken } from "../../utils/authToken";
 
 export default function AdminProtectedRoute({
   children,
 }) {
+  const {
+    adminAuthLoading,
+    adminInitialized,
+    isAdminAuthenticated,
+  } = useAuth();
 
-  const [isValid, setIsValid] =
-    useState(null);
-
-  useEffect(() => {
-
-    let mounted = true;
-
-    const token =
-      localStorage.getItem("adminToken") ||
-      localStorage.getItem("token");
-
-    const checkAdmin = async () => {
-      if (!token) {
-        if (mounted) {
-          setIsValid(false);
-        }
-        return;
-      }
-
-      try {
-        await apiRequest("/admin/stats", {
-          skipAuthRedirect: true,
-        });
-        if (mounted) {
-          setIsValid(true);
-        }
-      } catch {
-        if (mounted) {
-          setIsValid(false);
-        }
-      }
-    };
-
-    checkAdmin();
-
-    return () => {
-      mounted = false;
-    };
-
-  }, []);
-
-  if (isValid === null) {
-
+  if (!adminInitialized || adminAuthLoading) {
     return (
       <RouteLoader label="Checking admin access..." />
     );
-
   }
 
-  return isValid
+  const hasToken = Boolean(getAdminToken());
 
-    ? children
-
-    : (
+  if (!isAdminAuthenticated && !hasToken) {
+    return (
       <Navigate
         to="/admin/login"
         replace
       />
     );
+  }
 
+  return children;
 }

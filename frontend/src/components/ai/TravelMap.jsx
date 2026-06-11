@@ -70,7 +70,14 @@ const itemCoords = (item) => {
   if (!item || typeof item !== "object") return null;
   const lat = Number(item.latitude ?? item.lat);
   const lng = Number(item.longitude ?? item.lng ?? item.lon);
-  return Number.isFinite(lat) && Number.isFinite(lng) ? [lat, lng] : null;
+  const valid =
+    Number.isFinite(lat) &&
+    Number.isFinite(lng) &&
+    lat >= -90 &&
+    lat <= 90 &&
+    lng >= -180 &&
+    lng <= 180;
+  return valid ? [lat, lng] : null;
 };
 
 const attractionCoords = (item) => {
@@ -98,22 +105,31 @@ function FitBounds({ positions, fallbackCenter, fallbackZoom }) {
   return null;
 }
 
-/* ===================================================== */
-/* FIX DEFAULT MARKER */
-/* ===================================================== */
+const markerIcon = (type) => {
+  const styles = {
+    destination: "background:#f97316;border-color:#fff;color:#fff;",
+    hotel: "background:#0f172a;border-color:#fed7aa;color:#fff;",
+    restaurant: "background:#ea580c;border-color:#ffedd5;color:#fff;",
+    attraction: "background:#f8fafc;border-color:#f97316;color:#0f172a;",
+    pickup: "background:#475569;border-color:#ffedd5;color:#fff;",
+  };
 
-delete L.Icon.Default.prototype._getIconUrl;
+  const labels = {
+    destination: "D",
+    hotel: "H",
+    restaurant: "R",
+    attraction: "A",
+    pickup: "P",
+  };
 
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-
-  iconUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-
-  shadowUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-});
+  return L.divIcon({
+    className: "",
+    html: `<div style="${styles[type]} width:30px;height:30px;border-radius:999px;border-width:2px;border-style:solid;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;">${labels[type]}</div>`,
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
+    popupAnchor: [0, -16],
+  });
+};
 
 /* ===================================================== */
 /* COMPONENT */
@@ -127,6 +143,7 @@ function TravelMap({
   pickupPoints = [],
   nearbyAttractions = [],
   heightClass = "h-[320px] md:h-[420px]",
+  showChrome = true,
 }) {
 
   /* ===================================================== */
@@ -170,6 +187,15 @@ function TravelMap({
 
   const center = resolvedLocation.coords;
   const mapZoom = resolvedLocation.zoom || matchedLocation.zoom || 12;
+  const hasValidCenter =
+    Array.isArray(center) &&
+    center.length === 2 &&
+    Number.isFinite(center[0]) &&
+    Number.isFinite(center[1]) &&
+    center[0] >= -90 &&
+    center[0] <= 90 &&
+    center[1] >= -180 &&
+    center[1] <= 180;
 
   /* ===================================================== */
   /* SAFE LIMITED DATA */
@@ -239,34 +265,45 @@ function TravelMap({
   /* UI */
   /* ===================================================== */
 
+  if (!hasValidCenter) {
+    return (
+      <section className="rounded-[26px] border border-orange-100 bg-orange-50 p-6 text-orange-800">
+        <h2 className="text-xl font-semibold">Map unavailable</h2>
+        <p className="mt-2 text-sm leading-relaxed">
+          Destination coordinates could not be validated for this itinerary.
+        </p>
+      </section>
+    );
+  }
+
   return (
 
-    <section className="bg-white border border-gray-200 rounded-[28px] overflow-hidden shadow-sm">
+    <section className="overflow-hidden rounded-[26px] border border-slate-100 bg-white">
 
       {/* HEADER */}
 
-      <div className="px-6 py-5 border-b border-gray-100">
+      {showChrome && <div className="px-6 py-6 md:px-8">
 
-        <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+        <h2 className="text-xl font-semibold text-slate-950">
 
           AI Travel Map
 
         </h2>
 
-        <p className="text-gray-500 mt-1 text-sm md:text-base">
+        <p className="mt-2 text-sm leading-relaxed text-slate-500">
 
-          Smart location visualization for your itinerary
+          Destination, stay, dining, and attraction markers
 
         </p>
 
-      </div>
+      </div>}
 
       {/* MAP WRAPPER */}
 
-      <div className="relative">
+      <div className={showChrome ? "relative mx-3 mb-3 overflow-hidden rounded-[22px] md:mx-4 md:mb-4" : "relative overflow-hidden rounded-[26px]"}>
 
         {geoLoading && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/70 text-sm font-medium text-slate-600">
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/75 text-sm font-semibold text-slate-600 backdrop-blur-sm">
             Refining map location...
           </div>
         )}
@@ -293,19 +330,19 @@ function TravelMap({
 
           {/* MAIN DESTINATION */}
 
-          <Marker position={center}>
+          <Marker position={center} icon={markerIcon("destination")}>
 
             <Popup>
 
               <div className="min-w-[160px]">
 
-                <h3 className="font-bold text-gray-900">
+                <h3 className="font-bold text-slate-950">
 
                   {destination || "Destination"}
 
                 </h3>
 
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-slate-500 mt-1">
 
                   Main trip location
 
@@ -324,28 +361,21 @@ function TravelMap({
             <Marker
               key={`hotel-${index}`}
               position={coords}
+              icon={markerIcon("hotel")}
             >
 
               <Popup>
 
                 <div className="space-y-1 min-w-[180px]">
 
-                  <h3 className="font-bold text-gray-900">
+                  <h3 className="font-bold text-slate-950">
 
                     {hotel.name}
 
                   </h3>
 
-                  {hotel.rating && (
-                    <p className="text-sm text-gray-600">
-
-                      Rating: {hotel.rating}
-
-                    </p>
-                  )}
-
                   {(hotel.price_range || hotel.price) && (
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-slate-500">
 
                       {hotel.price_range || hotel.price}
 
@@ -367,27 +397,22 @@ function TravelMap({
             <Marker
               key={`restaurant-${index}`}
               position={coords}
+              icon={markerIcon("restaurant")}
             >
 
               <Popup>
 
                 <div className="space-y-1 min-w-[180px]">
 
-                  <h3 className="font-bold text-gray-900">
+                  <h3 className="font-bold text-slate-950">
 
                     {restaurant.name}
 
                   </h3>
 
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-slate-600">
 
                     {restaurant.cuisine || "Multi Cuisine"}
-
-                  </p>
-
-                  <p className="text-sm text-gray-500">
-
-                    Rating: {restaurant.rating || "4.4"}
 
                   </p>
 
@@ -403,13 +428,14 @@ function TravelMap({
             <Marker
               key={`pickup-${index}`}
               position={coords}
+              icon={markerIcon("pickup")}
             >
               <Popup>
                 <div className="min-w-[170px]">
-                  <h3 className="font-bold text-gray-900">
+                  <h3 className="font-bold text-slate-950">
                     {point}
                   </h3>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm text-slate-500">
                     Pickup point
                   </p>
                 </div>
@@ -421,15 +447,16 @@ function TravelMap({
             <Marker
               key={`attraction-${index}`}
               position={coords}
+              icon={markerIcon("attraction")}
             >
               <Popup>
                 <div className="min-w-[170px]">
-                  <h3 className="font-bold text-gray-900">
+                  <h3 className="font-bold text-slate-950">
                     {typeof attraction === "string"
                       ? attraction
                       : attraction.name || "Nearby attraction"}
                   </h3>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm text-slate-500">
                     Nearby attraction
                   </p>
                 </div>
@@ -441,17 +468,17 @@ function TravelMap({
 
       </div>
 
-      <div className="grid gap-3 border-t border-gray-100 px-6 py-4 text-sm text-gray-600 md:grid-cols-3">
+      {showChrome && <div className="grid gap-4 px-6 pb-6 pt-2 text-sm leading-relaxed text-slate-600 md:grid-cols-3 md:px-8">
         <span>
-          Destination: <strong className="text-gray-900">{destination || location || "Maharashtra"}</strong>
+          Destination: <strong className="text-slate-950">{destination || location || "Maharashtra"}</strong>
         </span>
         <span>
-          Coordinates: <strong className="text-gray-900">{center[0].toFixed(4)}, {center[1].toFixed(4)}</strong>
+          Coordinates: <strong className="text-slate-950">{center[0].toFixed(4)}, {center[1].toFixed(4)}</strong>
         </span>
         <span>
-          Source: <strong className="text-gray-900">OpenStreetMap</strong>
+          Source: <strong className="text-slate-950">OpenStreetMap</strong>
         </span>
-      </div>
+      </div>}
 
     </section>
 
