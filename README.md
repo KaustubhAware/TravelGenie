@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 # TravelGenie
+=======
+# TravelGenie 
+### *AI-Powered Tour & Travel Agency Operations Platform*
+>>>>>>> 460cddf2d6ede4b638057a8848a08a8b5ca9cb9e
 
 TravelGenie is a full-stack AI-powered Maharashtra travel and trekking platform built for package discovery, AI trip planning, booking, vendor operations, admin analytics, reviews, notifications, and payment tracking.
 
